@@ -1,0 +1,8 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import "tailwindcss";
+
+button {
+  @apply bg-green-600 text-white rounded-md px-4 py-2 shadow-md hover:bg-green-700 transition-colors duration-200 active:bg-green-800 disabled:bg-gray-400 disabled:cursor-not-allowed;
+
+}

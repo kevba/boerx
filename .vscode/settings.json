@@ -1,0 +1,16 @@
+{
+  "svg.preview.background": "dark-transparent",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+<<<<<<< HEAD
+    "source.organizeImports": "explicit",
+    "source.fixAll": "explicit"
+||||||| edd773cab
+    "source.organizeImports": "explicit"
+=======
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+>>>>>>> web-release-1.64.0
+  }
+}

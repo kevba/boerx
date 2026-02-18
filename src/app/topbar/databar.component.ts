@@ -1,0 +1,44 @@
+import { DecimalPipe } from "@angular/common";
+import { Component, computed, inject } from "@angular/core";
+import { Crop, CropService } from "../services/crop.service";
+import { StashService } from "../services/stash.service";
+
+@Component({
+  selector: "app-databar",
+  imports: [DecimalPipe],
+  template: `
+    <div class="flex flex row gap-4">
+      <div class="text-sm font-bold">
+        <span>Stash: </span>
+        <span class="text-amber-600"
+          >{{ stashService.stash() | number : "1.0-0" }}
+          {{ stashService.stashUnit }}</span
+        >
+      </div>
+      <div class="flex-1" w-full></div>
+      @for (option of cropPrices(); track option.crop) {
+      <div class="text-sm font-bold">
+        <span>{{ option.crop }}: </span>
+        <span class="text-green-600"
+          >{{ option.income | number : "1.0-0" }}
+          {{ stashService.stashUnit }}</span
+        >
+      </div>
+      }
+    </div>
+  `,
+})
+export class DatabarComponent {
+  stashService = inject(StashService);
+  cropService = inject(CropService);
+
+  cropPrices = computed(() => {
+    const cropValues = this.cropService.earnings();
+    const crops = Object.values(Crop);
+
+    return crops.map((crop) => ({
+      crop: crop,
+      income: cropValues[crop],
+    }));
+  });
+}
