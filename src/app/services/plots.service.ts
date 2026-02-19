@@ -60,6 +60,10 @@ export class PlotsService {
     this.initializePlots();
   }
 
+  selectPlot(plotId: string | null) {
+    this.selectedPlotId.set(plotId);
+  }
+
   private initializePlots() {
     this._plots.set([this.newPlot(), this.newPlot(), this.newPlot()]);
   }

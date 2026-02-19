@@ -1,4 +1,5 @@
 import { Component, inject } from "@angular/core";
+import { CanvasComponent } from "./canvas/canvas.component";
 import { PlotControlComponent } from "./plots/plot-control.component";
 import { PlotsComponent } from "./plots/plots.component";
 import { IncomeService } from "./services/income.service";
@@ -13,6 +14,7 @@ import { DatabarComponent } from "./topbar/databar.component";
     PlotControlComponent,
     PlotControlComponent,
     DatabarComponent,
+    CanvasComponent,
   ],
   template: `
     <div class="flex flex-col w-full h-screen">
@@ -26,7 +28,8 @@ import { DatabarComponent } from "./topbar/databar.component";
         <div class="flex no-wrap p-8 h-full w-full">
           <!-- plots -->
           <div class="w-[60%] content-baseline">
-            <app-plots />
+            <app-canvas />
+            <!-- <app-plots /> -->
           </div>
         </div>
       </div>
