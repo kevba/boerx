@@ -4,11 +4,10 @@ import {
   effect,
   ElementRef,
   inject,
-  untracked,
   viewChild,
 } from "@angular/core";
 import { Canvas } from "fabric";
-import { PlotsService } from "../services/plots.service";
+import { MachineRenderService } from "./machine-render.service";
 import { PlotRenderService } from "./plot-render.service";
 
 @Component({
@@ -19,8 +18,8 @@ import { PlotRenderService } from "./plot-render.service";
   ></canvas>`,
 })
 export class CanvasComponent {
-  private plotsService = inject(PlotsService);
   private plotRenderService = inject(PlotRenderService);
+  private machineRenderService = inject(MachineRenderService);
   private dragData = {
     isDragging: false,
     lastPosX: 0,
@@ -45,6 +44,7 @@ export class CanvasComponent {
       const canvas = this.canvas();
       if (!canvas) return;
       this.plotRenderService.canvas.set(canvas);
+      this.machineRenderService.canvas.set(canvas);
     });
 
     effect(() => {
@@ -66,21 +66,11 @@ export class CanvasComponent {
 
     effect(() => {
       const canvas = this.canvas();
-      if (!canvas) return;
-
-      if (this.plotsService.selectedPlot() && this.dragData.isDragging) {
-        this.dragData.isDragging = false;
-      }
-    });
-
-    effect(() => {
-      const canvas = this.canvas();
 
       canvas.on("mouse:down", (opt) => {
         var evt = opt.e as any;
-        const selectedPlot = untracked(() => this.plotsService.selectedPlot());
-        if (selectedPlot) {
-          this.plotsService.selectPlot(null);
+        if (canvas.getActiveObject()) {
+          return;
         }
 
         this.dragData.isDragging = true;

@@ -1,8 +1,8 @@
-import { Component, inject } from "@angular/core";
+import { Component, computed, inject } from "@angular/core";
 import { CanvasComponent } from "./canvas/canvas.component";
 import { PlotControlComponent } from "./plots/plot-control.component";
-import { PlotsComponent } from "./plots/plots.component";
 import { IncomeService } from "./services/income.service";
+import { MachineService } from "./services/machine.service";
 import { PlotsService } from "./services/plots.service";
 import { StashService } from "./services/stash.service";
 import { DatabarComponent } from "./topbar/databar.component";
@@ -10,7 +10,6 @@ import { DatabarComponent } from "./topbar/databar.component";
 @Component({
   selector: "app-root",
   imports: [
-    PlotsComponent,
     PlotControlComponent,
     PlotControlComponent,
     DatabarComponent,
@@ -40,8 +39,20 @@ import { DatabarComponent } from "./topbar/databar.component";
             <h2 class="text-lg font-bold ">Buy</h2>
 
             <div class="flex flex-col gap-4 h-full">
-              <button (click)="plotService.addPlot()">
-                Add Plot (-{{ plotService.plotCost() }}
+              <button
+                (click)="plotService.addPlot()"
+                [disabled]="!canBuyPlot()"
+              >
+                Plot (-{{ plotService.plotCost() }}
+                {{ stashService.stashUnit }})
+              </button>
+            </div>
+            <div class="flex flex-col gap-4 h-full">
+              <button
+                (click)="machineService.addMachine()"
+                [disabled]="!canBuyMachine()"
+              >
+                Machine (-{{ machineService.machineCost() }}
                 {{ stashService.stashUnit }})
               </button>
             </div>
@@ -60,5 +71,18 @@ export class AppComponent {
   _incomeService = inject(IncomeService);
 
   plotService = inject(PlotsService);
+  machineService = inject(MachineService);
   stashService = inject(StashService);
+
+  canBuyPlot = computed(() => {
+    const cost = this.plotService.plotCost();
+    const stash = this.stashService.stash();
+    return stash >= cost;
+  });
+
+  canBuyMachine = computed(() => {
+    const cost = this.machineService.machineCost();
+    const stash = this.stashService.stash();
+    return stash >= cost;
+  });
 }

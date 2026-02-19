@@ -79,15 +79,10 @@ class PlotRender extends Rect {
       width: 120,
       height: 120,
       hasControls: false,
-      // keep selectable
       selectable: true,
-
-      // disable resizing/scaling
       lockScalingX: true,
       lockScalingY: true,
-
-      // optional extras (usually good idea)
-      lockRotation: true, // prevent rotation
+      lockRotation: true,
     });
     this.id = id;
   }

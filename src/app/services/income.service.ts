@@ -1,5 +1,6 @@
 import { effect, inject, Injectable } from "@angular/core";
 import { CropService } from "./crop.service";
+import { MachineService } from "./machine.service";
 import { PlotsService } from "./plots.service";
 import { StashService } from "./stash.service";
 import { TickService } from "./tick.service";
@@ -12,6 +13,7 @@ export class IncomeService {
   private cropService = inject(CropService);
   private tickService = inject(TickService);
   private plotService = inject(PlotsService);
+  private machineService = inject(MachineService);
 
   constructor() {
     effect(() => {
@@ -36,9 +38,16 @@ export class IncomeService {
 
   private updateEarnings() {
     const plots = this.plotService.plots();
+    const machines = this.machineService.machines();
+
     let income = 0;
     plots.forEach((plot) => {
       income += this.cropService.harvestEarnings(plot.crop);
+    });
+
+    machines.forEach(() => {
+      income +=
+        this.machineService.machineEarningsIncreasePerPlot() * plots.length;
     });
 
     this.stashService.addStash(income);
