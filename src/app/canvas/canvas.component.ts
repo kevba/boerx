@@ -15,11 +15,7 @@ import { SurfaceService } from "./surface.service";
 
 @Component({
   selector: "app-canvas",
-  template: ` <div
-    id="canvas-container"
-    #canvas
-    class="w-full h-full border-1 border-zinc-200"
-  ></div>`,
+  template: ` <div id="canvas-container" #canvas class="w-full h-full"></div>`,
 })
 export class CanvasComponent {
   private size = signal(20000);

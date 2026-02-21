@@ -25,7 +25,7 @@ import { DatabarComponent } from "./topbar/databar.component";
       </div>
       <div class="p-2 bg-stone-600"><app-databar /></div>
       <div class="flex-1 bg-stone-500 h-full">
-        <div class="flex no-wrap p-8 h-full w-full">
+        <div class="flex no-wrap h-full w-full">
           <!-- plots -->
           <div class="w-[60%] content-baseline">
             <app-canvas />
