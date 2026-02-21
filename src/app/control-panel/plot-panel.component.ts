@@ -1,27 +1,30 @@
 import { Component, computed, inject } from "@angular/core";
 import { Crop, CropService } from "../services/crop.service";
-import { Plot, PlotsService } from "../services/plots.service";
+import { PlotsService } from "../services/plots.service";
 import { SelectionService } from "../services/selection.service";
 import { StashService } from "../services/stash.service";
+import { BuyTileComponent } from "./buy-tile.component";
 
 @Component({
   selector: "app-plot-panel",
   template: `
-    <div class="flex flex-col gap-2">
-      <h2 class="text-lg font-bold ">Plant Crop</h2>
-      <div class="flex flex-wrap gap-2">
-        @for (option of options(); track option.crop) {
-        <button
-          (click)="plantCrop(option.crop)"
-          [disabled]="cropOnPlot() === option.crop"
-        >
-          {{ option.crop }}
-          (-{{ option.plantConst }}{{ stashService.stashUnit }})
-        </button>
-        }
+    <div class="flex flex-col gap-2 p-4 w-full h-full items-center">
+      <div class="w-full"><h2 class="text-lg font-bold ">Plant Crop</h2></div>
+      <div>
+        <div class="flex flex-row flex-wrap gap-4 justify-center">
+          @for (option of options(); track option.crop) {
+            <app-buy-tile
+              image=""
+              [text]="option.crop"
+              [cost]="option.plantConst"
+              [disabled]="option.disabled"
+              (buyClick)="plantCrop(option.crop)"></app-buy-tile>
+          }
+        </div>
       </div>
     </div>
   `,
+  imports: [BuyTileComponent],
 })
 export class PlotPanelComponent {
   plotService = inject(PlotsService);
@@ -31,39 +34,35 @@ export class PlotPanelComponent {
 
   crops = Object.values(Crop);
 
-  cropOnPlot = computed(() => {
+  plots = computed(() => {
     const selectedPlotIds = this.selectionService.selectedPlots();
-    if (selectedPlotIds.length !== 1) return null;
-
-    const plot = this.plotService
+    return this.plotService
       .plots()
-      .find((p) => p.id === selectedPlotIds[0]);
-    return plot?.crop;
+      .filter((p) => selectedPlotIds.includes(p.id));
   });
 
   options = computed(() => {
     const plantConst = this.cropService.plantCost();
+    const plots = this.plots();
 
-    return this.crops.map((crop) => ({
-      crop: crop,
-      plantConst: plantConst[crop],
-    }));
+    return this.crops.map((crop) => {
+      const plotsWithoutCrop = plots.filter((p) => p?.crop !== crop).length;
+      return {
+        crop: crop,
+        disabled: plotsWithoutCrop === 0,
+        plantConst: plantConst[crop] * (plotsWithoutCrop || 1),
+      };
+    });
   });
 
   plantCrop(crop: Crop) {
-    const plotIds = this.selectionService.selectedPlots();
-    const plotMap = this.plotService.plots().reduce((acc, plot) => {
-      acc[plot.id] = plot;
-      return acc;
-    }, {} as Record<string, Plot>);
+    const plots = this.plots();
 
-    for (const plotId of plotIds) {
-      const plot = plotMap[plotId];
-
+    for (const plot of plots) {
       if (plot?.crop === crop) {
         return;
       } else {
-        this.plotService.plantOnPlot(plotId, crop);
+        this.plotService.plantOnPlot(plot.id, crop);
       }
     }
   }

@@ -10,22 +10,15 @@ import { DatabarComponent } from "./topbar/databar.component";
   template: `
     <div class="flex flex-col w-full h-screen">
       <div
-        class="h-[5rem] bg-gradient-to-r from-amber-800 via-lime-800 to-green-800 flex items-center "
-      >
+        class="h-[5rem] bg-gradient-to-r from-amber-800 via-lime-800 to-green-800 flex items-center ">
         <h1 class="text-5xl  font-bold  pl-4 text-green-600">BoerX</h1>
       </div>
-      <div class="h-[3rem] p-2 bg-stone-600 flex items-center">
+      <div class="h-[3rem] p-2 bg-stone-600 border-stone-600 flex items-center">
         <app-databar class="flex-1" />
       </div>
-      <div class="flex-1 bg-stone-500 h-full">
-        <div class="flex no-wrap h-full w-full">
-          <!-- plots -->
-          <div class="w-[60%] content-baseline">
-            <app-canvas />
-            <!-- <app-plots /> -->
-          </div>
-          <app-control-panel />
-        </div>
+      <div class="flex-1 flex no-wrap h-full w-full">
+        <app-canvas class="flex-1 content-baseline" />
+        <app-control-panel />
       </div>
       <div class="h-[3rem] bg-stone-600 ">
         <div class="flex flex-row gap-4 p-4 h-full">

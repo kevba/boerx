@@ -10,19 +10,18 @@ import { StashService } from "../services/stash.service";
     <div class="flex flex row gap-4 w-full">
       <div class="text-sm font-bold">
         <span>Stash: </span>
-        <span class="text-amber-500"
-          >{{ stashService.stash() | number : "1.0-0" }}
-          {{ stashService.stashUnit }}</span
-        >
+        <span class="text-amber-500">
+          {{ stashService.stash() | number : "1.0-0"
+          }}{{ stashService.stashUnit }}
+        </span>
       </div>
       <div class="flex-1" w-full></div>
       @for (option of cropPrices(); track option.crop) {
       <div class="text-sm font-bold">
         <span>{{ option.crop }}: </span>
-        <span class="text-green-500"
-          >{{ option.income | number : "1.0-0" }}
-          {{ stashService.stashUnit }}</span
-        >
+        <span class="text-green-500">
+          {{ option.income | number : "1.0-0" }}{{ stashService.stashUnit }}
+        </span>
       </div>
       }
     </div>

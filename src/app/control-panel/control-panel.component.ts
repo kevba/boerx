@@ -1,25 +1,66 @@
 import { Component, computed, inject } from "@angular/core";
 import { SelectionService } from "../services/selection.service";
-import { BuyPanelComponent } from "./buy-panel.component";
+import { MainPanelComponent } from "./main-panel.component";
 import { PlotPanelComponent } from "./plot-panel.component";
 
 @Component({
   selector: "app-control-panel",
-  imports: [PlotPanelComponent, BuyPanelComponent],
-  template: `
-    <div class="flex flex-col gap-4 p-4">
-      <h2>Control Panel</h2>
+  imports: [PlotPanelComponent, MainPanelComponent],
 
-      <app-buy-panel />
-      @if (showPlotControl()) {
-      <app-plot-panel />
-      }
+  template: `
+    <div class="w-[20rem] flex flex-col h-full overflow-scroll bg-stone-500 ">
+      <div class="relative w-full h-full flex-1 ">
+        <app-main-panel
+          class="absolute top-0 left-0 w-full h-full border-l-8 border-stone-600" />
+        @if (showPlotControl()) {
+          <div
+            class="absolute top-0 left-0 w-full h-full bg-stone-500 border-l-8 border-stone-600"
+            animate.enter="slide-in-enter"
+            animate.leave="slide-in-leave">
+            <div class="flex flex-col h-full w-full">
+              <div class="w-full flex flex-row items-center gap-4 px-4 pt-4">
+                <button class="text " (click)="selectionService.clear()">
+                  {{ "<" }}
+                </button>
+                <span class="text-2xl">Upgrades</span>
+              </div>
+              <app-plot-panel />
+            </div>
+          </div>
+        } @else {}
+      </div>
     </div>
+  `,
+  styles: `
+    .slide-in-enter {
+      animation: slideInFromRight 500ms ease-out;
+    }
+    .slide-in-leave {
+      animation: slideOutToRight 500ms ease-in;
+    }
+
+    @keyframes slideInFromRight {
+      from {
+        transform: translateX(100%);
+      }
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOutToRight {
+      from {
+        transform: translateX(0);
+      }
+      to {
+        transform: translateX(100%);
+      }
+    }
   `,
 })
 export class ControlPanelComponent {
   selectionService = inject(SelectionService);
   showPlotControl = computed(
-    () => this.selectionService.selectedPlots().length > 0
+    () => this.selectionService.selectedPlots().length > 0,
   );
 }
