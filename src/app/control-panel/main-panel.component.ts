@@ -1,9 +1,11 @@
-import { Component, computed, signal } from "@angular/core";
+import { Component, computed, inject, signal } from "@angular/core";
+import { CheatsService } from "../services/cheats.service";
+import { CheatsPanelComponent } from "./cheats-panel.component";
 import { ShopPanelComponent } from "./shop-panel.component";
 
 @Component({
   selector: "app-main-panel",
-  imports: [ShopPanelComponent],
+  imports: [ShopPanelComponent, CheatsPanelComponent],
   template: `
     <div class="p-4 flex flex-col h-full">
       <div
@@ -20,6 +22,9 @@ import { ShopPanelComponent } from "./shop-panel.component";
           @case (PanelType.Shop) {
             <app-shop-panel />
           }
+          @case (PanelType.Cheats) {
+            <app-cheats-panel />
+          }
           @default {
             <div>Select an option</div>
           }
@@ -29,18 +34,28 @@ import { ShopPanelComponent } from "./shop-panel.component";
   `,
 })
 export class MainPanelComponent {
+  private cheatsService = inject(CheatsService);
+
   PanelType = PanelType;
 
   selectedMenuIndex = signal(0);
-  selectedMenu = computed(() => this.menuItems()[this.selectedMenuIndex()]);
+  selectedMenu = computed(() => {
+    const selected = this.menuItems()?.[this.selectedMenuIndex()];
+    return selected || this.menuItems()[0];
+  });
 
   menuItems = computed(() => {
-    return Object.keys(PanelType).map((key) => {
+    let items = Object.keys(PanelType).map((key) => {
       return {
         type: key,
         text: PanelType[key as keyof typeof PanelType],
       };
     });
+
+    items = items.filter(
+      (item) => this.cheatsService.unlocked() || item.type !== PanelType.Cheats,
+    );
+    return items;
   });
 
   nextMenu() {
@@ -64,4 +79,5 @@ export class MainPanelComponent {
 enum PanelType {
   Shop = "Shop",
   Stats = "Stats",
+  Cheats = "Cheats",
 }
