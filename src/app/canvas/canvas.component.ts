@@ -35,7 +35,7 @@ export class CanvasComponent {
 
   private canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>(
     "canvas",
-    {}
+    {},
   );
 
   private stage = computed(() => {
@@ -77,10 +77,6 @@ export class CanvasComponent {
       const url = this.surfaceService.tileImageUrl();
       if (!url) return;
       this.setBackgroundImage(url);
-    });
-
-    effect(() => {
-      this.surfaceService.setSize(this.size());
     });
   }
 
@@ -135,7 +131,7 @@ export class CanvasComponent {
 
   private boundsHelper = (
     pos: Konva.Vector2d,
-    stage: Konva.Stage
+    stage: Konva.Stage,
   ): Konva.Vector2d => {
     const width = this.canvasRef().nativeElement.clientWidth;
     const height = this.canvasRef().nativeElement.clientHeight;

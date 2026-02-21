@@ -3,6 +3,7 @@ import Konva from "konva";
 import { Crop } from "../services/crop.service";
 import { Plot, PlotsService } from "../services/plots.service";
 import { EntityType, SelectionService } from "../services/selection.service";
+import { ColorMap, NoisyImageService } from "./noisy-image.service";
 
 @Injectable({
   providedIn: "root",
@@ -10,7 +11,18 @@ import { EntityType, SelectionService } from "../services/selection.service";
 export class PlotRenderService {
   private plotsService = inject(PlotsService);
   private selectionService = inject(SelectionService);
+  private noisyImageService = inject(NoisyImageService);
+
+  private SIZE = 120;
+
   layer = new Konva.Layer();
+
+  private transparentColorMap: ColorMap = {
+    "-0.5": "#1010101f",
+    "-0.2": "#7F7F7F1f",
+    "0": "#7F7F7F1f",
+    "0.3": "#FFFFFF1f",
+  };
 
   private colorMap: Record<Crop, string> = {
     [Crop.Wheat]: "oklch(85.2% 0.199 91.936)",
@@ -39,17 +51,6 @@ export class PlotRenderService {
         this.renderPlot(element, isSelected, i + 1);
       });
     });
-
-    effect(() => {
-      // canvas.on("mouse:down", (e) => {
-      //   if (e.target instanceof PlotRender) {
-      //     const id = e.target.id;
-      //     this.handlePlotClick(id);
-      //   } else {
-      //     this.plotsService.selectPlot(null);
-      //   }
-      // });
-    });
   }
 
   setStage(stage: Konva.Stage) {
@@ -57,54 +58,77 @@ export class PlotRenderService {
   }
 
   private renderPlot(plot: Plot, selected: boolean, i: number) {
-    const color = this.colorMap[plot.crop];
     const layer = this.layer;
     if (!layer) return;
 
-    const drawnPlot = layer.findOne(`#${plot.id}`);
+    const coords = { x: i * 50, y: 20 };
+
+    const drawnPlot = layer.findOne(`#${plot.id}-base`);
 
     if (drawnPlot) {
       drawnPlot.setAttrs({
-        ...(selected ? this.selectedStyle : this.baseStyle),
-        fill: color,
-        draggable: selected,
+        ...this.getPlotAttributes(plot, selected),
       });
 
       return;
     }
 
-    const plotRender = new PlotRender({
-      id: plot.id,
-      x: i * 50,
-      y: 20,
-      ...(selected ? this.selectedStyle : this.baseStyle),
-      fill: color,
-      draggable: selected,
+    const plotBase = new Konva.Rect({
+      id: plot.id + "-base",
+      x: coords.x,
+      y: coords.y,
+      height: this.SIZE,
+      width: this.SIZE,
+      ...this.getPlotAttributes(plot, selected),
     });
-    plotRender.on("click", (e) => {
+
+    const plotOverlay = new Konva.Rect({
+      id: plot.id + "-overlay",
+      x: coords.x,
+      y: coords.y,
+      height: this.SIZE,
+      width: this.SIZE,
+      listening: false,
+      draggable: false,
+    });
+
+    const fillPatternImage = new Image();
+    fillPatternImage.onload = () => {
+      plotOverlay.setAttr("fillPatternImage", fillPatternImage);
+    };
+    fillPatternImage.src = this.noisyImageService.getNoiseImage(
+      120,
+      10,
+      0.9,
+      this.transparentColorMap,
+    );
+
+    const group = new Konva.Group({
+      id: plot.id,
+      x: coords.x,
+      y: coords.y,
+      draggable: true,
+    });
+
+    group.on("click", (e) => {
       this.selectionService.setMulti(e.evt.shiftKey);
       this.handlePlotClick(plot.id);
     });
 
-    layer.add(plotRender);
+    group.add(plotBase);
+    group.add(plotOverlay);
+    layer.add(group);
   }
 
   private handlePlotClick(plotId: string) {
     this.selectionService.select(EntityType.Plot, plotId);
   }
-}
 
-class PlotRender extends Konva.Rect {
-  constructor(...[options]: ConstructorParameters<typeof Konva.Rect>) {
-    super({
-      ...options,
-      width: 120,
-      height: 120,
-      // hasControls: false,
-      // selectable: true,
-      // lockScalingX: true,
-      // lockScalingY: true,
-      // lockRotation: true,
-    });
+  private getPlotAttributes(plot: Plot, selected: boolean) {
+    const color = this.colorMap[plot.crop];
+    return {
+      ...(selected ? this.selectedStyle : this.baseStyle),
+      fill: color,
+    };
   }
 }
