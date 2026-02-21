@@ -24,6 +24,10 @@ export class CanvasComponent {
   private machineRenderService = inject(MachineRenderService);
   private selectionService = inject(SelectionService);
 
+  private backgroundLayer = new Konva.Layer({
+    fill: "green",
+  });
+
   private canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>(
     "canvas",
     {}
@@ -44,6 +48,7 @@ export class CanvasComponent {
       const stage = this.stage();
       if (!stage) return;
 
+      this.addBackground(stage);
       this.plotRenderService.setStage(stage);
       this.machineRenderService.setStage(stage);
 
@@ -53,5 +58,17 @@ export class CanvasComponent {
         }
       });
     });
+  }
+
+  private addBackground(stage: Konva.Stage) {
+    const bg = new Konva.Rect({
+      width: stage.width(),
+      height: stage.height(),
+      fill: "oklch(42.1% 0.095 57.708)",
+      listening: false,
+    });
+
+    this.backgroundLayer.add(bg);
+    stage.add(this.backgroundLayer);
   }
 }

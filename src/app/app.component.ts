@@ -23,8 +23,8 @@ import { DatabarComponent } from "./topbar/databar.component";
       >
         <h1 class="text-3xl  font-bold  pl-4 text-green-600">BoerX</h1>
       </div>
-      <div class="p-2 bg-neutral-300"><app-databar /></div>
-      <div class="flex-1 bg-green-500 h-full">
+      <div class="p-2 bg-stone-600"><app-databar /></div>
+      <div class="flex-1 bg-stone-500 h-full">
         <div class="flex no-wrap p-8 h-full w-full">
           <!-- plots -->
           <div class="w-[60%] content-baseline">
@@ -33,7 +33,7 @@ import { DatabarComponent } from "./topbar/databar.component";
           </div>
         </div>
       </div>
-      <div class="h-[10rem] bg-neutral-300 ">
+      <div class="h-[10rem] bg-stone-600 ">
         <div class="flex flex-row gap-4 p-4 h-full">
           <!-- controls -->
           <div class="flex flex-col h-full gap-2">
