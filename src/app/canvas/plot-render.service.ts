@@ -20,13 +20,13 @@ export class PlotRenderService {
   };
 
   private selectedStyle = {
-    stroke: "yellow",
+    stroke: "#c49949",
     strokeWidth: 4,
   };
 
   private baseStyle = {
-    stroke: "green",
-    strokeWidth: 0,
+    stroke: "#866933",
+    strokeWidth: 4,
   };
 
   constructor() {
@@ -75,8 +75,8 @@ export class PlotRenderService {
 
     const plotRender = new PlotRender({
       id: plot.id,
-      x: i * 160,
-      y: 100,
+      x: i * 50,
+      y: 20,
       ...(selected ? this.selectedStyle : this.baseStyle),
       fill: color,
       draggable: selected,
