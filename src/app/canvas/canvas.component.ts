@@ -4,7 +4,6 @@ import {
   effect,
   ElementRef,
   inject,
-  signal,
   viewChild,
 } from "@angular/core";
 import Konva from "konva";
@@ -15,10 +14,13 @@ import { SurfaceService } from "./surface.service";
 
 @Component({
   selector: "app-canvas",
-  template: ` <div id="canvas-container" #canvas class="w-full h-full"></div>`,
+  template: ` <div
+    id="canvas-container"
+    #canvas
+    class="w-full h-full min-w-[0px] min-h-[0px]"></div>`,
 })
 export class CanvasComponent {
-  private size = signal(20000);
+  private size = 2500;
 
   private plotRenderService = inject(PlotRenderService);
   private machineRenderService = inject(MachineRenderService);
@@ -28,8 +30,8 @@ export class CanvasComponent {
   private backgroundLayer = new Konva.Layer();
   private backgroudRect = new Konva.Rect({
     id: "background",
-    width: this.size(),
-    height: this.size(),
+    width: this.size,
+    height: this.size,
     listening: false,
   });
 
@@ -97,7 +99,6 @@ export class CanvasComponent {
   private handleZoom(stage: Konva.Stage) {
     const scaleBy = 1.05;
     const maxScale = 2;
-    const minScale = 0.25;
 
     stage.scale({ x: 1, y: 1 });
 
@@ -115,6 +116,15 @@ export class CanvasComponent {
       let direction = e.evt.deltaY < 0 ? 1 : -1;
 
       const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+      // Calculate dynamic minimum scale to prevent whitespace
+      const viewportWidth = this.canvasRef().nativeElement.clientWidth;
+      const viewportHeight = this.canvasRef().nativeElement.clientHeight;
+      const minScale = Math.max(
+        viewportWidth / this.size,
+        viewportHeight / this.size,
+      );
+
       if (newScale < minScale || newScale > maxScale) return;
 
       stage.scale({ x: newScale, y: newScale });
@@ -133,14 +143,23 @@ export class CanvasComponent {
     pos: Konva.Vector2d,
     stage: Konva.Stage,
   ): Konva.Vector2d => {
-    const width = this.canvasRef().nativeElement.clientWidth;
-    const height = this.canvasRef().nativeElement.clientHeight;
-    const size = this.size();
+    // Size of the div containing the canvas
+    const viewportWidth = this.canvasRef().nativeElement.clientWidth;
+    const viewportHeight = this.canvasRef().nativeElement.clientHeight;
+
+    // Size of the canvas content, should be limited to this value, translated
+    // to screen coordinates using the scale
+    const size = this.size;
 
     const scale = stage.scaleX() as number;
 
-    const minX = width * scale - size;
-    const minY = height * scale - size;
+    // Calculate bounds in screen coordinates
+    const contentScreenWidth = size * scale;
+    const contentScreenHeight = size * scale;
+
+    // Prevent white space on all edges
+    const minX = Math.min(0, -(contentScreenWidth - viewportWidth));
+    const minY = Math.min(0, -(contentScreenHeight - viewportHeight));
 
     return {
       x: Math.max(minX, Math.min(0, pos.x)),
