@@ -3,7 +3,7 @@ import Konva from "konva";
 import {
   Machine,
   MachineService,
-  MachineType,
+  TractorBrand,
 } from "../services/machine.service";
 
 @Injectable({
@@ -11,11 +11,9 @@ import {
 })
 export class MachineRenderService {
   private machinesService = inject(MachineService);
-  layer = new Konva.Layer();
-
-  private iconMap: Record<MachineType, string> = {
-    [MachineType.Tractor]: "🚜",
-  };
+  layer = new Konva.Layer({
+    imageSmoothingEnabled: false,
+  });
 
   constructor() {
     effect(() => {
@@ -35,36 +33,107 @@ export class MachineRenderService {
     if (!layer) return;
 
     const drawnMachine = layer.findOne(`#${machine.id}`);
-
-    if (drawnMachine) {
-      drawnMachine.to({ text: this.iconMap[machine.type] });
+    if (drawnMachine && drawnMachine instanceof TractorImage) {
+      drawnMachine.setColor(BrandColors[machine.brand]);
       return;
     }
 
-    const machineRender = new MachineRender({
-      text: this.iconMap[machine.type],
-      x: i * 160,
-      y: 100,
+    const machineBase = new TractorImage({
+      machine: machine,
+      x: 10,
+      y: 10,
     });
 
-    layer.add(machineRender);
+    layer.add(machineBase);
   }
 }
 
-class MachineRender extends Konva.Text {
-  constructor(...[options]: ConstructorParameters<typeof Konva.Text>) {
+class TractorImage extends Konva.Image {
+  frame = 0;
+  totalFrames = 3;
+  frameWidth = 16;
+  frameSpeed = 1000;
+
+  private isAnimating = true;
+  private sourceImage: HTMLImageElement | null = null;
+
+  constructor(args: { x: number; y: number; machine: Machine }) {
+    const imageObj = new Image();
+    imageObj.src = "/sprites/tractor.png";
+    imageObj.onload = () => {
+      this.setColor(BrandColors[args.machine.brand]);
+      this.animateSprite();
+    };
+
     super({
-      ...options,
-      fontSize: 20,
-      fontFamily: "Arial, sans-serif",
-      textAlign: "center",
-      originX: "center",
-      originY: "center",
-      hasControls: false,
-      selectable: true,
-      lockScalingX: true,
-      lockScalingY: true,
-      lockRotation: true,
+      ...args,
+      id: args.machine.id,
+      width: 32,
+      height: 32,
+      // This image is a dummy
+      image: imageObj,
+      draggable: true,
+      crop: { x: 0, y: 0, width: 16, height: 16 },
     });
+
+    this.sourceImage = imageObj;
+  }
+
+  animateSprite() {
+    this.frame = (this.frame + 1) % this.totalFrames;
+    this.cropX(this.frame * this.frameWidth); // move crop to the next frame
+    this.getLayer()?.batchDraw();
+    if (this.isAnimating) {
+      setTimeout(() => this.animateSprite(), this.frameSpeed); // frame delay
+    }
+  }
+
+  setColor(color: { r: number; g: number; b: number }) {
+    const image = this.sourceImage;
+    if (image) {
+      const processedImage = preprocessImage(image, color);
+      this.image(processedImage);
+    }
+  }
+
+  override destroy(): this {
+    this.isAnimating = false;
+    return super.destroy();
   }
 }
+
+const preprocessImage = function (
+  image: HTMLImageElement,
+  rgb = { r: 255, g: 0, b: 0 },
+): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d")!;
+
+  canvas.width = image.width;
+  canvas.height = image.height;
+
+  ctx.drawImage(image, 0, 0);
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i] === 255 && data[i + 1] === 255 && data[i + 2] === 255) {
+      data[i] = rgb.r;
+      data[i + 1] = rgb.g;
+      data[i + 2] = rgb.b;
+    }
+  }
+
+  // Put the processed image data back
+  ctx.putImageData(imageData, 0, 0);
+
+  return canvas;
+};
+
+const BrandColors: Record<string, { r: number; g: number; b: number }> = {
+  [TractorBrand.DearJuan]: { r: 54, g: 185, b: 0 },
+  [TractorBrand.OldHillland]: { r: 0, g: 102, b: 204 },
+  [TractorBrand.Kerel]: { r: 200, g: 16, b: 46 },
+  [TractorBrand.Klaas]: { r: 255, g: 128, b: 0 },
+};

@@ -30,13 +30,14 @@ export class MachineService {
   }
 
   private initializeMachines() {
-    this._machine.set([]);
+    this._machine.set([this.newMachine()]);
   }
 
   private newMachine(): Machine {
     return {
       id: crypto.randomUUID(),
       type: MachineType.Tractor,
+      brand: TractorBrand.DearJuan,
     };
   }
 }
@@ -47,4 +48,12 @@ export enum MachineType {
 export type Machine = {
   id: string;
   type: MachineType;
+  brand: TractorBrand;
 };
+
+export enum TractorBrand {
+  DearJuan = "Dear Juan",
+  OldHillland = "Old Hillland",
+  Kerel = "Kerel",
+  Klaas = "Klaas",
+}
