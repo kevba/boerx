@@ -7,7 +7,7 @@ import { StashService } from "../services/stash.service";
   selector: "app-databar",
   imports: [DecimalPipe],
   template: `
-    <div class="flex flex row gap-4">
+    <div class="flex flex row gap-4 w-full">
       <div class="text-sm font-bold">
         <span>Stash: </span>
         <span class="text-amber-500"

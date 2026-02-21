@@ -5,11 +5,11 @@ import { SelectionService } from "../services/selection.service";
 import { StashService } from "../services/stash.service";
 
 @Component({
-  selector: "app-plot-control",
+  selector: "app-plot-panel",
   template: `
     <div class="flex flex-col gap-2">
       <h2 class="text-lg font-bold ">Plant Crop</h2>
-      <div class="flex gap-2">
+      <div class="flex flex-wrap gap-2">
         @for (option of options(); track option.crop) {
         <button
           (click)="plantCrop(option.crop)"
@@ -23,7 +23,7 @@ import { StashService } from "../services/stash.service";
     </div>
   `,
 })
-export class PlotControlComponent {
+export class PlotPanelComponent {
   plotService = inject(PlotsService);
   selectionService = inject(SelectionService);
   cropService = inject(CropService);
