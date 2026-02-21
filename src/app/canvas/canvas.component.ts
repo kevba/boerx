@@ -20,6 +20,8 @@ import { PlotRenderService } from "./plot-render.service";
   ></div>`,
 })
 export class CanvasComponent {
+  private SIZE = 5000;
+
   private plotRenderService = inject(PlotRenderService);
   private machineRenderService = inject(MachineRenderService);
   private selectionService = inject(SelectionService);
@@ -35,12 +37,27 @@ export class CanvasComponent {
 
   private stage = computed(() => {
     if (!this.canvasRef().nativeElement) return;
+    const width = this.canvasRef().nativeElement.clientWidth;
+    const height = this.canvasRef().nativeElement.clientHeight;
 
-    return new Konva.Stage({
+    const newStage = new Konva.Stage({
       container: "canvas-container",
-      width: this.canvasRef().nativeElement.clientWidth,
-      height: this.canvasRef().nativeElement.clientHeight,
+      width: width,
+      height: height,
+      draggable: true,
+      dragBoundFunc: (pos) => {
+        const scale = newStage.scaleX() as number;
+
+        const minX = width * scale - this.SIZE;
+        const minY = height * scale - this.SIZE;
+
+        return {
+          x: Math.max(minX, Math.min(0, pos.x)),
+          y: Math.max(minY, Math.min(0, pos.y)),
+        };
+      },
     });
+    return newStage;
   });
 
   constructor() {
@@ -57,18 +74,51 @@ export class CanvasComponent {
           this.selectionService.clear();
         }
       });
+
+      this.handleZoom(stage);
     });
   }
 
   private addBackground(stage: Konva.Stage) {
     const bg = new Konva.Rect({
-      width: stage.width(),
-      height: stage.height(),
+      width: this.SIZE,
+      height: this.SIZE,
       fill: "oklch(42.1% 0.095 57.708)",
       listening: false,
     });
 
     this.backgroundLayer.add(bg);
     stage.add(this.backgroundLayer);
+  }
+
+  private handleZoom(stage: Konva.Stage) {
+    const scaleBy = 1.05;
+    const maxScale = 2;
+    const minScale = 1;
+
+    stage.on("wheel", (e) => {
+      e.evt.preventDefault();
+
+      const oldScale = stage.scaleX();
+      const pointer = stage.getPointerPosition()!;
+
+      const mousePointTo = {
+        x: (pointer.x - stage.x()) / oldScale,
+        y: (pointer.y - stage.y()) / oldScale,
+      };
+
+      let direction = e.evt.deltaY < 0 ? 1 : -1;
+
+      const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+      if (newScale < minScale || newScale > maxScale) return;
+
+      stage.scale({ x: newScale, y: newScale });
+
+      const newPos = {
+        x: pointer.x - mousePointTo.x * newScale,
+        y: pointer.y - mousePointTo.y * newScale,
+      };
+      stage.position(newPos);
+    });
   }
 }
