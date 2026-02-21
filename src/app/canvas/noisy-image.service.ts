@@ -37,7 +37,6 @@ export class NoisyImageService {
       }),
     );
 
-    console.log(pixels);
     return this.pixelsToImage(pixels, size);
   }
 
