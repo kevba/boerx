@@ -12,7 +12,7 @@ import { BuyTileComponent } from "./buy-tile.component";
       <app-buy-tile
         image=""
         text="money!"
-        [cost]="100000"
+        [cost]="-100000"
         (buyClick)="addMoney()"></app-buy-tile>
     </div>
   `,

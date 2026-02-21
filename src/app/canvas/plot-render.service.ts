@@ -25,10 +25,10 @@ export class PlotRenderService {
   };
 
   private colorMap: Record<Crop, string> = {
-    [Crop.Wheat]: "oklch(85.2% 0.199 91.936)",
-    [Crop.Corn]: "oklch(68.1% 0.162 75.834)",
-    [Crop.Potato]: "oklch(75% 0.183 55.934)",
-    [Crop.Grass]: "oklch(62.7% 0.194 149.214)",
+    [Crop.Wheat]: "#ebc23e",
+    [Crop.Corn]: "#f0e009",
+    [Crop.Potato]: "#7e4f21",
+    [Crop.Grass]: "#2d771a",
   };
 
   private selectedStyle = {
@@ -64,10 +64,14 @@ export class PlotRenderService {
     const coords = { x: i * 50, y: 20 };
 
     const drawnPlot = layer.findOne(`#${plot.id}-base`);
+    const drawnGroup = layer.findOne(`#${plot.id}`);
 
     if (drawnPlot) {
       drawnPlot.setAttrs({
         ...this.getPlotAttributes(plot, selected),
+      });
+      drawnGroup!.setAttrs({
+        draggable: selected,
       });
 
       return;
@@ -107,7 +111,7 @@ export class PlotRenderService {
       id: plot.id,
       x: coords.x,
       y: coords.y,
-      draggable: true,
+      draggable: false,
     });
 
     group.on("click", (e) => {
