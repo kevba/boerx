@@ -1,7 +1,6 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { Crop, CropService } from "./crop.service";
 import { StashService } from "./stash.service";
-import { TickService } from "./tick.service";
 
 @Injectable({
   providedIn: "root",
@@ -9,12 +8,6 @@ import { TickService } from "./tick.service";
 export class PlotsService {
   private stashService = inject(StashService);
   private cropService = inject(CropService);
-  private tickService = inject(TickService);
-
-  selectedPlotId = signal<string | null>(null);
-  selectedPlot = computed(() =>
-    this.plots().find((p) => p.id === this.selectedPlotId())
-  );
 
   private _plots = signal<Plot[]>([]);
 
@@ -58,10 +51,6 @@ export class PlotsService {
 
   constructor() {
     this.initializePlots();
-  }
-
-  selectPlot(plotId: string | null) {
-    this.selectedPlotId.set(plotId);
   }
 
   private initializePlots() {

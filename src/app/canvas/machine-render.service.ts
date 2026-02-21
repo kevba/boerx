@@ -1,5 +1,5 @@
-import { effect, inject, Injectable, signal } from "@angular/core";
-import { Canvas, Text } from "fabric";
+import { effect, inject, Injectable } from "@angular/core";
+import Konva from "konva";
 import {
   Machine,
   MachineService,
@@ -11,7 +11,7 @@ import {
 })
 export class MachineRenderService {
   private machinesService = inject(MachineService);
-  canvas = signal<Canvas | undefined>(undefined);
+  layer = new Konva.Layer();
 
   private iconMap: Record<MachineType, string> = {
     [MachineType.Tractor]: "🚜",
@@ -24,52 +24,37 @@ export class MachineRenderService {
         this.renderMachine(element, i + 1);
       });
     });
+  }
 
-    effect(() => {
-      const canvas = this.canvas();
-      if (!canvas) return;
-
-      canvas.on("mouse:down", (e) => {
-        if (e.target instanceof MachineRender) {
-        }
-      });
-    });
+  setStage(stage: Konva.Stage) {
+    stage.add(this.layer);
   }
 
   private renderMachine(machine: Machine, i: number) {
-    const canvas = this.canvas();
-    if (!canvas) return;
+    const layer = this.layer;
+    if (!layer) return;
 
-    const drawnMachine = canvas
-      .getObjects()
-      .find((o) => o instanceof MachineRender && o.id === machine.id);
+    const drawnMachine = layer.findOne(`#${machine.id}`);
 
     if (drawnMachine) {
-      drawnMachine.set({ text: this.iconMap[machine.type] });
-      canvas.requestRenderAll();
-
+      drawnMachine.to({ text: this.iconMap[machine.type] });
       return;
     }
 
-    const machineRender = new MachineRender(
-      machine.id,
-      this.iconMap[machine.type],
-      {
-        left: i * 160,
-        top: 100,
-      }
-    );
+    const machineRender = new MachineRender({
+      text: this.iconMap[machine.type],
+      x: i * 160,
+      y: 100,
+    });
 
-    canvas.add(machineRender);
+    layer.add(machineRender);
   }
 }
 
-class MachineRender extends Text {
-  id: string;
-
-  constructor(id: string, ...args: ConstructorParameters<typeof Text>) {
-    super(args[0], {
-      ...args[1],
+class MachineRender extends Konva.Text {
+  constructor(...[options]: ConstructorParameters<typeof Konva.Text>) {
+    super({
+      ...options,
       fontSize: 20,
       fontFamily: "Arial, sans-serif",
       textAlign: "center",
@@ -81,6 +66,5 @@ class MachineRender extends Text {
       lockScalingY: true,
       lockRotation: true,
     });
-    this.id = id;
   }
 }

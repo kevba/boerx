@@ -4,6 +4,7 @@ import { PlotControlComponent } from "./plots/plot-control.component";
 import { IncomeService } from "./services/income.service";
 import { MachineService } from "./services/machine.service";
 import { PlotsService } from "./services/plots.service";
+import { SelectionService } from "./services/selection.service";
 import { StashService } from "./services/stash.service";
 import { DatabarComponent } from "./topbar/databar.component";
 
@@ -58,7 +59,7 @@ import { DatabarComponent } from "./topbar/databar.component";
             </div>
           </div>
           <div class="border-l-2 border-neutral-400"></div>
-          @if (plotService.selectedPlotId()) {
+          @if (showPlotControl()) {
           <app-plot-control />
           }
         </div>
@@ -73,6 +74,11 @@ export class AppComponent {
   plotService = inject(PlotsService);
   machineService = inject(MachineService);
   stashService = inject(StashService);
+
+  selectionService = inject(SelectionService);
+  showPlotControl = computed(
+    () => this.selectionService.selectedPlots().length > 0
+  );
 
   canBuyPlot = computed(() => {
     const cost = this.plotService.plotCost();

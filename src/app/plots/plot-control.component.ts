@@ -1,6 +1,7 @@
 import { Component, computed, inject } from "@angular/core";
 import { Crop, CropService } from "../services/crop.service";
-import { PlotsService } from "../services/plots.service";
+import { Plot, PlotsService } from "../services/plots.service";
+import { SelectionService } from "../services/selection.service";
 import { StashService } from "../services/stash.service";
 
 @Component({
@@ -24,12 +25,20 @@ import { StashService } from "../services/stash.service";
 })
 export class PlotControlComponent {
   plotService = inject(PlotsService);
+  selectionService = inject(SelectionService);
   cropService = inject(CropService);
   stashService = inject(StashService);
 
   crops = Object.values(Crop);
+
   cropOnPlot = computed(() => {
-    return this.plotService.selectedPlot()?.crop;
+    const selectedPlotIds = this.selectionService.selectedPlots();
+    if (selectedPlotIds.length !== 1) return null;
+
+    const plot = this.plotService
+      .plots()
+      .find((p) => p.id === selectedPlotIds[0]);
+    return plot?.crop;
   });
 
   options = computed(() => {
@@ -42,9 +51,20 @@ export class PlotControlComponent {
   });
 
   plantCrop(crop: Crop) {
-    const plotId = this.plotService.selectedPlotId();
-    if (plotId) {
-      this.plotService.plantOnPlot(plotId, crop);
+    const plotIds = this.selectionService.selectedPlots();
+    const plotMap = this.plotService.plots().reduce((acc, plot) => {
+      acc[plot.id] = plot;
+      return acc;
+    }, {} as Record<string, Plot>);
+
+    for (const plotId of plotIds) {
+      const plot = plotMap[plotId];
+
+      if (plot?.crop === crop) {
+        return;
+      } else {
+        this.plotService.plantOnPlot(plotId, crop);
+      }
     }
   }
 }

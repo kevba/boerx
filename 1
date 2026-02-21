@@ -1,0 +1,438 @@
+adds tracktors
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch main
+# Your branch is ahead of 'origin/main' by 1 commit.
+#   (use "git push" to publish your local commits)
+#
+# Changes to be committed:
+#	modified:   src/app/app.component.ts
+#	modified:   src/app/canvas/canvas.component.ts
+#	new file:   src/app/canvas/machine-render.service.ts
+#	modified:   src/app/canvas/plot-render.service.ts
+#	deleted:    src/app/plots/plot.component.ts
+#	deleted:    src/app/plots/plots.component.ts
+#	modified:   src/app/services/income.service.ts
+#	new file:   src/app/services/machine.service.ts
+#
+# ------------------------ >8 ------------------------
+# Do not modify or remove the line above.
+# Everything below it will be ignored.
+diff --git c/src/app/app.component.ts i/src/app/app.component.ts
+index 745a0e6..a356d37 100644
+--- c/src/app/app.component.ts
++++ i/src/app/app.component.ts
+@@ -1,8 +1,8 @@
+-import { Component, inject } from "@angular/core";
++import { Component, computed, inject } from "@angular/core";
+ import { CanvasComponent } from "./canvas/canvas.component";
+ import { PlotControlComponent } from "./plots/plot-control.component";
+-import { PlotsComponent } from "./plots/plots.component";
+ import { IncomeService } from "./services/income.service";
++import { MachineService } from "./services/machine.service";
+ import { PlotsService } from "./services/plots.service";
+ import { StashService } from "./services/stash.service";
+ import { DatabarComponent } from "./topbar/databar.component";
+@@ -10,7 +10,6 @@ import { DatabarComponent } from "./topbar/databar.component";
+ @Component({
+   selector: "app-root",
+   imports: [
+-    PlotsComponent,
+     PlotControlComponent,
+     PlotControlComponent,
+     DatabarComponent,
+@@ -40,8 +39,20 @@ import { DatabarComponent } from "./topbar/databar.component";
+             <h2 class="text-lg font-bold ">Buy</h2>
+ 
+             <div class="flex flex-col gap-4 h-full">
+-              <button (click)="plotService.addPlot()">
+-                Add Plot (-{{ plotService.plotCost() }}
++              <button
++                (click)="plotService.addPlot()"
++                [disabled]="!canBuyPlot()"
++              >
++                Plot (-{{ plotService.plotCost() }}
++                {{ stashService.stashUnit }})
++              </button>
++            </div>
++            <div class="flex flex-col gap-4 h-full">
++              <button
++                (click)="machineService.addMachine()"
++                [disabled]="!canBuyMachine()"
++              >
++                Machine (-{{ machineService.machineCost() }}
+                 {{ stashService.stashUnit }})
+               </button>
+             </div>
+@@ -60,5 +71,18 @@ export class AppComponent {
+   _incomeService = inject(IncomeService);
+ 
+   plotService = inject(PlotsService);
++  machineService = inject(MachineService);
+   stashService = inject(StashService);
++
++  canBuyPlot = computed(() => {
++    const cost = this.plotService.plotCost();
++    const stash = this.stashService.stash();
++    return stash >= cost;
++  });
++
++  canBuyMachine = computed(() => {
++    const cost = this.machineService.machineCost();
++    const stash = this.stashService.stash();
++    return stash >= cost;
++  });
+ }
+diff --git c/src/app/canvas/canvas.component.ts i/src/app/canvas/canvas.component.ts
+index 63c6a94..9c01c6a 100644
+--- c/src/app/canvas/canvas.component.ts
++++ i/src/app/canvas/canvas.component.ts
+@@ -4,11 +4,10 @@ import {
+   effect,
+   ElementRef,
+   inject,
+-  untracked,
+   viewChild,
+ } from "@angular/core";
+ import { Canvas } from "fabric";
+-import { PlotsService } from "../services/plots.service";
++import { MachineRenderService } from "./machine-render.service";
+ import { PlotRenderService } from "./plot-render.service";
+ 
+ @Component({
+@@ -19,8 +18,8 @@ import { PlotRenderService } from "./plot-render.service";
+   ></canvas>`,
+ })
+ export class CanvasComponent {
+-  private plotsService = inject(PlotsService);
+   private plotRenderService = inject(PlotRenderService);
++  private machineRenderService = inject(MachineRenderService);
+   private dragData = {
+     isDragging: false,
+     lastPosX: 0,
+@@ -45,6 +44,7 @@ export class CanvasComponent {
+       const canvas = this.canvas();
+       if (!canvas) return;
+       this.plotRenderService.canvas.set(canvas);
++      this.machineRenderService.canvas.set(canvas);
+     });
+ 
+     effect(() => {
+@@ -64,23 +64,13 @@ export class CanvasComponent {
+       });
+     });
+ 
+-    effect(() => {
+-      const canvas = this.canvas();
+-      if (!canvas) return;
+-
+-      if (this.plotsService.selectedPlot() && this.dragData.isDragging) {
+-        this.dragData.isDragging = false;
+-      }
+-    });
+-
+     effect(() => {
+       const canvas = this.canvas();
+ 
+       canvas.on("mouse:down", (opt) => {
+         var evt = opt.e as any;
+-        const selectedPlot = untracked(() => this.plotsService.selectedPlot());
+-        if (selectedPlot) {
+-          this.plotsService.selectPlot(null);
++        if (canvas.getActiveObject()) {
++          return;
+         }
+ 
+         this.dragData.isDragging = true;
+diff --git c/src/app/canvas/machine-render.service.ts i/src/app/canvas/machine-render.service.ts
+new file mode 100644
+index 0000000..802100a
+--- /dev/null
++++ i/src/app/canvas/machine-render.service.ts
+@@ -0,0 +1,86 @@
++import { effect, inject, Injectable, signal } from "@angular/core";
++import { Canvas, Text } from "fabric";
++import {
++  Machine,
++  MachineService,
++  MachineType,
++} from "../services/machine.service";
++
++@Injectable({
++  providedIn: "root",
++})
++export class MachineRenderService {
++  private machinesService = inject(MachineService);
++  canvas = signal<Canvas | undefined>(undefined);
++
++  private iconMap: Record<MachineType, string> = {
++    [MachineType.Tractor]: "🚜",
++  };
++
++  constructor() {
++    effect(() => {
++      const machines = this.machinesService.machines();
++      machines.forEach((element, i) => {
++        this.renderMachine(element, i + 1);
++      });
++    });
++
++    effect(() => {
++      const canvas = this.canvas();
++      if (!canvas) return;
++
++      canvas.on("mouse:down", (e) => {
++        if (e.target instanceof MachineRender) {
++        }
++      });
++    });
++  }
++
++  private renderMachine(machine: Machine, i: number) {
++    const canvas = this.canvas();
++    if (!canvas) return;
++
++    const drawnMachine = canvas
++      .getObjects()
++      .find((o) => o instanceof MachineRender && o.id === machine.id);
++
++    if (drawnMachine) {
++      drawnMachine.set({ text: this.iconMap[machine.type] });
++      canvas.requestRenderAll();
++
++      return;
++    }
++
++    const machineRender = new MachineRender(
++      machine.id,
++      this.iconMap[machine.type],
++      {
++        left: i * 160,
++        top: 100,
++      }
++    );
++
++    canvas.add(machineRender);
++  }
++}
++
++class MachineRender extends Text {
++  id: string;
++
++  constructor(id: string, ...args: ConstructorParameters<typeof Text>) {
++    super(args[0], {
++      ...args[1],
++      fontSize: 20,
++      fontFamily: "Arial, sans-serif",
++      textAlign: "center",
++      originX: "center",
++      originY: "center",
++      hasControls: false,
++      selectable: true,
++      lockScalingX: true,
++      lockScalingY: true,
++      lockRotation: true,
++    });
++    this.id = id;
++  }
++}
+diff --git c/src/app/canvas/plot-render.service.ts i/src/app/canvas/plot-render.service.ts
+index 0a43aac..9936452 100644
+--- c/src/app/canvas/plot-render.service.ts
++++ i/src/app/canvas/plot-render.service.ts
+@@ -79,15 +79,10 @@ class PlotRender extends Rect {
+       width: 120,
+       height: 120,
+       hasControls: false,
+-      // keep selectable
+       selectable: true,
+-
+-      // disable resizing/scaling
+       lockScalingX: true,
+       lockScalingY: true,
+-
+-      // optional extras (usually good idea)
+-      lockRotation: true, // prevent rotation
++      lockRotation: true,
+     });
+     this.id = id;
+   }
+diff --git c/src/app/plots/plot.component.ts i/src/app/plots/plot.component.ts
+deleted file mode 100644
+index 64c5aac..0000000
+--- c/src/app/plots/plot.component.ts
++++ /dev/null
+@@ -1,54 +0,0 @@
+-import { NgClass } from "@angular/common";
+-import { Component, computed, inject, input } from "@angular/core";
+-import { Crop } from "../services/crop.service";
+-import { PlotsService } from "../services/plots.service";
+-
+-@Component({
+-  selector: "app-plot",
+-  imports: [NgClass],
+-  template: `
+-    <div
+-      (click)="selectPlot()"
+-      [class]="'w-16 h-16 rounded-md border-2 relative cursor-pointer '"
+-      [ngClass]="{
+-        'border-amber-600': isSelected(),
+-        'border-neutral-400': !isSelected()
+-      }"
+-    >
+-      <div [ngClass]="color()" class="w-full h-full"></div>
+-    </div>
+-  `,
+-})
+-export class PlotComponent {
+-  plotService = inject(PlotsService);
+-  plotId = input.required<string>();
+-
+-  plot = computed(() => {
+-    const plot = this.plotService.plots().find((p) => p.id === this.plotId())!;
+-    return plot;
+-  });
+-  crop = computed(() => {
+-    return this.plot().crop;
+-  });
+-
+-  isSelected = computed(
+-    () => this.plotService.selectedPlotId() === this.plot().id
+-  );
+-
+-  color = computed(() => {
+-    switch (this.crop()) {
+-      case Crop.Wheat:
+-        return "bg-yellow-400";
+-      case Crop.Corn:
+-        return "bg-yellow-600";
+-      case Crop.Potato:
+-        return "bg-orange-400";
+-      default:
+-        return "bg-green-600";
+-    }
+-  });
+-
+-  selectPlot() {
+-    this.plotService.selectedPlotId.set(this.plot().id);
+-  }
+-}
+diff --git c/src/app/plots/plots.component.ts i/src/app/plots/plots.component.ts
+deleted file mode 100644
+index 48d98e0..0000000
+--- c/src/app/plots/plots.component.ts
++++ /dev/null
+@@ -1,18 +0,0 @@
+-import { Component, inject } from "@angular/core";
+-import { PlotsService } from "../services/plots.service";
+-import { PlotComponent } from "./plot.component";
+-
+-@Component({
+-  selector: "app-plots",
+-  imports: [PlotComponent],
+-  template: `
+-    <div class="flex  flex-wrap gap-4">
+-      @for (plot of plotService.plots(); track plot.id) {
+-      <app-plot [plotId]="plot.id"></app-plot>
+-      }
+-    </div>
+-  `,
+-})
+-export class PlotsComponent {
+-  plotService = inject(PlotsService);
+-}
+diff --git c/src/app/services/income.service.ts i/src/app/services/income.service.ts
+index c97e746..27c13a0 100644
+--- c/src/app/services/income.service.ts
++++ i/src/app/services/income.service.ts
+@@ -1,5 +1,6 @@
+ import { effect, inject, Injectable } from "@angular/core";
+ import { CropService } from "./crop.service";
++import { MachineService } from "./machine.service";
+ import { PlotsService } from "./plots.service";
+ import { StashService } from "./stash.service";
+ import { TickService } from "./tick.service";
+@@ -12,6 +13,7 @@ export class IncomeService {
+   private cropService = inject(CropService);
+   private tickService = inject(TickService);
+   private plotService = inject(PlotsService);
++  private machineService = inject(MachineService);
+ 
+   constructor() {
+     effect(() => {
+@@ -36,11 +38,18 @@ export class IncomeService {
+ 
+   private updateEarnings() {
+     const plots = this.plotService.plots();
++    const machines = this.machineService.machines();
++
+     let income = 0;
+     plots.forEach((plot) => {
+       income += this.cropService.harvestEarnings(plot.crop);
+     });
+ 
++    machines.forEach(() => {
++      income +=
++        this.machineService.machineEarningsIncreasePerPlot() * plots.length;
++    });
++
+     this.stashService.addStash(income);
+   }
+ }
+diff --git c/src/app/services/machine.service.ts i/src/app/services/machine.service.ts
+new file mode 100644
+index 0000000..70653cb
+--- /dev/null
++++ i/src/app/services/machine.service.ts
+@@ -0,0 +1,50 @@
++import { computed, inject, Injectable, signal } from "@angular/core";
++import { StashService } from "./stash.service";
++
++@Injectable({
++  providedIn: "root",
++})
++export class MachineService {
++  private stashService = inject(StashService);
++
++  private _machine = signal<Machine[]>([]);
++
++  machines = computed(() => this._machine());
++  machineCost = computed(() => 10000);
++  machineEarningsIncreasePerPlot = computed(() => 100);
++
++  addMachine() {
++    const cost = this.machineCost();
++    const stash = this.stashService.stash();
++    if (stash < cost) {
++      return;
++    }
++    this.stashService.addStash(-cost);
++    const plot: Machine = this.newMachine();
++
++    this._machine.update((plots) => [...plots, plot]);
++  }
++
++  constructor() {
++    this.initializeMachines();
++  }
++
++  private initializeMachines() {
++    this._machine.set([]);
++  }
++
++  private newMachine(): Machine {
++    return {
++      id: crypto.randomUUID(),
++      type: MachineType.Tractor,
++    };
++  }
++}
++
++export enum MachineType {
++  Tractor = "Tractor",
++}
++export type Machine = {
++  id: string;
++  type: MachineType;
++};

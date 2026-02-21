@@ -1,14 +1,16 @@
-import { effect, inject, Injectable, signal } from "@angular/core";
-import { Canvas, Rect } from "fabric";
+import { effect, inject, Injectable } from "@angular/core";
+import Konva from "konva";
 import { Crop } from "../services/crop.service";
 import { Plot, PlotsService } from "../services/plots.service";
+import { EntityType, SelectionService } from "../services/selection.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class PlotRenderService {
   private plotsService = inject(PlotsService);
-  canvas = signal<Canvas | undefined>(undefined);
+  private selectionService = inject(SelectionService);
+  layer = new Konva.Layer();
 
   private colorMap: Record<Crop, string> = {
     [Crop.Wheat]: "oklch(85.2% 0.199 91.936)",
@@ -17,73 +19,92 @@ export class PlotRenderService {
     [Crop.Grass]: "oklch(62.7% 0.194 149.214)",
   };
 
+  private selectedStyle = {
+    stroke: "yellow",
+    strokeWidth: 4,
+  };
+
+  private baseStyle = {
+    stroke: "green",
+    strokeWidth: 0,
+  };
+
   constructor() {
     effect(() => {
       const plots = this.plotsService.plots();
+      const selectedPlots = this.selectionService.selectedPlots();
+
       plots.forEach((element, i) => {
-        this.renderPlot(element, i + 1);
+        const isSelected = selectedPlots.includes(element.id);
+        this.renderPlot(element, isSelected, i + 1);
       });
     });
 
     effect(() => {
-      const canvas = this.canvas();
-      if (!canvas) return;
-
-      canvas.on("mouse:down", (e) => {
-        if (e.target instanceof PlotRender) {
-          const id = e.target.id;
-          this.handlePlotClick(id);
-        } else {
-          this.plotsService.selectPlot(null);
-        }
-      });
+      // canvas.on("mouse:down", (e) => {
+      //   if (e.target instanceof PlotRender) {
+      //     const id = e.target.id;
+      //     this.handlePlotClick(id);
+      //   } else {
+      //     this.plotsService.selectPlot(null);
+      //   }
+      // });
     });
   }
 
-  private renderPlot(plot: Plot, i: number) {
-    const color = this.colorMap[plot.crop];
-    const canvas = this.canvas();
-    if (!canvas) return;
+  setStage(stage: Konva.Stage) {
+    stage.add(this.layer);
+  }
 
-    const drawnPlot = canvas
-      .getObjects()
-      .find((o) => o instanceof PlotRender && o.id === plot.id);
+  private renderPlot(plot: Plot, selected: boolean, i: number) {
+    const color = this.colorMap[plot.crop];
+    const layer = this.layer;
+    if (!layer) return;
+
+    const drawnPlot = layer.findOne(`#${plot.id}`);
 
     if (drawnPlot) {
-      drawnPlot.set({ fill: color });
-      canvas.requestRenderAll();
+      drawnPlot.setAttrs({
+        ...(selected ? this.selectedStyle : this.baseStyle),
+        fill: color,
+        draggable: selected,
+      });
 
       return;
     }
 
-    const plotRender = new PlotRender(plot.id, {
-      left: i * 160,
-      top: 100,
+    const plotRender = new PlotRender({
+      id: plot.id,
+      x: i * 160,
+      y: 100,
+      ...(selected ? this.selectedStyle : this.baseStyle),
       fill: color,
+      draggable: selected,
+    });
+    plotRender.on("click", (e) => {
+      this.selectionService.setMulti(e.evt.shiftKey);
+      this.handlePlotClick(plot.id);
     });
 
-    canvas.add(plotRender);
+    layer.add(plotRender);
   }
 
   private handlePlotClick(plotId: string) {
-    this.plotsService.selectPlot(plotId);
+    this.selectionService.select(EntityType.Plot, plotId);
   }
 }
 
-class PlotRender extends Rect {
-  id: string;
-
-  constructor(id: string, ...[options]: ConstructorParameters<typeof Rect>) {
+class PlotRender extends Konva.Rect {
+  constructor(...[options]: ConstructorParameters<typeof Konva.Rect>) {
     super({
       ...options,
       width: 120,
       height: 120,
-      hasControls: false,
-      selectable: true,
-      lockScalingX: true,
-      lockScalingY: true,
-      lockRotation: true,
+      // hasControls: false,
+      // selectable: true,
+      // lockScalingX: true,
+      // lockScalingY: true,
+      // lockRotation: true,
     });
-    this.id = id;
   }
 }
