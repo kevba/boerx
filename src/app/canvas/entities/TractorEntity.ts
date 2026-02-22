@@ -1,6 +1,6 @@
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
-import { Tractor } from "../../services/entities/tractor.service";
+import { Tractor, TractorBrand } from "../../services/entities/tractor.service";
 import { RenderUtils } from "../utils/renderUtils";
 import { Sprite } from "./Sprite";
 import { Direction, MoveBehavior } from "./behaviors/move";
@@ -14,6 +14,13 @@ export class TractorEntity {
 
   private moveEntityTarget: EntityType.Barn | EntityType.Plot = EntityType.Plot;
 
+  private brandSpeed: Record<TractorBrand, number> = {
+    [TractorBrand.DearJuan]: 24,
+    [TractorBrand.OldHillland]: 48,
+    [TractorBrand.Kerel]: 120,
+    [TractorBrand.Klaas]: 240,
+  };
+
   constructor(
     tractor: Tractor,
     initialCoords: { x: number; y: number },
@@ -26,13 +33,15 @@ export class TractorEntity {
       y: initialCoords.y,
     });
 
-    this.update(tractor);
     this.layer.add(this.image);
 
-    this.moveBehavior = new MoveBehavior(this.image, 240, (direction) =>
-      this.setDirection(direction),
+    this.moveBehavior = new MoveBehavior(
+      this.image,
+      this.brandSpeed[tractor.brand],
+      (direction) => this.setDirection(direction),
     );
 
+    this.update(tractor);
     setInterval(() => {
       this.moveToTarget();
     }, 1000);
@@ -40,6 +49,7 @@ export class TractorEntity {
 
   update(tractor: Tractor) {
     this.image.setColor(RenderUtils.BrandColors[tractor.brand]);
+    this.moveBehavior.setSpeed(this.brandSpeed[tractor.brand]);
   }
 
   setSelected(selected: boolean) {

@@ -32,6 +32,10 @@ export class MoveBehavior {
     this.moving = false;
   }
 
+  setSpeed(speed: number) {
+    this.speed = speed;
+  }
+
   private movementLoop(
     destination: { x: number; y: number },
     radius: number = 0,
@@ -54,7 +58,6 @@ export class MoveBehavior {
     const distance = Math.hypot(xDiff, yDiff);
 
     if (distance <= radius) {
-      console.log("Reached destination");
       this.stop();
       onReach?.();
       return;
