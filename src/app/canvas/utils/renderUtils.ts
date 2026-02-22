@@ -5,9 +5,9 @@ export class RenderUtils {
   static selectedColor = "#c49949";
 
   static entitySize: Record<EntityType, [number, number]> = {
-    [EntityType.Plot]: [120, 120],
-    [EntityType.Barn]: [240, 240],
-    [EntityType.Tractor]: [32, 32],
+    [EntityType.Plot]: [128, 128],
+    [EntityType.Barn]: [192, 192],
+    [EntityType.Tractor]: [48, 48],
   };
 
   static BrandColors: Record<string, { r: number; g: number; b: number }> = {

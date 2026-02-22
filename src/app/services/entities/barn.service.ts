@@ -92,6 +92,6 @@ export type Barn = {
 
 export enum BarnSize {
   Shed = "Shed",
-  Storage = "Barn",
+  Storage = "Storage",
   Warehouse = "Warehouse",
 }

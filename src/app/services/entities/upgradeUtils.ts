@@ -21,6 +21,7 @@ export class UpgradeUtils {
       const nextUpgrade = upgradeKey[lastUpgrade.next as T];
       orderedUpgrades.push(nextUpgrade);
     }
+    orderedUpgrades.reverse();
 
     const fromIndex = orderedUpgrades.findIndex(
       (upgrade) => upgrade.next === from,
