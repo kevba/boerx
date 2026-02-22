@@ -9,32 +9,32 @@ export class TractorService {
   private stashService = inject(StashService);
 
   private _tractors = signal<Tractor[]>([]);
+  private baseCost = 50000;
 
   tractors = computed(() => this._tractors());
-  tractorCost = computed(() => 10000);
-  tractorUpgradeCost = computed(() => 10000);
-
-  tractorEarningsIncreasePerPlot = computed(() => 100);
+  tractorCost = computed(
+    () => this.baseCost + (this.tractors().length * 50) ** 2,
+  );
 
   upgrades = {
     [TractorBrand.DearJuan]: {
       next: TractorBrand.OldHillland,
-      upgradeCost: 5000,
+      upgradeCost: this.baseCost * 2,
       earningsIncreasePerPlot: 1000,
     },
     [TractorBrand.OldHillland]: {
       next: TractorBrand.Kerel,
-      upgradeCost: 5000,
+      upgradeCost: this.baseCost * 3,
       earningsIncreasePerPlot: 2000,
     },
     [TractorBrand.Kerel]: {
       next: TractorBrand.Klaas,
-      upgradeCost: 5000,
+      upgradeCost: this.baseCost * 4,
       earningsIncreasePerPlot: 3000,
     },
     [TractorBrand.Klaas]: {
       next: null,
-      upgradeCost: 5000,
+      upgradeCost: this.baseCost * 5,
       earningsIncreasePerPlot: 4000,
     },
   };
@@ -68,7 +68,7 @@ export class TractorService {
       //   Create a new object, otherwise the signal won't detect the change since the reference is the same
       tractors[index] = {
         ...tractors[index],
-        brand: brand,
+        upgrade: brand,
       };
 
       return [...tractors];
@@ -82,20 +82,20 @@ export class TractorService {
     );
     if (!tractor) return 0;
 
-    return this.upgrader.fromToCost(tractor.brand, upgradeTo);
+    return this.upgrader.fromToCost(tractor.upgrade, upgradeTo);
   }
 
   private newTractor(): Tractor {
     return {
       id: crypto.randomUUID(),
-      brand: TractorBrand.DearJuan,
+      upgrade: TractorBrand.DearJuan,
     };
   }
 }
 
 export type Tractor = {
   id: string;
-  brand: TractorBrand;
+  upgrade: TractorBrand;
 };
 
 export enum TractorBrand {

@@ -47,7 +47,7 @@ export class TractorPanelComponent {
     ) as TractorBrand[];
 
     return upgrades.map((brand) => {
-      const upgradable = tractors.filter((p) => p?.brand !== brand).length;
+      const upgradable = tractors.filter((p) => p?.upgrade !== brand).length;
       let upgradeCost = 0;
       for (const tractor of tractors) {
         const cost = this.tractorService.upgradeCostForSize(tractor.id, brand);

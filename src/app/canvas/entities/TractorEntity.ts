@@ -37,7 +37,7 @@ export class TractorEntity {
 
     this.moveBehavior = new MoveBehavior(
       this.image,
-      this.brandSpeed[tractor.brand],
+      this.brandSpeed[tractor.upgrade],
       (direction) => this.setDirection(direction),
     );
 
@@ -48,8 +48,8 @@ export class TractorEntity {
   }
 
   update(tractor: Tractor) {
-    this.image.setColor(RenderUtils.BrandColors[tractor.brand]);
-    this.moveBehavior.setSpeed(this.brandSpeed[tractor.brand]);
+    this.image.setColor(RenderUtils.BrandColors[tractor.upgrade]);
+    this.moveBehavior.setSpeed(this.brandSpeed[tractor.upgrade]);
   }
 
   setSelected(selected: boolean) {

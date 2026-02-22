@@ -12,7 +12,7 @@ export class PlotsService {
   private _plots = signal<Plot[]>([]);
 
   plots = computed(() => this._plots());
-  plotCost = computed(() => 4100 + (this.plots().length * 10) ** 2);
+  plotCost = computed(() => 4000 + (this.plots().length * 10) ** 2);
 
   addPlot() {
     const cost = this.plotCost();

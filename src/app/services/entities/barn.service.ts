@@ -9,22 +9,23 @@ export class BarnService {
   private stashService = inject(StashService);
 
   private _barns = signal<Barn[]>([]);
+  private baseCost = 20000;
+  barnCost = computed(() => this.baseCost + (this.barns().length * 50) ** 2);
 
-  barnCost = computed(() => 20000);
   upgrades = {
     [BarnSize.Shed]: {
       next: BarnSize.Storage,
-      upgradeCost: 50000,
+      upgradeCost: this.baseCost * 2,
       earningsIncreasePerPlot: 1000,
     },
     [BarnSize.Storage]: {
       next: BarnSize.Warehouse,
-      upgradeCost: 100000,
+      upgradeCost: this.baseCost * 3,
       earningsIncreasePerPlot: 2000,
     },
     [BarnSize.Warehouse]: {
       next: null,
-      upgradeCost: 200000,
+      upgradeCost: this.baseCost * 4,
       earningsIncreasePerPlot: 4000,
     },
   };
@@ -62,7 +63,7 @@ export class BarnService {
       //   Create a new object, otherwise the signal won't detect the change since the reference is the same
       barns[index] = {
         ...barns[index],
-        size: toSize,
+        upgrade: toSize,
       };
 
       return [...barns];
@@ -75,20 +76,20 @@ export class BarnService {
     const barn = this._barns().find((barn) => barn.id === barnId);
     if (!barn) return 0;
 
-    return this.upgrader.fromToCost(barn.size, toSize);
+    return this.upgrader.fromToCost(barn.upgrade, toSize);
   }
 
   private newBarn(): Barn {
     return {
       id: crypto.randomUUID(),
-      size: BarnSize.Shed,
+      upgrade: BarnSize.Shed,
     };
   }
 }
 
 export type Barn = {
   id: string;
-  size: BarnSize;
+  upgrade: BarnSize;
 };
 
 export enum BarnSize {

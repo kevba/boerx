@@ -43,19 +43,20 @@ export class IncomeService {
     const tractors = this.tractorService.tractors();
     const barns = this.barnService.barns();
 
-    let income = 0;
+    let income = 10;
     plots.forEach((plot) => {
       income += this.cropService.harvestEarnings(plot.crop);
     });
 
-    tractors.forEach(() => {
+    tractors.forEach((tractor) => {
       income +=
-        this.tractorService.tractorEarningsIncreasePerPlot() * plots.length;
+        this.tractorService.upgrades[tractor.upgrade].earningsIncreasePerPlot *
+        plots.length;
     });
 
     barns.forEach((barn) => {
       income +=
-        this.barnService.upgrades[barn.size].earningsIncreasePerPlot *
+        this.barnService.upgrades[barn.upgrade].earningsIncreasePerPlot *
         plots.length;
     });
 
