@@ -20,7 +20,7 @@ button {
 }
 
 button.text {
-    @apply text-2xl p-0 bg-transparent border-none shadow-none hover:text-green-500 active:text-green-600 disabled:text-zinc-400 disabled:cursor-not-allowed;
+    @apply text-2xl  bg-transparent border-none shadow-none hover:text-green-500 active:text-green-600 disabled:text-zinc-400 disabled:cursor-not-allowed;
 }
 
 body {

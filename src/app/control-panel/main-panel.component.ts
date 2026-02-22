@@ -10,11 +10,11 @@ import { ShopPanelComponent } from "./shop-panel.component";
     <div class="p-4 flex flex-col h-full">
       <div
         class="w-full text-2xl flex flex-row items-center justify-between gap-4">
-        <button class="text" (click)="previousMenu()">{{ "<" }}</button>
+        <button class="text pl-2!" (click)="previousMenu()">{{ "<" }}</button>
         <h1 class="text-2xl font-bold text-center ">
           {{ selectedMenu().text }}
         </h1>
-        <button class="text" (click)="nextMenu()">{{ ">" }}</button>
+        <button class="text pr-2!" (click)="nextMenu()">{{ ">" }}</button>
       </div>
 
       <div class="flex flex-col gap-4 pt-4 items-center">
