@@ -63,7 +63,7 @@ export class TractorRenderService {
 class TractorEntity {
   private image: TractorImage;
   private layer: Konva.Layer;
-
+  private movementSpeed = 15;
   private moveInterval: any;
 
   constructor(
@@ -123,21 +123,32 @@ class TractorEntity {
       return;
     }
 
+    const plotWidth = RenderUtils.entitySize[EntityType.Plot][0];
+    const plotHeight = RenderUtils.entitySize[EntityType.Plot][1];
+
     // Center to center diff
     const xDiff =
-      coords.x -
-      closestPlot.x() -
-      RenderUtils.entitySize[EntityType.Plot][0] / 2 +
-      this.image.width() / 2;
+      coords.x - closestPlot.x() - plotWidth / 2 + this.image.width() / 2;
 
     const yDiff =
-      coords.y -
-      closestPlot.y() -
-      RenderUtils.entitySize[EntityType.Plot][1] / 2 +
-      this.image.height() / 2;
+      coords.y - closestPlot.y() - plotHeight / 2 + this.image.height() / 2;
 
-    const xMovement = xDiff > 0 ? Math.max(-15, -xDiff) : Math.min(15, -xDiff);
-    const yMovement = yDiff > 0 ? Math.max(-15, -yDiff) : Math.min(15, -yDiff);
+    // If we're close enough to the center stop moving
+    if (Math.abs(xDiff) < plotWidth / 3 && Math.abs(yDiff) < plotHeight / 3) {
+      this.moveInterval = setTimeout(() => {
+        this.moveToPlot();
+      }, 2000);
+      return;
+    }
+
+    const xMovement =
+      xDiff > 0
+        ? Math.max(-this.movementSpeed, -xDiff)
+        : Math.min(this.movementSpeed, -xDiff);
+    const yMovement =
+      yDiff > 0
+        ? Math.max(-this.movementSpeed, -yDiff)
+        : Math.min(this.movementSpeed, -yDiff);
 
     if (xMovement <= 0) {
       this.setDirection("left");
