@@ -1,4 +1,4 @@
-import { EntityType } from "../models/entity";
+import { EntityType } from "../../models/entity";
 
 export class RenderUtils {
   static selectedColor = "#c49949";

@@ -1,20 +1,20 @@
 import { effect, inject, Injectable } from "@angular/core";
 import Konva from "konva";
-import { EntityType } from "../models/entity";
-import { BuyService } from "../services/buy.service";
+import { EntityType } from "../../models/entity";
+import { BuyService } from "../../services/buy.service";
 import {
-  Machine,
-  MachineService,
+  Tractor,
   TractorBrand,
-} from "../services/machine.service";
-import { SelectionService } from "../services/selection.service";
-import { RenderUtils } from "./renderUtils";
+  TractorService,
+} from "../../services/entities/tractor.service";
+import { SelectionService } from "../../services/selection.service";
+import { RenderUtils } from "../utils/renderUtils";
 
 @Injectable({
   providedIn: "root",
 })
-export class MachineRenderService {
-  private machinesService = inject(MachineService);
+export class TractorRenderService {
+  private tractorsService = inject(TractorService);
   private selectionService = inject(SelectionService);
   private buyService = inject(BuyService);
 
@@ -24,13 +24,13 @@ export class MachineRenderService {
 
   constructor() {
     effect(() => {
-      const machines = this.machinesService.machines();
-      const selectedMachines = this.selectionService.selectedMachines();
+      const tractors = this.tractorsService.tractors();
+      const selectedTractors = this.selectionService.selectedTractors();
 
-      machines.forEach((element, i) => {
-        const isSelected = selectedMachines.includes(element.id);
+      tractors.forEach((element, i) => {
+        const isSelected = selectedTractors.includes(element.id);
 
-        this.renderMachine(element, isSelected);
+        this.renderTractor(element, isSelected);
       });
     });
   }
@@ -39,15 +39,15 @@ export class MachineRenderService {
     stage.add(this.layer);
   }
 
-  private renderMachine(machine: Machine, selected: boolean) {
+  private renderTractor(tractor: Tractor, selected: boolean) {
     const layer = this.layer;
     if (!layer) return;
 
-    const drawnMachine = layer.findOne(`#${machine.id}`);
-    if (drawnMachine && drawnMachine instanceof TractorImage) {
-      drawnMachine.setColor(BrandColors[machine.brand]);
-      drawnMachine.setAttr("draggable", selected);
-      drawnMachine.setAttr(
+    const drawnTractor = layer.findOne(`#${tractor.id}`);
+    if (drawnTractor && drawnTractor instanceof TractorImage) {
+      drawnTractor.setColor(BrandColors[tractor.brand]);
+      drawnTractor.setAttr("draggable", selected);
+      drawnTractor.setAttr(
         "stroke",
         selected ? RenderUtils.selectedColor : undefined,
       );
@@ -57,14 +57,14 @@ export class MachineRenderService {
     const coords = this.buyService.getBuyLocation();
 
     const tractorBase = new TractorImage({
-      machine: machine,
+      tractor: tractor,
       x: coords.x,
       y: coords.y,
     });
 
     tractorBase.on("click", (e) => {
       this.selectionService.setMulti(e.evt.shiftKey);
-      this.selectionService.select(EntityType.Tractor, machine.id);
+      this.selectionService.select(EntityType.Tractor, tractor.id);
     });
 
     layer.add(tractorBase);
@@ -81,11 +81,11 @@ class TractorImage extends Konva.Image {
   private isAnimating = true;
   private sourceImage: HTMLImageElement | null = null;
 
-  constructor(args: { x: number; y: number; machine: Machine }) {
+  constructor(args: { x: number; y: number; tractor: Tractor }) {
     const imageObj = new Image();
     imageObj.src = "/sprites/tractor.png";
     imageObj.onload = () => {
-      this.setColor(BrandColors[args.machine.brand]);
+      this.setColor(BrandColors[args.tractor.brand]);
       this.animateSprite();
     };
     const width = RenderUtils.entitySize[EntityType.Tractor][0];
@@ -93,7 +93,7 @@ class TractorImage extends Konva.Image {
 
     super({
       ...args,
-      id: args.machine.id,
+      id: args.tractor.id,
       width: width,
       height: height,
       // This image is a dummy

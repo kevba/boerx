@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
+import { StashService } from "../stash.service";
 import { Crop, CropService } from "./crop.service";
-import { StashService } from "./stash.service";
 
 @Injectable({
   providedIn: "root",

@@ -9,8 +9,8 @@ import {
 import Konva from "konva";
 import { SelectionService } from "../services/selection.service";
 import { BuyRenderService } from "./buy-render.service";
-import { MachineRenderService } from "./machine-render.service";
-import { PlotRenderService } from "./plot-render.service";
+import { PlotRenderService } from "./entities/plot-render.service";
+import { TractorRenderService } from "./entities/tractor-render.service";
 import { SurfaceService } from "./surface.service";
 
 @Component({
@@ -24,7 +24,7 @@ export class CanvasComponent {
   private size = 2500;
 
   private plotRenderService = inject(PlotRenderService);
-  private machineRenderService = inject(MachineRenderService);
+  private tractorRenderService = inject(TractorRenderService);
   private buyRenderService = inject(BuyRenderService);
   private selectionService = inject(SelectionService);
   private surfaceService = inject(SurfaceService);
@@ -67,7 +67,7 @@ export class CanvasComponent {
 
       stage.add(this.backgroundLayer);
       this.plotRenderService.setStage(stage);
-      this.machineRenderService.setStage(stage);
+      this.tractorRenderService.setStage(stage);
       this.buyRenderService.setStage(stage);
 
       stage.on("click", (e) => {

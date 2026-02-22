@@ -1,12 +1,12 @@
 import { effect, inject, Injectable } from "@angular/core";
 import Konva from "konva";
-import { EntityType } from "../models/entity";
-import { BuyService } from "../services/buy.service";
-import { Crop } from "../services/crop.service";
-import { Plot, PlotsService } from "../services/plots.service";
-import { SelectionService } from "../services/selection.service";
-import { ColorMap, NoisyImageService } from "./noisy-image.service";
-import { RenderUtils } from "./renderUtils";
+import { EntityType } from "../../models/entity";
+import { BuyService } from "../../services/buy.service";
+import { Crop } from "../../services/entities/crop.service";
+import { Plot, PlotsService } from "../../services/entities/plots.service";
+import { SelectionService } from "../../services/selection.service";
+import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
+import { RenderUtils } from "../utils/renderUtils";
 
 @Injectable({
   providedIn: "root",

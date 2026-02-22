@@ -1,9 +1,9 @@
 import { Component, computed, inject } from "@angular/core";
-import { Crop, CropService } from "../services/crop.service";
-import { PlotsService } from "../services/plots.service";
-import { SelectionService } from "../services/selection.service";
-import { StashService } from "../services/stash.service";
-import { BuyTileComponent } from "./buy-tile.component";
+import { Crop, CropService } from "../../services/entities/crop.service";
+import { PlotsService } from "../../services/entities/plots.service";
+import { SelectionService } from "../../services/selection.service";
+import { StashService } from "../../services/stash.service";
+import { BuyTileComponent } from "../buy-tile.component";
 
 @Component({
   selector: "app-plot-panel",

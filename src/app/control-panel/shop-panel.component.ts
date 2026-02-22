@@ -1,8 +1,8 @@
 import { Component, computed, inject } from "@angular/core";
 import { EntityType } from "../models/entity";
 import { BuyService } from "../services/buy.service";
-import { MachineService } from "../services/machine.service";
-import { PlotsService } from "../services/plots.service";
+import { PlotsService } from "../services/entities/plots.service";
+import { TractorService } from "../services/entities/tractor.service";
 import { StashService } from "../services/stash.service";
 import { BuyTileComponent } from "./buy-tile.component";
 
@@ -19,16 +19,16 @@ import { BuyTileComponent } from "./buy-tile.component";
         (buyClick)="onBuy(EntityType.Plot)"></app-buy-tile>
       <app-buy-tile
         image=""
-        text="Machine"
+        text="Tractor"
         [active]="activeBuyingEntity() === EntityType.Tractor"
-        [cost]="machineService.machineCost()"
+        [cost]="tractorService.tractorCost()"
         (buyClick)="onBuy(EntityType.Tractor)"></app-buy-tile>
     </div>
   `,
 })
 export class ShopPanelComponent {
   plotService = inject(PlotsService);
-  machineService = inject(MachineService);
+  tractorService = inject(TractorService);
   stashService = inject(StashService);
   buyService = inject(BuyService);
   EntityType = EntityType;
@@ -41,8 +41,8 @@ export class ShopPanelComponent {
     return stash >= cost;
   });
 
-  canBuyMachine = computed(() => {
-    const cost = this.machineService.machineCost();
+  canBuyTractor = computed(() => {
+    const cost = this.tractorService.tractorCost();
     const stash = this.stashService.stash();
     return stash >= cost;
   });
@@ -52,7 +52,7 @@ export class ShopPanelComponent {
       if (entity === EntityType.Plot) {
         this.plotService.addPlot();
       } else if (entity === EntityType.Tractor) {
-        this.machineService.addMachine();
+        this.tractorService.addTractor();
       }
     });
   }

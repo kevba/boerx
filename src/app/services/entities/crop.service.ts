@@ -18,28 +18,26 @@ export class CropService {
     [Crop.Potato]: 0,
   });
 
-  hc = signal(0);
-
   earnings = computed<Record<Crop, number>>(() => ({
     [Crop.Grass]: this.earningsCalculation(
       Crop.Grass,
       100,
-      this.harvestCounter()
+      this.harvestCounter(),
     ),
     [Crop.Wheat]: this.earningsCalculation(
       Crop.Wheat,
       200,
-      this.harvestCounter()
+      this.harvestCounter(),
     ),
     [Crop.Corn]: this.earningsCalculation(
       Crop.Corn,
       250,
-      this.harvestCounter()
+      this.harvestCounter(),
     ),
     [Crop.Potato]: this.earningsCalculation(
       Crop.Potato,
       300,
-      this.harvestCounter()
+      this.harvestCounter(),
     ),
   }));
 
@@ -61,7 +59,7 @@ export class CropService {
   private earningsCalculation(
     crop: Crop,
     base: number,
-    harvests: Record<Crop, number>
+    harvests: Record<Crop, number>,
   ): number {
     const totalHarvests = Object.values(harvests).reduce((a, b) => a + b, 0);
     const fraction = harvests[crop] || 1 / (totalHarvests || 1);

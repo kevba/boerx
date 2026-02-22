@@ -1,5 +1,5 @@
 import { computed, inject, Injectable } from "@angular/core";
-import { ColorMap, NoisyImageService } from "./noisy-image.service";
+import { ColorMap, NoisyImageService } from "./utils/noisy-image.service";
 
 @Injectable({
   providedIn: "root",

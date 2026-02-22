@@ -1,9 +1,12 @@
 import { Component, computed, inject } from "@angular/core";
-import { CropService } from "../services/crop.service";
-import { MachineService, TractorBrand } from "../services/machine.service";
-import { SelectionService } from "../services/selection.service";
-import { StashService } from "../services/stash.service";
-import { BuyTileComponent } from "./buy-tile.component";
+import { CropService } from "../../services/entities/crop.service";
+import {
+  TractorBrand,
+  TractorService,
+} from "../../services/entities/tractor.service";
+import { SelectionService } from "../../services/selection.service";
+import { StashService } from "../../services/stash.service";
+import { BuyTileComponent } from "../buy-tile.component";
 
 @Component({
   selector: "app-tractor-panel",
@@ -29,7 +32,7 @@ import { BuyTileComponent } from "./buy-tile.component";
   imports: [BuyTileComponent],
 })
 export class TractorPanelComponent {
-  machineService = inject(MachineService);
+  tractorService = inject(TractorService);
   selectionService = inject(SelectionService);
   cropService = inject(CropService);
   stashService = inject(StashService);
@@ -37,9 +40,9 @@ export class TractorPanelComponent {
   brands = Object.values(TractorBrand);
 
   tractors = computed(() => {
-    const selectedTractorIds = this.selectionService.selectedMachines();
-    return this.machineService
-      .machines()
+    const selectedTractorIds = this.selectionService.selectedTractors();
+    return this.tractorService
+      .tractors()
       .filter((p) => selectedTractorIds.includes(p.id));
   });
 
@@ -53,7 +56,7 @@ export class TractorPanelComponent {
         brand: brand,
         disabled: upgradable === 0,
         upgradeCost:
-          this.machineService.machineUpgradeCost() * (upgradable || 1),
+          this.tractorService.tractorUpgradeCost() * (upgradable || 1),
       };
     });
   });
@@ -65,7 +68,7 @@ export class TractorPanelComponent {
       if (tractor?.brand === brand) {
         return;
       } else {
-        this.machineService.upgradeMachine(tractor.id, brand);
+        this.tractorService.upgradeTractor(tractor.id, brand);
       }
     }
   }

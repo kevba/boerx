@@ -1,8 +1,8 @@
 import { Component, computed, inject } from "@angular/core";
 import { SelectionService } from "../services/selection.service";
+import { PlotPanelComponent } from "./entity-panel/plot-panel.component";
+import { TractorPanelComponent } from "./entity-panel/tractor-panel.component";
 import { MainPanelComponent } from "./main-panel.component";
-import { PlotPanelComponent } from "./plot-panel.component";
-import { TractorPanelComponent } from "./tractor-panel.component";
 
 @Component({
   selector: "app-control-panel",
@@ -27,7 +27,7 @@ import { TractorPanelComponent } from "./tractor-panel.component";
               </div>
               @if (showPlotControl()) {
                 <app-plot-panel />
-              } @else if (showMachineControl()) {
+              } @else if (showTractorControl()) {
                 <app-tractor-panel />
               }
             </div>
@@ -73,7 +73,7 @@ export class ControlPanelComponent {
   showPlotControl = computed(
     () => this.selectionService.selectedPlots().length > 0,
   );
-  showMachineControl = computed(
-    () => this.selectionService.selectedMachines().length > 0,
+  showTractorControl = computed(
+    () => this.selectionService.selectedTractors().length > 0,
   );
 }

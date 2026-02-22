@@ -20,7 +20,7 @@ export class SelectionService {
     return selected.filter((e) => e.type === EntityType.Plot).map((e) => e.id);
   });
 
-  selectedMachines = computed(() => {
+  selectedTractors = computed(() => {
     const selected = this.selectedEntities();
     return selected
       .filter((e) => e.type === EntityType.Tractor)

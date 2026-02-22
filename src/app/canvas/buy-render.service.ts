@@ -2,7 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import Konva from "konva";
 import { EntityType } from "../models/entity";
 import { BuyService } from "../services/buy.service";
-import { RenderUtils } from "./renderUtils";
+import { RenderUtils } from "./utils/renderUtils";
 
 @Injectable({
   providedIn: "root",
