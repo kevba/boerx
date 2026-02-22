@@ -14,11 +14,13 @@ import { BuyTileComponent } from "./buy-tile.component";
       <app-buy-tile
         image=""
         text="Plot"
+        [active]="activeBuyingEntity() === EntityType.Plot"
         [cost]="plotService.plotCost()"
         (buyClick)="onBuy(EntityType.Plot)"></app-buy-tile>
       <app-buy-tile
         image=""
         text="Machine"
+        [active]="activeBuyingEntity() === EntityType.Tractor"
         [cost]="machineService.machineCost()"
         (buyClick)="onBuy(EntityType.Tractor)"></app-buy-tile>
     </div>
@@ -30,6 +32,8 @@ export class ShopPanelComponent {
   stashService = inject(StashService);
   buyService = inject(BuyService);
   EntityType = EntityType;
+
+  activeBuyingEntity = computed(() => this.buyService.buyingEntity());
 
   canBuyPlot = computed(() => {
     const cost = this.plotService.plotCost();

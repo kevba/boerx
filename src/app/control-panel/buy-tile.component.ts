@@ -26,13 +26,18 @@ export class BuyTileComponent {
       return "border-zinc-500 text-zinc-500 ";
     }
 
-    return "border-green-600 hover:border-green-500 hover:text-green-100 cursor-pointer";
+    if (this.active()) {
+      return "border-green-600! text-green-100!";
+    }
+
+    return "hover:border-green-500 hover:text-green-100 cursor-pointer";
   });
 
   image = input.required<string>();
   text = input.required<string>();
   cost = input.required<number>();
   disabled = input<boolean>(false);
+  active = input<boolean>(false);
 
   buyClick = output();
 
