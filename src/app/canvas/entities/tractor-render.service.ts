@@ -116,7 +116,13 @@ class TractorEntity {
     const coords = this.image.getAbsolutePosition();
     const closestPlot = this.findClosestPlot(coords, plots);
 
-    if (!closestPlot) return;
+    if (!closestPlot) {
+      this.moveInterval = setTimeout(() => {
+        this.moveToPlot();
+      }, 2000);
+      return;
+    }
+
     // Center to center diff
     const xDiff =
       coords.x -
@@ -132,6 +138,12 @@ class TractorEntity {
 
     const xMovement = xDiff > 0 ? Math.max(-15, -xDiff) : Math.min(15, -xDiff);
     const yMovement = yDiff > 0 ? Math.max(-15, -yDiff) : Math.min(15, -yDiff);
+
+    if (xMovement <= 0) {
+      this.setDirection("left");
+    } else {
+      this.setDirection("right");
+    }
 
     this.image.to({
       x: coords.x + xMovement,
@@ -164,6 +176,16 @@ class TractorEntity {
     });
 
     return closestNode;
+  }
+
+  private setDirection(direction: "left" | "right") {
+    if (direction === "right") {
+      this.image.scaleX(1);
+      this.image.offsetX(0);
+    } else {
+      this.image.scaleX(-1);
+      this.image.offsetX(this.image.width());
+    }
   }
 }
 
