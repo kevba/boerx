@@ -1,6 +1,5 @@
 import { effect, inject, Injectable } from "@angular/core";
 import { BarnService } from "./entities/barn.service";
-import { CropService } from "./entities/crop.service";
 import { PlotsService } from "./entities/plots.service";
 import { TractorService } from "./entities/tractor.service";
 import { StashService } from "./stash.service";
@@ -11,7 +10,6 @@ import { TickService } from "./tick.service";
 })
 export class IncomeService {
   private stashService = inject(StashService);
-  private cropService = inject(CropService);
   private tickService = inject(TickService);
   private plotService = inject(PlotsService);
   private tractorService = inject(TractorService);
@@ -34,7 +32,7 @@ export class IncomeService {
 
     // harvest count update must happen first, and also in a separate effect to prevent haniging reactive updates
     plots.forEach((plot) => {
-      this.cropService.updateHarvestCounter(plot.crop);
+      this.plotService.harvest(plot);
     });
   }
 
@@ -45,7 +43,7 @@ export class IncomeService {
 
     let income = 10;
     plots.forEach((plot) => {
-      income += this.cropService.harvestEarnings(plot.crop);
+      income += this.plotService.harvestEarnings(plot);
     });
 
     tractors.forEach((tractor) => {

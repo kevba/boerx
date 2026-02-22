@@ -4,7 +4,7 @@ import { Crop, CropService } from "../services/entities/crop.service";
 import { StashService } from "../services/stash.service";
 
 @Component({
-  selector: "app-databar",
+  selector: "app-financial-bar",
   imports: [DecimalPipe],
   template: `
     <div class="flex flex row gap-4 w-full">
@@ -27,7 +27,7 @@ import { StashService } from "../services/stash.service";
     </div>
   `,
 })
-export class DatabarComponent {
+export class FinancialBarComponent {
   stashService = inject(StashService);
   cropService = inject(CropService);
 

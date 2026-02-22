@@ -41,12 +41,6 @@ export class CropService {
     ),
   }));
 
-  harvestEarnings(crop: Crop): number {
-    const earnings = this.earnings()[crop];
-
-    return earnings;
-  }
-
   updateHarvestCounter(crop: Crop) {
     this.harvestCounter.update((counter) => {
       return {

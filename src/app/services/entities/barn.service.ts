@@ -48,7 +48,7 @@ export class BarnService {
     const barn = this._barns().find((barn) => barn.id === barnId);
     if (!barn) return;
 
-    const upgradeCost = this.upgradeCostForSize(barnId, toSize);
+    const upgradeCost = this.upgradeCost(barnId, toSize);
 
     const stash = this.stashService.stash();
     if (stash < upgradeCost) {
@@ -72,7 +72,7 @@ export class BarnService {
 
   constructor() {}
 
-  upgradeCostForSize(barnId: string, toSize: BarnSize): number {
+  upgradeCost(barnId: string, toSize: BarnSize): number {
     const barn = this._barns().find((barn) => barn.id === barnId);
     if (!barn) return 0;
 

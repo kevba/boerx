@@ -44,7 +44,7 @@ export class BarnPanelComponent {
     return upgrades.map((size) => {
       let upgradeCost = 0;
       for (const barn of barns) {
-        const cost = this.barnService.upgradeCostForSize(barn.id, size);
+        const cost = this.barnService.upgradeCost(barn.id, size);
         upgradeCost += cost;
       }
 

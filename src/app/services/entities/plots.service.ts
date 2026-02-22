@@ -1,6 +1,8 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
+import { NutrientsService } from "../nutrients.service";
 import { StashService } from "../stash.service";
 import { Crop, CropService } from "./crop.service";
+import { Upgrader } from "./upgradeUtils";
 
 @Injectable({
   providedIn: "root",
@@ -8,11 +10,31 @@ import { Crop, CropService } from "./crop.service";
 export class PlotsService {
   private stashService = inject(StashService);
   private cropService = inject(CropService);
+  private nutrientsService = inject(NutrientsService);
 
   private _plots = signal<Plot[]>([]);
+  plots = this._plots.asReadonly();
 
-  plots = computed(() => this._plots());
-  plotCost = computed(() => 4000 + (this.plots().length * 10) ** 2);
+  private baseCost = 4000;
+  plotCost = computed(() => this.baseCost + (this.plots().length * 10) ** 2);
+
+  hasSensorUpgrade = computed(() =>
+    this.plots().some((plot) => plot.upgrade !== PlotUpgrade.Basic),
+  );
+
+  upgrades = {
+    [PlotUpgrade.Basic]: {
+      next: PlotUpgrade.Sensor,
+      upgradeCost: this.baseCost * 2,
+      earningsIncreasePerPlot: 1000,
+    },
+    [PlotUpgrade.Sensor]: {
+      next: null,
+      upgradeCost: this.baseCost * 2,
+      earningsIncreasePerPlot: 1000,
+    },
+  };
+  private upgrader = new Upgrader<PlotUpgrade>(this.upgrades);
 
   addPlot() {
     const cost = this.plotCost();
@@ -24,6 +46,39 @@ export class PlotsService {
     const plot: Plot = this.newPlot();
 
     this._plots.update((plots) => [...plots, plot]);
+  }
+
+  upgradePlot(plotId: string, toUpgrade: PlotUpgrade) {
+    const plot = this._plots().find((plot) => plot.id === plotId);
+    if (!plot) return;
+
+    const upgradeCost = this.upgradeCost(plotId, toUpgrade);
+
+    const stash = this.stashService.stash();
+    if (stash < upgradeCost) {
+      return;
+    }
+    this.stashService.addStash(-upgradeCost);
+
+    this._plots.update((plots) => {
+      const index = plots.findIndex((plot) => plot.id === plotId);
+      if (index === -1) return plots;
+
+      //   Create a new object, otherwise the signal won't detect the change since the reference is the same
+      plots[index] = {
+        ...plots[index],
+        upgrade: toUpgrade,
+      };
+
+      return [...plots];
+    });
+  }
+
+  upgradeCost(plotId: string, toUpgrade: PlotUpgrade): number {
+    const plot = this._plots().find((plot) => plot.id === plotId);
+    if (!plot) return 0;
+
+    return this.upgrader.fromToCost(plot.upgrade, toUpgrade);
   }
 
   plantOnPlot(plotId: string, crop: Crop) {
@@ -49,12 +104,30 @@ export class PlotsService {
     });
   }
 
+  harvest(plot: Plot) {
+    const depletion = this.nutrientsService.cropBaseDepletion()[plot.crop];
+
+    // TODO: support upgrades that reduce depletion
+    this.nutrientsService.addWater(-depletion.water);
+    this.nutrientsService.addFertilizer(-depletion.nutrients);
+
+    this.cropService.updateHarvestCounter(plot.crop);
+  }
+
+  harvestEarnings(plot: Plot): number {
+    const earnings = this.cropService.earnings()[plot.crop];
+    const mult = this.nutrientsService.cropValueMult()[plot.crop];
+
+    return earnings * mult.water * mult.nutrients;
+  }
+
   constructor() {}
 
   private newPlot(): Plot {
     return {
       id: crypto.randomUUID(),
       crop: Crop.Grass,
+      upgrade: PlotUpgrade.Basic,
     };
   }
 }
@@ -62,4 +135,10 @@ export class PlotsService {
 export type Plot = {
   id: string;
   crop: Crop;
+  upgrade: PlotUpgrade;
 };
+
+export enum PlotUpgrade {
+  Basic = "basic",
+  Sensor = "sensor",
+}
