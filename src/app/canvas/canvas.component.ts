@@ -55,6 +55,8 @@ export class CanvasComponent {
       width: width,
       height: height,
       draggable: true,
+      x: -(this.size / 2 - width / 2),
+      y: -(this.size / 2 - height / 2),
       dragBoundFunc: (pos): Konva.Vector2d => this.boundsHelper(pos, newStage),
     });
 
