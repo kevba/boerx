@@ -1,9 +1,5 @@
 import { computed, Injectable, signal } from "@angular/core";
-
-export enum EntityType {
-  Plot = "plot",
-  Machine = "machine",
-}
+import { EntityType } from "../models/entity";
 
 export type SelectedEntity = {
   type: EntityType;
@@ -27,7 +23,7 @@ export class SelectionService {
   selectedMachines = computed(() => {
     const selected = this.selectedEntities();
     return selected
-      .filter((e) => e.type === EntityType.Machine)
+      .filter((e) => e.type === EntityType.Tractor)
       .map((e) => e.id);
   });
 

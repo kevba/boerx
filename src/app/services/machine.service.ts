@@ -52,13 +52,7 @@ export class MachineService {
     });
   }
 
-  constructor() {
-    this.initializeMachines();
-  }
-
-  private initializeMachines() {
-    this._machine.set([this.newMachine()]);
-  }
+  constructor() {}
 
   private newMachine(): Machine {
     return {

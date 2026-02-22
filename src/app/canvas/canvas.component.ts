@@ -8,6 +8,7 @@ import {
 } from "@angular/core";
 import Konva from "konva";
 import { SelectionService } from "../services/selection.service";
+import { BuyRenderService } from "./buy-render.service";
 import { MachineRenderService } from "./machine-render.service";
 import { PlotRenderService } from "./plot-render.service";
 import { SurfaceService } from "./surface.service";
@@ -24,6 +25,7 @@ export class CanvasComponent {
 
   private plotRenderService = inject(PlotRenderService);
   private machineRenderService = inject(MachineRenderService);
+  private buyRenderService = inject(BuyRenderService);
   private selectionService = inject(SelectionService);
   private surfaceService = inject(SurfaceService);
 
@@ -52,6 +54,7 @@ export class CanvasComponent {
       draggable: true,
       dragBoundFunc: (pos): Konva.Vector2d => this.boundsHelper(pos, newStage),
     });
+
     return newStage;
   });
 
@@ -65,6 +68,7 @@ export class CanvasComponent {
       stage.add(this.backgroundLayer);
       this.plotRenderService.setStage(stage);
       this.machineRenderService.setStage(stage);
+      this.buyRenderService.setStage(stage);
 
       stage.on("click", (e) => {
         if (e.target === stage) {

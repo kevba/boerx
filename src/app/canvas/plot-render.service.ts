@@ -1,8 +1,10 @@
 import { effect, inject, Injectable } from "@angular/core";
 import Konva from "konva";
+import { EntityType } from "../models/entity";
+import { BuyService } from "../services/buy.service";
 import { Crop } from "../services/crop.service";
 import { Plot, PlotsService } from "../services/plots.service";
-import { EntityType, SelectionService } from "../services/selection.service";
+import { SelectionService } from "../services/selection.service";
 import { ColorMap, NoisyImageService } from "./noisy-image.service";
 import { RenderUtils } from "./renderUtils";
 
@@ -12,9 +14,8 @@ import { RenderUtils } from "./renderUtils";
 export class PlotRenderService {
   private plotsService = inject(PlotsService);
   private selectionService = inject(SelectionService);
+  private buyService = inject(BuyService);
   private noisyImageService = inject(NoisyImageService);
-
-  private SIZE = 120;
 
   layer = new Konva.Layer();
 
@@ -62,8 +63,6 @@ export class PlotRenderService {
     const layer = this.layer;
     if (!layer) return;
 
-    const coords = { x: 50, y: 20 };
-
     const drawnPlot = layer.findOne(`#${plot.id}-base`);
     const drawnGroup = layer.findOne(`#${plot.id}`);
 
@@ -78,21 +77,28 @@ export class PlotRenderService {
       return;
     }
 
+    const width = RenderUtils.entitySize[EntityType.Plot][0];
+    const height = RenderUtils.entitySize[EntityType.Plot][1];
+    const coords = this.buyService.getBuyLocation();
+
     const plotBase = new Konva.Rect({
       id: plot.id + "-base",
-      x: coords.x,
-      y: coords.y,
-      height: this.SIZE,
-      width: this.SIZE,
+      // Coords within the plot group, the group itself is positioned at the plot's coordinates
+      x: 0,
+      y: 0,
+      width: width,
+      height: height,
       ...this.getPlotAttributes(plot, selected),
     });
 
     const plotOverlay = new Konva.Rect({
       id: plot.id + "-overlay",
-      x: coords.x,
-      y: coords.y,
-      height: this.SIZE,
-      width: this.SIZE,
+      // Coords within the plot group, the group itself is positioned at the plot's coordinates
+
+      x: 0,
+      y: 0,
+      width: width,
+      height: height,
       listening: false,
       draggable: false,
     });

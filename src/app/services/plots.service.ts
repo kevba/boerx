@@ -49,13 +49,7 @@ export class PlotsService {
     });
   }
 
-  constructor() {
-    this.initializePlots();
-  }
-
-  private initializePlots() {
-    this._plots.set([this.newPlot(), this.newPlot(), this.newPlot()]);
-  }
+  constructor() {}
 
   private newPlot(): Plot {
     return {

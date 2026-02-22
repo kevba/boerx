@@ -1,11 +1,13 @@
 import { effect, inject, Injectable } from "@angular/core";
 import Konva from "konva";
+import { EntityType } from "../models/entity";
+import { BuyService } from "../services/buy.service";
 import {
   Machine,
   MachineService,
   TractorBrand,
 } from "../services/machine.service";
-import { EntityType, SelectionService } from "../services/selection.service";
+import { SelectionService } from "../services/selection.service";
 import { RenderUtils } from "./renderUtils";
 
 @Injectable({
@@ -14,6 +16,7 @@ import { RenderUtils } from "./renderUtils";
 export class MachineRenderService {
   private machinesService = inject(MachineService);
   private selectionService = inject(SelectionService);
+  private buyService = inject(BuyService);
 
   layer = new Konva.Layer({
     imageSmoothingEnabled: false,
@@ -51,19 +54,20 @@ export class MachineRenderService {
 
       return;
     }
+    const coords = this.buyService.getBuyLocation();
 
-    const machineBase = new TractorImage({
+    const tractorBase = new TractorImage({
       machine: machine,
-      x: 10,
-      y: 10,
+      x: coords.x,
+      y: coords.y,
     });
 
-    machineBase.on("click", (e) => {
+    tractorBase.on("click", (e) => {
       this.selectionService.setMulti(e.evt.shiftKey);
-      this.selectionService.select(EntityType.Machine, machine.id);
+      this.selectionService.select(EntityType.Tractor, machine.id);
     });
 
-    layer.add(machineBase);
+    layer.add(tractorBase);
   }
 }
 
@@ -71,6 +75,7 @@ class TractorImage extends Konva.Image {
   frame = 0;
   totalFrames = 3;
   frameWidth = 16;
+  frameHeight = 16;
   frameSpeed = 1000;
 
   private isAnimating = true;
@@ -83,18 +88,25 @@ class TractorImage extends Konva.Image {
       this.setColor(BrandColors[args.machine.brand]);
       this.animateSprite();
     };
+    const width = RenderUtils.entitySize[EntityType.Tractor][0];
+    const height = RenderUtils.entitySize[EntityType.Tractor][1];
 
     super({
       ...args,
       id: args.machine.id,
-      width: 32,
-      height: 32,
+      width: width,
+      height: height,
       // This image is a dummy
       image: imageObj,
       draggable: false,
-      crop: { x: 0, y: 0, width: 16, height: 16 },
     });
 
+    this.setAttr("crop", {
+      x: 0,
+      y: 0,
+      width: this.frameWidth,
+      height: this.frameHeight,
+    });
     this.sourceImage = imageObj;
   }
 
