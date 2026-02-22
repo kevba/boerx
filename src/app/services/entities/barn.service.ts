@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { StashService } from "../stash.service";
-import { UpgradeTable, UpgradeUtils } from "./upgradeUtils";
+import { UpgradeUtils } from "./upgradeUtils";
 
 @Injectable({
   providedIn: "root",
@@ -11,21 +11,21 @@ export class BarnService {
   private _barns = signal<Barn[]>([]);
 
   barnCost = computed(() => 20000);
-  upgrades: UpgradeTable<BarnSize> = {
+  upgrades = {
     [BarnSize.Shed]: {
       next: BarnSize.Storage,
       upgradeCost: 50000,
-      earningsIncrease: 1000,
+      earningsIncreasePerPlot: 1000,
     },
     [BarnSize.Storage]: {
       next: BarnSize.Warehouse,
       upgradeCost: 100000,
-      earningsIncrease: 2000,
+      earningsIncreasePerPlot: 2000,
     },
     [BarnSize.Warehouse]: {
       next: null,
       upgradeCost: 200000,
-      earningsIncrease: 4000,
+      earningsIncreasePerPlot: 4000,
     },
   };
 
