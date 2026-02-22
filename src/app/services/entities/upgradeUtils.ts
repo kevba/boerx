@@ -1,42 +1,54 @@
-export class UpgradeUtils {
-  static FromToCost<T extends string>(
-    upgradeKey: UpgradeTable<T>,
-    from: T,
-    to: T,
-  ): number {
-    let upgradeCost = 0;
+export class Upgrader<T extends string> {
+  constructor(private upgrades: UpgradeTable<T>) {}
 
-    const upgrades = Object.values(upgradeKey).map(
-      (upgrade) => (upgrade as Upgrade<T>).next,
-    );
+  fromToCost(from: T, to: T): number {
+    if (from === to) return 0;
 
-    const base = Object.keys(upgradeKey).find(
-      (upgrade) => !upgrades.includes(upgrade as T),
-    );
-    const orderedUpgrades: Upgrade<T>[] = [];
-    orderedUpgrades.push(upgradeKey[base as T]);
+    const upgrade = this.upgrades[from];
+    if (!upgrade) return 0;
 
-    while (orderedUpgrades.length < Object.keys(upgradeKey).length) {
-      const lastUpgrade = orderedUpgrades[orderedUpgrades.length - 1];
-      const nextUpgrade = upgradeKey[lastUpgrade.next as T];
-      orderedUpgrades.push(nextUpgrade);
+    if (upgrade.next === to) {
+      return upgrade.upgradeCost;
     }
-    orderedUpgrades.reverse();
 
-    const fromIndex = orderedUpgrades.findIndex(
-      (upgrade) => upgrade.next === from,
-    );
-    const toIndex = orderedUpgrades.findIndex((upgrade) => upgrade.next === to);
+    // check downgrade
+    const downgradeCost = this.getDowngradeCost(from, to);
+    if (downgradeCost !== 0) {
+      return -downgradeCost;
+    }
 
-    if (fromIndex === -1 || toIndex === -1 || fromIndex > toIndex) {
+    // Somehow trying to downgrade or upgrade to an upgrade that is not in the path
+    if (!upgrade.next) {
       return 0;
     }
 
-    for (let i = fromIndex; i < toIndex; i++) {
-      upgradeCost += orderedUpgrades[i].upgradeCost;
+    // If the next upgrade is not the target, we need to check the next one
+    const nextCost = this.fromToCost(upgrade.next as T, to);
+    if (nextCost === 0) {
+      return 0;
     }
 
-    return upgradeCost;
+    return upgrade.upgradeCost + nextCost;
+  }
+
+  private getDowngradeCost(from: T, to: T): number {
+    let current = to;
+    let cost = 0;
+
+    while (current) {
+      const currentUpgrade = this.upgrades[current];
+      if (!currentUpgrade || !currentUpgrade.next) break;
+
+      cost += currentUpgrade.upgradeCost;
+
+      if (currentUpgrade.next === from) {
+        return cost;
+      }
+
+      current = currentUpgrade.next as T;
+    }
+
+    return 0;
   }
 }
 

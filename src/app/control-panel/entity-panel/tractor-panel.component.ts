@@ -51,12 +51,16 @@ export class TractorPanelComponent {
 
     return this.brands.map((brand) => {
       const upgradable = tractors.filter((p) => p?.brand !== brand).length;
+      let upgradeCost = 0;
+      for (const tractor of tractors) {
+        const cost = this.tractorService.upgradeCostForSize(tractor.id, brand);
+        upgradeCost += cost;
+      }
 
       return {
         brand: brand,
         disabled: upgradable === 0,
-        upgradeCost:
-          this.tractorService.tractorUpgradeCost() * (upgradable || 1),
+        upgradeCost: upgradeCost,
       };
     });
   });

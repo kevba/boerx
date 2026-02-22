@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { StashService } from "../stash.service";
-import { UpgradeUtils } from "./upgradeUtils";
+import { Upgrader } from "./upgradeUtils";
 
 @Injectable({
   providedIn: "root",
@@ -28,6 +28,7 @@ export class BarnService {
       earningsIncreasePerPlot: 4000,
     },
   };
+  private upgrader = new Upgrader<BarnSize>(this.upgrades);
 
   barns = computed(() => this._barns());
 
@@ -74,7 +75,7 @@ export class BarnService {
     const barn = this._barns().find((barn) => barn.id === barnId);
     if (!barn) return 0;
 
-    return UpgradeUtils.FromToCost(this.upgrades, barn.size, toSize);
+    return this.upgrader.fromToCost(barn.size, toSize);
   }
 
   private newBarn(): Barn {
