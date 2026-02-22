@@ -33,10 +33,10 @@ export class SelectionService {
   });
 
   select(entityType: EntityType, id: string): void {
-    this.selectedEntities.update((entities) => [
-      ...(this.multiSelect() ? entities : []),
-      { type: entityType, id },
-    ]);
+    this.selectedEntities.update((entities) => {
+      const ofType = entities.filter((e) => e.type === entityType);
+      return [...(this.multiSelect() ? ofType : []), { type: entityType, id }];
+    });
   }
 
   deselect(id: string): void {

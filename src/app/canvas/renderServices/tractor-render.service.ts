@@ -48,8 +48,8 @@ export class TractorRenderService {
     if (!entity) {
       const coords = this.buyService.getBuyLocation();
       entity = new TractorEntity(tractor, coords, layer);
-      entity.onClick(() => {
-        this.selectionService.setMulti(false);
+      entity.onClick((e) => {
+        this.selectionService.setMulti(e.evt.shiftKey);
         this.selectionService.select(EntityType.Tractor, tractor.id);
       });
       this.entities[tractor.id] = entity;

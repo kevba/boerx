@@ -60,8 +60,8 @@ export class TractorEntity {
     );
   }
 
-  onClick(callback: () => void) {
-    this.image.on("click", callback);
+  onClick(callback: (e: Konva.KonvaEventObject<MouseEvent>) => void) {
+    this.image.on("click", (e) => callback(e));
   }
 
   destroy() {
