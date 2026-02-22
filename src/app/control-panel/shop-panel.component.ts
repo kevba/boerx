@@ -11,7 +11,7 @@ import { BuyTileComponent } from "./buy-tile.component";
   selector: "app-shop-panel",
   imports: [BuyTileComponent],
   template: `
-    <div class="flex flex-row flex-wrap gap-4 justify-center">
+    <div class="flex flex-row flex-wrap gap-4">
       <app-buy-tile
         image=""
         text="Plot"

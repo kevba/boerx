@@ -13,7 +13,7 @@ import { BuyTileComponent } from "../buy-tile.component";
         <h2 class="text-lg font-bold ">Upgrade Barn</h2>
       </div>
       <div>
-        <div class="flex flex-row flex-wrap gap-4 justify-center">
+        <div class="flex flex-row flex-wrap gap-4">
           @for (option of options(); track option.size) {
             <app-buy-tile
               image=""
