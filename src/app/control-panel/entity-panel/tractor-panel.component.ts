@@ -1,11 +1,9 @@
 import { Component, computed, inject } from "@angular/core";
-import { CropService } from "../../services/entities/crop.service";
 import {
   TractorBrand,
   TractorService,
 } from "../../services/entities/tractor.service";
 import { SelectionService } from "../../services/selection.service";
-import { StashService } from "../../services/stash.service";
 import { BuyTileComponent } from "../buy-tile.component";
 
 @Component({
@@ -34,10 +32,6 @@ import { BuyTileComponent } from "../buy-tile.component";
 export class TractorPanelComponent {
   tractorService = inject(TractorService);
   selectionService = inject(SelectionService);
-  cropService = inject(CropService);
-  stashService = inject(StashService);
-
-  brands = Object.values(TractorBrand);
 
   tractors = computed(() => {
     const selectedTractorIds = this.selectionService.selectedTractors();
@@ -48,8 +42,11 @@ export class TractorPanelComponent {
 
   options = computed(() => {
     const tractors = this.tractors();
+    const upgrades = Object.keys(
+      this.tractorService.upgrades,
+    ) as TractorBrand[];
 
-    return this.brands.map((brand) => {
+    return upgrades.map((brand) => {
       const upgradable = tractors.filter((p) => p?.brand !== brand).length;
       let upgradeCost = 0;
       for (const tractor of tractors) {
@@ -69,11 +66,7 @@ export class TractorPanelComponent {
     const tractors = this.tractors();
 
     for (const tractor of tractors) {
-      if (tractor?.brand === brand) {
-        return;
-      } else {
-        this.tractorService.upgradeTractor(tractor.id, brand);
-      }
+      this.tractorService.upgradeTractor(tractor.id, brand);
     }
   }
 }
