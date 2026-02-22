@@ -11,7 +11,8 @@ import { BuyTileComponent } from "../buy-tile.component";
 @Component({
   selector: "app-plot-panel",
   template: `
-    <div class="flex flex-col gap-2 p-4 w-full h-full items-center">
+    <div
+      class="flex flex-col gap-2 p-4 w-full h-full items-center overflow-scroll ">
       <div class="w-full"><h2 class="text-lg font-bold ">Plant Crop</h2></div>
       <div>
         <div class="flex flex-row flex-wrap gap-4">

@@ -15,7 +15,7 @@ import { MainPanelComponent } from "./main-panel.component";
   ],
 
   template: `
-    <div class="w-[20rem] flex flex-col h-full overflow-scroll bg-stone-500 ">
+    <div class="w-[20rem] flex flex-col h-full bg-stone-500 ">
       <div class="relative w-full h-full flex-1 ">
         <app-main-panel
           class="absolute top-0 left-0 w-full h-full border-l-8 border-stone-600" />
@@ -31,13 +31,15 @@ import { MainPanelComponent } from "./main-panel.component";
                 </button>
                 <span class="text-2xl">Upgrades</span>
               </div>
-              @if (showPlotControl()) {
-                <app-plot-panel />
-              } @else if (showTractorControl()) {
-                <app-tractor-panel />
-              } @else if (showBarnControl()) {
-                <app-barn-panel />
-              }
+              <div class=" h-full w-full overflow-scroll">
+                @if (showPlotControl()) {
+                  <app-plot-panel />
+                } @else if (showTractorControl()) {
+                  <app-tractor-panel />
+                } @else if (showBarnControl()) {
+                  <app-barn-panel />
+                }
+              </div>
             </div>
           </div>
         }

@@ -18,19 +18,31 @@ export class PlotsService {
   private baseCost = 4000;
   plotCost = computed(() => this.baseCost + (this.plots().length * 10) ** 2);
 
-  hasSensorUpgrade = computed(() =>
-    this.plots().some((plot) => plot.upgrade !== PlotUpgrade.Basic),
+  hasMoistureUpgrade = computed(() =>
+    this.plots().some((plot) => ![PlotUpgrade.Basic].includes(plot.upgrade)),
+  );
+
+  hasSoilUpgrade = computed(() =>
+    this.plots().some(
+      (plot) =>
+        ![PlotUpgrade.Basic, PlotUpgrade.Moisture].includes(plot.upgrade),
+    ),
   );
 
   upgrades = {
     [PlotUpgrade.Basic]: {
-      next: PlotUpgrade.Sensor,
-      upgradeCost: this.baseCost * 2,
+      next: PlotUpgrade.Moisture,
+      upgradeCost: this.baseCost * 10,
       earningsIncreasePerPlot: 1000,
     },
-    [PlotUpgrade.Sensor]: {
+    [PlotUpgrade.Moisture]: {
+      next: PlotUpgrade.Soil,
+      upgradeCost: this.baseCost * 20,
+      earningsIncreasePerPlot: 1000,
+    },
+    [PlotUpgrade.Soil]: {
       next: null,
-      upgradeCost: this.baseCost * 2,
+      upgradeCost: this.baseCost * 30,
       earningsIncreasePerPlot: 1000,
     },
   };
@@ -140,5 +152,6 @@ export type Plot = {
 
 export enum PlotUpgrade {
   Basic = "basic",
-  Sensor = "sensor",
+  Moisture = "moisture",
+  Soil = "soil",
 }

@@ -7,9 +7,11 @@ import { StashService } from "../services/stash.service";
 @Component({
   selector: "app-nutrients-bar",
   template: `
-    @if (showBars()) {
-      <div class="flex flex-row gap-8 w-full" animate.enter="shake-enter">
-        <div class="flex flex-row gap-2 items-center flex-1">
+    <div class="flex flex-row gap-8 w-full">
+      @if (showWaterBar()) {
+        <div
+          animate.enter="shake-enter"
+          class="flex flex-row gap-2 items-center flex-1">
           <div [ngClass]="waterStatusClass()">water:</div>
           <div class="w-full flex flex-row rounded border-3 border-zinc-800 ">
             @for (segment of waterBarSegments(); track segment.id) {
@@ -26,7 +28,11 @@ import { StashService } from "../services/stash.service";
             }
           </div>
         </div>
-        <div class="flex flex-row gap-2 items-center flex-1">
+      }
+      @if (showFertilizerBar()) {
+        <div
+          animate.enter="shake-enter"
+          class="flex flex-row gap-2 items-center flex-1">
           <div [ngClass]="fertilizerStatusClass()">fertilizer:</div>
           <div class="w-full flex flex-row rounded border-3 border-zinc-800 ">
             @for (segment of fertilizerBarSegments(); track segment.id) {
@@ -43,8 +49,8 @@ import { StashService } from "../services/stash.service";
             }
           </div>
         </div>
-      </div>
-    }
+      }
+    </div>
   `,
   styles: `
     .shake-enter {
@@ -76,7 +82,8 @@ export class NutrientsBarComponent {
   plotsService = inject(PlotsService);
   nutrientsService = inject(NutrientsService);
 
-  showBars = computed(() => this.plotsService.hasSensorUpgrade());
+  showWaterBar = computed(() => this.plotsService.hasMoistureUpgrade());
+  showFertilizerBar = computed(() => this.plotsService.hasSoilUpgrade());
 
   waterStatusClass = computed(() => {
     const waterRatio =
