@@ -70,8 +70,8 @@ export class CanvasComponent {
 
       stage.add(this.backgroundLayer);
       this.plotRenderService.setStage(stage);
-      this.tractorRenderService.setStage(stage);
       this.barnRenderService.setStage(stage);
+      this.tractorRenderService.setStage(stage);
 
       this.buyRenderService.setStage(stage);
 

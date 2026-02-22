@@ -16,6 +16,7 @@ export class Sprite extends Konva.Image {
 
   constructor(options: {
     id: string;
+    name: string;
     x: number;
     y: number;
     imageSrc: string;
@@ -30,6 +31,7 @@ export class Sprite extends Konva.Image {
 
     super({
       id: options.id,
+      name: options.name,
       x: options.x,
       y: options.y,
       width: width,

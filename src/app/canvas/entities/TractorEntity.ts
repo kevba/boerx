@@ -3,12 +3,16 @@ import { EntityType } from "../../models/entity";
 import { Tractor } from "../../services/entities/tractor.service";
 import { RenderUtils } from "../utils/renderUtils";
 import { Sprite } from "./Sprite";
+import { Direction, MoveBehavior } from "./behaviors/move";
+import { BehaviorUtils } from "./behaviors/utils";
 
 export class TractorEntity {
   private image: TractorImage;
   private layer: Konva.Layer;
-  private movementSpeed = 15;
-  private moveInterval: any;
+  private moveBehavior: MoveBehavior;
+  private homePlotId: string | null = null;
+
+  private moveEntityTarget: EntityType.Barn | EntityType.Plot = EntityType.Plot;
 
   constructor(
     tractor: Tractor,
@@ -25,7 +29,13 @@ export class TractorEntity {
     this.update(tractor);
     this.layer.add(this.image);
 
-    this.moveToPlot();
+    this.moveBehavior = new MoveBehavior(this.image, 240, (direction) =>
+      this.setDirection(direction),
+    );
+
+    setInterval(() => {
+      this.moveToTarget();
+    }, 1000);
   }
 
   update(tractor: Tractor) {
@@ -48,93 +58,55 @@ export class TractorEntity {
     this.image.destroy();
   }
 
-  private moveToPlot() {
+  private moveToTarget() {
     if (this.image.draggable()) {
-      this.moveInterval = setTimeout(() => {
-        this.moveToPlot();
-      }, 1000);
+      this.moveBehavior.stop();
       return;
     }
 
-    const plots = this.layer.getParent()?.find(`.plot`) || [];
     const coords = this.image.position();
-    const closestPlot = this.findClosestPlot(coords, plots);
+    let targetNode: Konva.Node | undefined;
 
-    if (!closestPlot) {
-      this.moveInterval = setTimeout(() => {
-        this.moveToPlot();
-      }, 2000);
-      return;
-    }
-
-    const plotWidth = RenderUtils.entitySize[EntityType.Plot][0];
-    const plotHeight = RenderUtils.entitySize[EntityType.Plot][1];
-
-    // Center to center diff
-    const xDiff =
-      coords.x - closestPlot.x() - plotWidth / 2 + this.image.width() / 2;
-
-    const yDiff =
-      coords.y - closestPlot.y() - plotHeight / 2 + this.image.height() / 2;
-
-    // If we're close enough to the center stop moving
-    if (Math.abs(xDiff) < plotWidth / 3 && Math.abs(yDiff) < plotHeight / 3) {
-      this.moveInterval = setTimeout(() => {
-        this.moveToPlot();
-      }, 2000);
-      return;
-    }
-
-    const xMovement =
-      xDiff > 0
-        ? Math.max(-this.movementSpeed, -xDiff)
-        : Math.min(this.movementSpeed, -xDiff);
-    const yMovement =
-      yDiff > 0
-        ? Math.max(-this.movementSpeed, -yDiff)
-        : Math.min(this.movementSpeed, -yDiff);
-
-    if (xMovement <= 0) {
-      this.setDirection("left");
-    } else {
-      this.setDirection("right");
-    }
-
-    this.image.to({
-      x: coords.x + xMovement,
-      y: coords.y + yMovement,
-      duration: 0.5,
-    });
-
-    this.moveInterval = setTimeout(() => {
-      this.moveToPlot();
-    }, 500);
-  }
-
-  private findClosestPlot(
-    coords: { x: number; y: number },
-    nodes: Konva.Node[],
-  ) {
-    let closestNode: Konva.Node = nodes[0];
-    let closestDistance = Infinity;
-
-    nodes.forEach((node) => {
-      const nodePos = node.position();
-      const dx = nodePos.x - coords.x;
-      const dy = nodePos.y - coords.y;
-      const distance = Math.hypot(dx, dy);
-
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestNode = node;
+    if (this.moveEntityTarget === EntityType.Plot && this.homePlotId) {
+      targetNode = this.layer.getParent()?.findOne(`#${this.homePlotId}`);
+      if (!targetNode) {
+        this.homePlotId = null;
       }
-    });
+    }
 
-    return closestNode;
+    // If we don't have a home plot or we're moving towards the barn, find the closest target
+    if (!targetNode) {
+      const targets =
+        this.layer.getParent()?.find(`.${this.moveEntityTarget}`) || [];
+      targetNode = BehaviorUtils.findClosest(coords, targets);
+    }
+
+    const nextTarget =
+      this.moveEntityTarget === EntityType.Plot
+        ? EntityType.Barn
+        : EntityType.Plot;
+
+    if (!targetNode) {
+      this.moveBehavior.stop();
+      this.moveEntityTarget = nextTarget;
+
+      return;
+    }
+
+    this.moveBehavior.moveToTarget(targetNode, () => {
+      if (
+        this.moveEntityTarget === EntityType.Plot &&
+        this.homePlotId === null
+      ) {
+        this.homePlotId = targetNode.id();
+      }
+
+      this.moveEntityTarget = nextTarget;
+    });
   }
 
-  private setDirection(direction: "left" | "right") {
-    if (direction === "right") {
+  private setDirection(direction: Direction) {
+    if (direction === Direction.right) {
       this.image.scaleX(1);
       this.image.offsetX(0);
     } else {
@@ -148,6 +120,7 @@ class TractorImage extends Sprite {
   constructor(args: { x: number; y: number; tractor: Tractor }) {
     super({
       id: `tractor_${args.tractor.id}`,
+      name: EntityType.Tractor,
       x: args.x,
       y: args.y,
       imageSrc: "/sprites/tractor.png",

@@ -47,6 +47,7 @@ class BarnImage extends Sprite {
   constructor(args: { x: number; y: number; barn: Barn }) {
     super({
       id: `barn_${args.barn.id}`,
+      name: EntityType.Barn,
       x: args.x,
       y: args.y,
       imageSrc: "/imgs/barn.png",
