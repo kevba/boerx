@@ -2,17 +2,18 @@ import { Component, computed, inject } from "@angular/core";
 import { SelectionService } from "../services/selection.service";
 import { MainPanelComponent } from "./main-panel.component";
 import { PlotPanelComponent } from "./plot-panel.component";
+import { TractorPanelComponent } from "./tractor-panel.component";
 
 @Component({
   selector: "app-control-panel",
-  imports: [PlotPanelComponent, MainPanelComponent],
+  imports: [PlotPanelComponent, MainPanelComponent, TractorPanelComponent],
 
   template: `
     <div class="w-[20rem] flex flex-col h-full overflow-scroll bg-stone-500 ">
       <div class="relative w-full h-full flex-1 ">
         <app-main-panel
           class="absolute top-0 left-0 w-full h-full border-l-8 border-stone-600" />
-        @if (showPlotControl()) {
+        @if (showSelectedControl()) {
           <div
             class="absolute top-0 left-0 w-full h-full bg-stone-500 border-l-8 border-stone-600"
             animate.enter="slide-in-enter"
@@ -24,10 +25,14 @@ import { PlotPanelComponent } from "./plot-panel.component";
                 </button>
                 <span class="text-2xl">Upgrades</span>
               </div>
-              <app-plot-panel />
+              @if (showPlotControl()) {
+                <app-plot-panel />
+              } @else if (showMachineControl()) {
+                <app-tractor-panel />
+              }
             </div>
           </div>
-        } @else {}
+        }
       </div>
     </div>
   `,
@@ -60,7 +65,15 @@ import { PlotPanelComponent } from "./plot-panel.component";
 })
 export class ControlPanelComponent {
   selectionService = inject(SelectionService);
+
+  showSelectedControl = computed(
+    () => this.selectionService.selected().length > 0,
+  );
+
   showPlotControl = computed(
     () => this.selectionService.selectedPlots().length > 0,
+  );
+  showMachineControl = computed(
+    () => this.selectionService.selectedMachines().length > 0,
   );
 }

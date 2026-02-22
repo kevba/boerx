@@ -5,12 +5,16 @@ import {
   MachineService,
   TractorBrand,
 } from "../services/machine.service";
+import { EntityType, SelectionService } from "../services/selection.service";
+import { RenderUtils } from "./renderUtils";
 
 @Injectable({
   providedIn: "root",
 })
 export class MachineRenderService {
   private machinesService = inject(MachineService);
+  private selectionService = inject(SelectionService);
+
   layer = new Konva.Layer({
     imageSmoothingEnabled: false,
   });
@@ -18,8 +22,12 @@ export class MachineRenderService {
   constructor() {
     effect(() => {
       const machines = this.machinesService.machines();
+      const selectedMachines = this.selectionService.selectedMachines();
+
       machines.forEach((element, i) => {
-        this.renderMachine(element, i + 1);
+        const isSelected = selectedMachines.includes(element.id);
+
+        this.renderMachine(element, isSelected);
       });
     });
   }
@@ -28,13 +36,19 @@ export class MachineRenderService {
     stage.add(this.layer);
   }
 
-  private renderMachine(machine: Machine, i: number) {
+  private renderMachine(machine: Machine, selected: boolean) {
     const layer = this.layer;
     if (!layer) return;
 
     const drawnMachine = layer.findOne(`#${machine.id}`);
     if (drawnMachine && drawnMachine instanceof TractorImage) {
       drawnMachine.setColor(BrandColors[machine.brand]);
+      drawnMachine.setAttr("draggable", selected);
+      drawnMachine.setAttr(
+        "stroke",
+        selected ? RenderUtils.selectedColor : undefined,
+      );
+
       return;
     }
 
@@ -42,6 +56,11 @@ export class MachineRenderService {
       machine: machine,
       x: 10,
       y: 10,
+    });
+
+    machineBase.on("click", (e) => {
+      this.selectionService.setMulti(e.evt.shiftKey);
+      this.selectionService.select(EntityType.Machine, machine.id);
     });
 
     layer.add(machineBase);
@@ -72,7 +91,7 @@ class TractorImage extends Konva.Image {
       height: 32,
       // This image is a dummy
       image: imageObj,
-      draggable: true,
+      draggable: false,
       crop: { x: 0, y: 0, width: 16, height: 16 },
     });
 

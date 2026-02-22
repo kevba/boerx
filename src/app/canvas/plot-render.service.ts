@@ -4,6 +4,7 @@ import { Crop } from "../services/crop.service";
 import { Plot, PlotsService } from "../services/plots.service";
 import { EntityType, SelectionService } from "../services/selection.service";
 import { ColorMap, NoisyImageService } from "./noisy-image.service";
+import { RenderUtils } from "./renderUtils";
 
 @Injectable({
   providedIn: "root",
@@ -32,7 +33,7 @@ export class PlotRenderService {
   };
 
   private selectedStyle = {
-    stroke: "#c49949",
+    stroke: RenderUtils.selectedColor,
     strokeWidth: 4,
   };
 
@@ -48,7 +49,7 @@ export class PlotRenderService {
 
       plots.forEach((element, i) => {
         const isSelected = selectedPlots.includes(element.id);
-        this.renderPlot(element, isSelected, i + 1);
+        this.renderPlot(element, isSelected);
       });
     });
   }
@@ -57,11 +58,11 @@ export class PlotRenderService {
     stage.add(this.layer);
   }
 
-  private renderPlot(plot: Plot, selected: boolean, i: number) {
+  private renderPlot(plot: Plot, selected: boolean) {
     const layer = this.layer;
     if (!layer) return;
 
-    const coords = { x: i * 50, y: 20 };
+    const coords = { x: 50, y: 20 };
 
     const drawnPlot = layer.findOne(`#${plot.id}-base`);
     const drawnGroup = layer.findOne(`#${plot.id}`);
@@ -116,16 +117,12 @@ export class PlotRenderService {
 
     group.on("click", (e) => {
       this.selectionService.setMulti(e.evt.shiftKey);
-      this.handlePlotClick(plot.id);
+      this.selectionService.select(EntityType.Plot, plot.id);
     });
 
     group.add(plotBase);
     group.add(plotOverlay);
     layer.add(group);
-  }
-
-  private handlePlotClick(plotId: string) {
-    this.selectionService.select(EntityType.Plot, plotId);
   }
 
   private getPlotAttributes(plot: Plot, selected: boolean) {

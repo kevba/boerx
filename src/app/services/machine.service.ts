@@ -11,6 +11,8 @@ export class MachineService {
 
   machines = computed(() => this._machine());
   machineCost = computed(() => 10000);
+  machineUpgradeCost = computed(() => 10000);
+
   machineEarningsIncreasePerPlot = computed(() => 100);
 
   addMachine() {
@@ -23,6 +25,31 @@ export class MachineService {
     const plot: Machine = this.newMachine();
 
     this._machine.update((plots) => [...plots, plot]);
+  }
+
+  upgradeMachine(machineId: string, brand: TractorBrand) {
+    const cost = this.machineUpgradeCost();
+
+    const stash = this.stashService.stash();
+    if (stash < cost) {
+      return;
+    }
+    this.stashService.addStash(-cost);
+
+    this._machine.update((machines) => {
+      const machineIndex = machines.findIndex(
+        (machine) => machine.id === machineId,
+      );
+      if (machineIndex === -1) return machines;
+
+      //   Create a new object, otherwise the signal won't detect the change since the reference is the same
+      machines[machineIndex] = {
+        ...machines[machineIndex],
+        brand: brand,
+      };
+
+      return [...machines];
+    });
   }
 
   constructor() {
