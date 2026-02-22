@@ -115,6 +115,7 @@ export class PlotRenderService {
     );
 
     const group = new Konva.Group({
+      name: "plot",
       id: plot.id,
       x: coords.x,
       y: coords.y,

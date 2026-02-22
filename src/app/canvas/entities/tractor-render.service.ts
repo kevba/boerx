@@ -4,7 +4,6 @@ import { EntityType } from "../../models/entity";
 import { BuyService } from "../../services/buy.service";
 import {
   Tractor,
-  TractorBrand,
   TractorService,
 } from "../../services/entities/tractor.service";
 import { SelectionService } from "../../services/selection.service";
@@ -17,6 +16,8 @@ export class TractorRenderService {
   private tractorsService = inject(TractorService);
   private selectionService = inject(SelectionService);
   private buyService = inject(BuyService);
+
+  private entities: Record<string, TractorEntity> = {};
 
   layer = new Konva.Layer({
     imageSmoothingEnabled: false,
@@ -43,31 +44,126 @@ export class TractorRenderService {
     const layer = this.layer;
     if (!layer) return;
 
-    const drawnTractor = layer.findOne(`#${tractor.id}`);
-    if (drawnTractor && drawnTractor instanceof TractorImage) {
-      drawnTractor.setColor(BrandColors[tractor.brand]);
-      drawnTractor.setAttr("draggable", selected);
-      drawnTractor.setAttr(
-        "stroke",
-        selected ? RenderUtils.selectedColor : undefined,
-      );
+    let entity = this.entities[tractor.id];
+    if (!entity) {
+      const coords = this.buyService.getBuyLocation();
+      entity = new TractorEntity(tractor, coords, layer);
+      entity.onClick(() => {
+        this.selectionService.setMulti(false);
+        this.selectionService.select(EntityType.Tractor, tractor.id);
+      });
+      this.entities[tractor.id] = entity;
+    }
 
+    entity.update(tractor);
+    entity.setSelected(selected);
+  }
+}
+
+class TractorEntity {
+  private image: TractorImage;
+  private layer: Konva.Layer;
+
+  private moveInterval: any;
+
+  constructor(
+    tractor: Tractor,
+    initialCoords: { x: number; y: number },
+    layer: Konva.Layer,
+  ) {
+    this.layer = layer;
+    this.image = new TractorImage({
+      tractor: tractor,
+      x: initialCoords.x,
+      y: initialCoords.y,
+    });
+
+    this.update(tractor);
+    this.layer.add(this.image);
+
+    this.moveToPlot();
+  }
+
+  update(tractor: Tractor) {
+    this.image.setColor(RenderUtils.BrandColors[tractor.brand]);
+  }
+
+  setSelected(selected: boolean) {
+    this.image.setAttr("draggable", selected);
+    this.image.setAttr(
+      "stroke",
+      selected ? RenderUtils.selectedColor : undefined,
+    );
+  }
+
+  onClick(callback: () => void) {
+    this.image.on("click", callback);
+  }
+
+  destroy() {
+    this.image.destroy();
+  }
+
+  private moveToPlot() {
+    if (this.image.draggable()) {
+      this.moveInterval = setTimeout(() => {
+        this.moveToPlot();
+      }, 1000);
       return;
     }
-    const coords = this.buyService.getBuyLocation();
 
-    const tractorBase = new TractorImage({
-      tractor: tractor,
-      x: coords.x,
-      y: coords.y,
+    const plots = this.layer.getParent()?.find(`.plot`) || [];
+    const coords = this.image.getAbsolutePosition();
+    const closestPlot = this.findClosestPlot(coords, plots);
+
+    if (!closestPlot) return;
+    // Center to center diff
+    const xDiff =
+      coords.x -
+      closestPlot.x() -
+      RenderUtils.entitySize[EntityType.Plot][0] / 2 +
+      this.image.width() / 2;
+
+    const yDiff =
+      coords.y -
+      closestPlot.y() -
+      RenderUtils.entitySize[EntityType.Plot][1] / 2 +
+      this.image.height() / 2;
+
+    const xMovement = xDiff > 0 ? Math.max(-15, -xDiff) : Math.min(15, -xDiff);
+    const yMovement = yDiff > 0 ? Math.max(-15, -yDiff) : Math.min(15, -yDiff);
+
+    this.image.to({
+      x: coords.x + xMovement,
+      y: coords.y + yMovement,
+      duration: 0.5,
     });
 
-    tractorBase.on("click", (e) => {
-      this.selectionService.setMulti(e.evt.shiftKey);
-      this.selectionService.select(EntityType.Tractor, tractor.id);
+    this.moveInterval = setTimeout(() => {
+      this.moveToPlot();
+    }, 500);
+  }
+
+  private findClosestPlot(
+    coords: { x: number; y: number },
+    nodes: Konva.Node[],
+  ) {
+    let closestNode: Konva.Node = nodes[0];
+    let closestDistance = Infinity;
+
+    nodes.forEach((node) => {
+      const nodePos = node.getAbsolutePosition();
+      const dx = nodePos.x - coords.x;
+      const dy = nodePos.y - coords.y;
+      const distance = Math.hypot(dx, dy);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestNode = node;
+      }
     });
 
-    layer.add(tractorBase);
+    return closestNode;
   }
 }
 
@@ -78,16 +174,12 @@ class TractorImage extends Konva.Image {
   frameHeight = 16;
   frameSpeed = 1000;
 
+  private color = { r: 255, g: 0, b: 0 };
+
   private isAnimating = true;
   private sourceImage: HTMLImageElement | null = null;
 
   constructor(args: { x: number; y: number; tractor: Tractor }) {
-    const imageObj = new Image();
-    imageObj.src = "/sprites/tractor.png";
-    imageObj.onload = () => {
-      this.setColor(BrandColors[args.tractor.brand]);
-      this.animateSprite();
-    };
     const width = RenderUtils.entitySize[EntityType.Tractor][0];
     const height = RenderUtils.entitySize[EntityType.Tractor][1];
 
@@ -97,7 +189,7 @@ class TractorImage extends Konva.Image {
       width: width,
       height: height,
       // This image is a dummy
-      image: imageObj,
+      image: new Image(),
       draggable: false,
     });
 
@@ -107,7 +199,14 @@ class TractorImage extends Konva.Image {
       width: this.frameWidth,
       height: this.frameHeight,
     });
-    this.sourceImage = imageObj;
+
+    this.sourceImage = new Image();
+    this.sourceImage.src = "/sprites/tractor.png";
+    this.sourceImage.onload = () => {
+      const processedImage = preprocessImage(this.sourceImage!, this.color);
+      this.image(processedImage);
+      this.animateSprite();
+    };
   }
 
   animateSprite() {
@@ -120,9 +219,9 @@ class TractorImage extends Konva.Image {
   }
 
   setColor(color: { r: number; g: number; b: number }) {
-    const image = this.sourceImage;
-    if (image) {
-      const processedImage = preprocessImage(image, color);
+    this.color = color;
+    if (this.sourceImage?.complete) {
+      const processedImage = preprocessImage(this.sourceImage, color);
       this.image(processedImage);
     }
   }
@@ -160,11 +259,4 @@ const preprocessImage = function (
   ctx.putImageData(imageData, 0, 0);
 
   return canvas;
-};
-
-const BrandColors: Record<string, { r: number; g: number; b: number }> = {
-  [TractorBrand.DearJuan]: { r: 54, g: 185, b: 0 },
-  [TractorBrand.OldHillland]: { r: 0, g: 102, b: 204 },
-  [TractorBrand.Kerel]: { r: 200, g: 16, b: 46 },
-  [TractorBrand.Klaas]: { r: 255, g: 128, b: 0 },
 };
