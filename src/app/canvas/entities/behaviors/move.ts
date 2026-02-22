@@ -2,6 +2,7 @@ import Konva from "konva";
 
 export class MoveBehavior {
   private moving = false;
+  private moveTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private entity: Konva.Node,
@@ -9,11 +10,6 @@ export class MoveBehavior {
     private speed: number = 24,
     private directionCallback: (direction: Direction) => void = () => {},
   ) {}
-
-  moveTo(target: { x: number; y: number }, onReach?: () => void) {
-    this.moving = true;
-    this.movementLoop(target, 0, onReach);
-  }
 
   moveToTarget(target: Konva.Node, onReach?: () => void) {
     const targetPos = target.position();
@@ -25,11 +21,29 @@ export class MoveBehavior {
     const shortestSide = Math.min(target.width(), target.height());
 
     this.moving = true;
-    this.movementLoop({ x: centerX, y: centerY }, shortestSide / 3, onReach);
+    this.moveTo({ x: centerX, y: centerY }, onReach, shortestSide / 3);
+  }
+
+  moveTo(
+    target: { x: number; y: number },
+    onReach?: () => void,
+    radius: number = 0,
+  ) {
+    this.moving = true;
+    if (this.moveTimeout) {
+      clearTimeout(this.moveTimeout);
+      this.moveTimeout = null;
+    }
+
+    this.movementLoop(target, radius, onReach);
   }
 
   stop() {
     this.moving = false;
+    if (this.moveTimeout) {
+      clearTimeout(this.moveTimeout);
+      this.moveTimeout = null;
+    }
   }
 
   setSpeed(speed: number) {
@@ -80,7 +94,7 @@ export class MoveBehavior {
       duration: 1,
     });
 
-    setTimeout(() => this.movementLoop(destination), 1000);
+    this.moveTimeout = setTimeout(() => this.movementLoop(destination), 1000);
   }
 }
 

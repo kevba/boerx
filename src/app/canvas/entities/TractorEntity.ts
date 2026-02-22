@@ -44,7 +44,7 @@ export class TractorEntity {
     this.update(tractor);
     setInterval(() => {
       this.moveToTarget();
-    }, 1000);
+    }, 200);
   }
 
   update(tractor: Tractor) {
