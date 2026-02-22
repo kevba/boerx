@@ -113,7 +113,7 @@ class TractorEntity {
     }
 
     const plots = this.layer.getParent()?.find(`.plot`) || [];
-    const coords = this.image.getAbsolutePosition();
+    const coords = this.image.position();
     const closestPlot = this.findClosestPlot(coords, plots);
 
     if (!closestPlot) {
@@ -164,7 +164,7 @@ class TractorEntity {
     let closestDistance = Infinity;
 
     nodes.forEach((node) => {
-      const nodePos = node.getAbsolutePosition();
+      const nodePos = node.position();
       const dx = nodePos.x - coords.x;
       const dy = nodePos.y - coords.y;
       const distance = Math.hypot(dx, dy);
