@@ -9,11 +9,16 @@ import { StashService } from "../services/stash.service";
     <div
       class="h-[8rem] w-[8rem] border-2 border-zinc-300 bg-zinc-700 rounded-md select-none flex flex-col items-center transition-colors duration-200"
       [ngClass]="classes()"
-      (click)="buyClick.emit()">
-      <img [src]="image()" class="flex-1" />
+      (click)="onClick()">
+      <img [src]="image()" class="flex-1 pixelated" />
       <span class="text-sm">{{ text() }}</span>
       <span class="text-sm">{{ costText() }}</span>
     </div>
+  `,
+  styles: `
+    .pixelated {
+      image-rendering: pixelated;
+    }
   `,
   standalone: true,
 })
@@ -40,6 +45,12 @@ export class BuyTileComponent {
   active = input<boolean>(false);
 
   buyClick = output();
+
+  onClick() {
+    if (this.canBuy()) {
+      this.buyClick.emit();
+    }
+  }
 
   costText = computed(() => {
     return `${this.cost()}${this.stashService.stashUnit}`;

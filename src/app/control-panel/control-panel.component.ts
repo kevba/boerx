@@ -1,12 +1,18 @@
 import { Component, computed, inject } from "@angular/core";
 import { SelectionService } from "../services/selection.service";
+import { BarnPanelComponent } from "./entity-panel/barn-panel.component";
 import { PlotPanelComponent } from "./entity-panel/plot-panel.component";
 import { TractorPanelComponent } from "./entity-panel/tractor-panel.component";
 import { MainPanelComponent } from "./main-panel.component";
 
 @Component({
   selector: "app-control-panel",
-  imports: [PlotPanelComponent, MainPanelComponent, TractorPanelComponent],
+  imports: [
+    PlotPanelComponent,
+    MainPanelComponent,
+    TractorPanelComponent,
+    BarnPanelComponent,
+  ],
 
   template: `
     <div class="w-[20rem] flex flex-col h-full overflow-scroll bg-stone-500 ">
@@ -29,6 +35,8 @@ import { MainPanelComponent } from "./main-panel.component";
                 <app-plot-panel />
               } @else if (showTractorControl()) {
                 <app-tractor-panel />
+              } @else if (showBarnControl()) {
+                <app-barn-panel />
               }
             </div>
           </div>
@@ -73,7 +81,12 @@ export class ControlPanelComponent {
   showPlotControl = computed(
     () => this.selectionService.selectedPlots().length > 0,
   );
+
   showTractorControl = computed(
     () => this.selectionService.selectedTractors().length > 0,
+  );
+
+  showBarnControl = computed(
+    () => this.selectionService.selectedBarns().length > 0,
   );
 }

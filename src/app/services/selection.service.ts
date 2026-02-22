@@ -27,6 +27,11 @@ export class SelectionService {
       .map((e) => e.id);
   });
 
+  selectedBarns = computed(() => {
+    const selected = this.selectedEntities();
+    return selected.filter((e) => e.type === EntityType.Barn).map((e) => e.id);
+  });
+
   select(entityType: EntityType, id: string): void {
     this.selectedEntities.update((entities) => [
       ...(this.multiSelect() ? entities : []),
