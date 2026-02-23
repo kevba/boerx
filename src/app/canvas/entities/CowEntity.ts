@@ -3,10 +3,12 @@ import { EntityType } from "../../models/entity";
 import { Cow } from "../../services/entities/cow.service";
 import { RenderUtils } from "../utils/renderUtils";
 import { Sprite } from "./Sprite";
+import { Direction, MoveBehavior } from "./behaviors/move";
 
 export class CowEntity {
   private image: CowImage;
   private layer: Konva.Layer;
+  private moveBehavior: MoveBehavior;
 
   constructor(
     cow: Cow,
@@ -20,8 +22,16 @@ export class CowEntity {
       y: initialCoords.y,
     });
 
+    this.moveBehavior = new MoveBehavior(this.image, 12, (direction) =>
+      this.setDirection(direction),
+    );
+
     this.update(cow);
     this.layer.add(this.image);
+
+    setInterval(() => {
+      this.followCursor();
+    }, 200);
   }
 
   update(cow: Cow) {}
@@ -35,11 +45,31 @@ export class CowEntity {
   }
 
   onClick(callback: (e: Konva.KonvaEventObject<MouseEvent>) => void) {
-    this.image.on("click", e => callback(e));
+    this.image.on("click", (e) => callback(e));
   }
 
   destroy() {
     this.image.destroy();
+  }
+
+  private followCursor() {
+    const stage = this.image.getStage();
+    if (!stage) return;
+
+    const mousePos = stage.getRelativePointerPosition();
+    if (!mousePos) return;
+
+    this.moveBehavior.moveTo(mousePos, () => {}, 10);
+  }
+
+  private setDirection(direction: Direction) {
+    if (direction === Direction.right) {
+      this.image.scaleX(1);
+      this.image.offsetX(0);
+    } else {
+      this.image.scaleX(-1);
+      this.image.offsetX(this.image.width());
+    }
   }
 }
 

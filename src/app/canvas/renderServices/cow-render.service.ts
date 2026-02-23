@@ -27,7 +27,6 @@ export class CowRenderService {
     effect(() => {
       const cows = this.cowsService.entities();
       const selectedCows = this.selectionService.selectedPerType()[EntityType.Cow];
-      console.log("Rendering cows", cows, selectedCows);
       cows.forEach((element, i) => {
         const isSelected = selectedCows.includes(element.id);
         this.renderCow(element, isSelected);
