@@ -1,29 +1,25 @@
-import { computed, inject, Injectable, signal } from "@angular/core";
+import { computed, inject, Injectable } from "@angular/core";
+import { EntityType } from "../../models/entity";
 import { NutrientsService } from "../nutrients.service";
-import { StashService } from "../stash.service";
+import { BaseService } from "./base.service";
 import { Crop, CropService } from "./crop.service";
-import { Upgrader } from "./upgradeUtils";
 
 @Injectable({
   providedIn: "root",
 })
-export class PlotsService {
-  private stashService = inject(StashService);
+export class PlotsService extends BaseService<PlotUpgrade, Plot> {
+  override entityType = EntityType.Plot;
   private cropService = inject(CropService);
   private nutrientsService = inject(NutrientsService);
 
-  private _plots = signal<Plot[]>([]);
-  plots = this._plots.asReadonly();
-
-  private baseCost = 4000;
-  plotCost = computed(() => this.baseCost + (this.plots().length * 10) ** 2);
+  protected baseCost = 4000;
 
   hasMoistureUpgrade = computed(() =>
-    this.plots().some((plot) => ![PlotUpgrade.Basic].includes(plot.upgrade)),
+    this.entities().some((plot) => ![PlotUpgrade.Basic].includes(plot.upgrade)),
   );
 
   hasSoilUpgrade = computed(() =>
-    this.plots().some(
+    this.entities().some(
       (plot) =>
         ![PlotUpgrade.Basic, PlotUpgrade.Moisture].includes(plot.upgrade),
     ),
@@ -46,51 +42,10 @@ export class PlotsService {
       earningsIncreasePerPlot: 1000,
     },
   };
-  private upgrader = new Upgrader<PlotUpgrade>(this.upgrades);
 
-  addPlot() {
-    const cost = this.plotCost();
-    const stash = this.stashService.stash();
-    if (stash < cost) {
-      return;
-    }
-    this.stashService.addStash(-cost);
-    const plot: Plot = this.newPlot();
-
-    this._plots.update((plots) => [...plots, plot]);
-  }
-
-  upgradePlot(plotId: string, toUpgrade: PlotUpgrade) {
-    const plot = this._plots().find((plot) => plot.id === plotId);
-    if (!plot) return;
-
-    const upgradeCost = this.upgradeCost(plotId, toUpgrade);
-
-    const stash = this.stashService.stash();
-    if (stash < upgradeCost) {
-      return;
-    }
-    this.stashService.addStash(-upgradeCost);
-
-    this._plots.update((plots) => {
-      const index = plots.findIndex((plot) => plot.id === plotId);
-      if (index === -1) return plots;
-
-      //   Create a new object, otherwise the signal won't detect the change since the reference is the same
-      plots[index] = {
-        ...plots[index],
-        upgrade: toUpgrade,
-      };
-
-      return [...plots];
-    });
-  }
-
-  upgradeCost(plotId: string, toUpgrade: PlotUpgrade): number {
-    const plot = this._plots().find((plot) => plot.id === plotId);
-    if (!plot) return 0;
-
-    return this.upgrader.fromToCost(plot.upgrade, toUpgrade);
+  constructor() {
+    super();
+    this.init();
   }
 
   plantOnPlot(plotId: string, crop: Crop) {
@@ -102,7 +57,7 @@ export class PlotsService {
     }
     this.stashService.addStash(-cost);
 
-    this._plots.update((plots) => {
+    this._entity.update((plots) => {
       const plotIndex = plots.findIndex((plot) => plot.id === plotId);
       if (plotIndex === -1) return plots;
 
@@ -133,9 +88,7 @@ export class PlotsService {
     return earnings * mult.water * mult.nutrients;
   }
 
-  constructor() {}
-
-  private newPlot(): Plot {
+  createNew(): Plot {
     return {
       id: crypto.randomUUID(),
       crop: Crop.Grass,

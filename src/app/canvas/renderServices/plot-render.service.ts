@@ -45,7 +45,7 @@ export class PlotRenderService {
 
   constructor() {
     effect(() => {
-      const plots = this.plotsService.plots();
+      const plots = this.plotsService.entities();
       const selectedPlots = this.selectionService.selectedPlots();
 
       plots.forEach((element, i) => {

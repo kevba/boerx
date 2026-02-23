@@ -10,13 +10,14 @@ export abstract class BaseService<UpgradeType extends string, Entity extends { i
   
   protected stashService = inject(StashService);
   protected _entity = signal<Entity[]>([]);
-  protected baseCost = 4000;
+  protected abstract baseCost: number;
   
   entities = this._entity.asReadonly();
   cost = computed(() => this.baseCost + (this.entities().length * 10) ** 2);
   abstract entityType: EntityType
   
-  protected upgrader: Upgrader<UpgradeType>
+  abstract upgrades: UpgradeTable<UpgradeType>;
+  protected upgrader!: Upgrader<UpgradeType>
 
   add() {
     const cost = this.cost();
@@ -30,10 +31,11 @@ export abstract class BaseService<UpgradeType extends string, Entity extends { i
     this._entity.update((entities) => [...entities, base]);
   }
 
-  constructor() {
-    this.upgrader = new Upgrader<UpgradeType>(this.getUpgrades());
-  }
+  constructor() {}
 
+  protected init() {
+    this.upgrader = new Upgrader<UpgradeType>(this.upgrades);
+  }
 
   upgrade(baseId: string, toUpgrade: UpgradeType) {
     const base = this._entity().find((base) => base.id === baseId);
@@ -67,7 +69,6 @@ export abstract class BaseService<UpgradeType extends string, Entity extends { i
     return this.upgrader.fromToCost(base.upgrade, toUpgrade);
   }
 
-  abstract getUpgrades(): UpgradeTable<UpgradeType>;
   abstract createNew(): Entity;
 
 }

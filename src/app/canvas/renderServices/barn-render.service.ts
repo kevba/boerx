@@ -22,7 +22,7 @@ export class BarnRenderService {
 
   constructor() {
     effect(() => {
-      const barns = this.barnService.barns();
+      const barns = this.barnService.entities();
       const selectedBarns = this.selectionService.selectedBarns();
 
       barns.forEach((element, i) => {

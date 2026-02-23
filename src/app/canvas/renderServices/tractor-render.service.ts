@@ -25,7 +25,7 @@ export class TractorRenderService {
 
   constructor() {
     effect(() => {
-      const tractors = this.tractorsService.tractors();
+      const tractors = this.tractorsService.entities();
       const selectedTractors = this.selectionService.selectedTractors();
 
       tractors.forEach((element, i) => {

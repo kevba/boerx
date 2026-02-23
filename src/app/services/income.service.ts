@@ -28,7 +28,7 @@ export class IncomeService {
 
   private updateOnTick() {
     const _ = this.tickService.tick();
-    const plots = this.plotService.plots();
+    const plots = this.plotService.entities();
 
     // harvest count update must happen first, and also in a separate effect to prevent haniging reactive updates
     plots.forEach((plot) => {
@@ -37,9 +37,9 @@ export class IncomeService {
   }
 
   private updateEarnings() {
-    const plots = this.plotService.plots();
-    const tractors = this.tractorService.tractors();
-    const barns = this.barnService.barns();
+    const plots = this.plotService.entities();
+    const tractors = this.tractorService.entities();
+    const barns = this.barnService.entities();
 
     let income = 10;
     plots.forEach((plot) => {
@@ -48,7 +48,7 @@ export class IncomeService {
 
     tractors.forEach((tractor) => {
       income +=
-        this.tractorService.getUpgrades()[tractor.upgrade].earningsIncreasePerPlot *
+        this.tractorService.upgrades[tractor.upgrade].earningsIncreasePerPlot *
         plots.length;
     });
 

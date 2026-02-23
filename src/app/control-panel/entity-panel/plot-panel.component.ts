@@ -1,60 +1,50 @@
 import { Component, computed, inject } from "@angular/core";
+import { EntityType } from "../../models/entity";
+import { BaseService } from "../../services/entities/base.service";
 import { Crop, CropService } from "../../services/entities/crop.service";
-import {
-  PlotsService,
-  PlotUpgrade,
-} from "../../services/entities/plots.service";
+import { PlotsService } from "../../services/entities/plots.service";
 import { SelectionService } from "../../services/selection.service";
-import { StashService } from "../../services/stash.service";
 import { BuyTileComponent } from "../buy-tile.component";
+import { EntityUpgradesComponent } from "./entity-upgrades.component";
 
 @Component({
   selector: "app-plot-panel",
   template: `
     <div
-      class="flex flex-col gap-2 p-4 w-full h-full items-center overflow-scroll ">
-      <div class="w-full"><h2 class="text-lg font-bold ">Plant Crop</h2></div>
-      <div>
-        <div class="flex flex-row flex-wrap gap-4">
-          @for (option of cropOptions(); track option.crop) {
-            <app-buy-tile
-              image=""
-              [text]="option.crop"
-              [cost]="option.plantConst"
-              [disabled]="option.disabled"
-              (buyClick)="plantCrop(option.crop)"></app-buy-tile>
-          }
+      class="flex flex-col gap-2 w-full h-full items-center overflow-scroll ">
+      <div class="p-4 ">
+        <div class="w-full"><h2 class="text-lg font-bold ">Plant Crop</h2></div>
+        <div>
+          <div class="flex flex-row flex-wrap gap-4">
+            @for (option of cropOptions(); track option.crop) {
+              <app-buy-tile
+                image=""
+                [text]="option.crop"
+                [cost]="option.plantConst"
+                [disabled]="option.disabled"
+                (buyClick)="plantCrop(option.crop)"></app-buy-tile>
+            }
+          </div>
         </div>
       </div>
-      <div class="w-full"><h2 class="text-lg font-bold ">Upgrades</h2></div>
-      <div>
-        <div class="flex flex-row flex-wrap gap-4">
-          @for (option of upgradeOptions(); track option.upgrade) {
-            <app-buy-tile
-              image=""
-              [text]="option.upgrade"
-              [cost]="option.upgradeCost"
-              [disabled]="option.disabled"
-              (buyClick)="upgradePlot(option.upgrade)"></app-buy-tile>
-          }
-        </div>
-      </div>
+      <app-entity-upgrades />
     </div>
   `,
-  imports: [BuyTileComponent],
+  providers: [{ provide: BaseService, useExisting: PlotsService }],
+  imports: [BuyTileComponent, EntityUpgradesComponent],
 })
 export class PlotPanelComponent {
   plotService = inject(PlotsService);
   selectionService = inject(SelectionService);
   cropService = inject(CropService);
-  stashService = inject(StashService);
 
   crops = Object.values(Crop);
 
   plots = computed(() => {
-    const selectedPlotIds = this.selectionService.selectedPlots();
+    const selectedPlotIds =
+      this.selectionService.selectedPerType()[EntityType.Plot];
     return this.plotService
-      .plots()
+      .entities()
       .filter((p) => selectedPlotIds.includes(p.id));
   });
 
@@ -72,26 +62,6 @@ export class PlotPanelComponent {
     });
   });
 
-  upgradeOptions = computed(() => {
-    const plots = this.plots();
-    const upgrades = Object.keys(this.plotService.upgrades) as PlotUpgrade[];
-
-    return upgrades.map((plotUpgrade) => {
-      const upgradable = plots.filter((p) => p?.upgrade !== plotUpgrade).length;
-      let upgradeCost = 0;
-      for (const tractor of plots) {
-        const cost = this.plotService.upgradeCost(tractor.id, plotUpgrade);
-        upgradeCost += cost;
-      }
-
-      return {
-        upgrade: plotUpgrade,
-        disabled: upgradable === 0,
-        upgradeCost: upgradeCost,
-      };
-    });
-  });
-
   plantCrop(crop: Crop) {
     const plots = this.plots();
 
@@ -101,14 +71,6 @@ export class PlotPanelComponent {
       } else {
         this.plotService.plantOnPlot(plot.id, crop);
       }
-    }
-  }
-
-  upgradePlot(upgrade: PlotUpgrade) {
-    const plots = this.plots();
-
-    for (const plot of plots) {
-      this.plotService.upgradePlot(plot.id, upgrade);
     }
   }
 }

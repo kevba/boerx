@@ -41,7 +41,7 @@ export class EntityUpgradesComponent {
   options = computed(() => {
     const entities = this.selectedEntities();
     const upgrades = Object.keys(
-      this.entityService.getUpgrades(),
+      this.entityService.upgrades,
     )
 
     return upgrades.map((upgrade) => {

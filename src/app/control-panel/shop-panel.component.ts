@@ -16,19 +16,19 @@ import { BuyTileComponent } from "./buy-tile.component";
         image=""
         text="Plot"
         [active]="activeBuyingEntity() === EntityType.Plot"
-        [cost]="plotService.plotCost()"
+        [cost]="plotService.cost()"
         (buyClick)="onBuy(EntityType.Plot)"></app-buy-tile>
       <app-buy-tile
         image="/imgs/barn.png"
         text="Barn"
         [active]="activeBuyingEntity() === EntityType.Barn"
-        [cost]="barnService.barnCost()"
+        [cost]="barnService.cost()"
         (buyClick)="onBuy(EntityType.Barn)"></app-buy-tile>
       <app-buy-tile
         image="/imgs/tractor.png"
         text="Tractor"
         [active]="activeBuyingEntity() === EntityType.Tractor"
-        [cost]="tractorService.tractorCost()"
+        [cost]="tractorService.cost()"
         (buyClick)="onBuy(EntityType.Tractor)"></app-buy-tile>
     </div>
   `,
@@ -44,19 +44,19 @@ export class ShopPanelComponent {
   activeBuyingEntity = computed(() => this.buyService.buyingEntity());
 
   canBuyPlot = computed(() => {
-    const cost = this.plotService.plotCost();
+    const cost = this.plotService.cost();
     const stash = this.stashService.stash();
     return stash >= cost;
   });
 
   canBuyTractor = computed(() => {
-    const cost = this.tractorService.tractorCost();
+    const cost = this.tractorService.cost();
     const stash = this.stashService.stash();
     return stash >= cost;
   });
 
   canBuyBarn = computed(() => {
-    const cost = this.barnService.barnCost();
+    const cost = this.barnService.cost();
     const stash = this.stashService.stash();
     return stash >= cost;
   });
@@ -64,11 +64,11 @@ export class ShopPanelComponent {
   onBuy(entity: EntityType) {
     this.buyService.setBuying(entity, () => {
       if (entity === EntityType.Plot) {
-        this.plotService.addPlot();
+        this.plotService.add();
       } else if (entity === EntityType.Tractor) {
-        this.tractorService.addTractor();
+        this.tractorService.add();
       } else if (entity === EntityType.Barn) {
-        this.barnService.addBarn();
+        this.barnService.add();
       }
     });
   }
