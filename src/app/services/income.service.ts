@@ -48,7 +48,7 @@ export class IncomeService {
 
     tractors.forEach((tractor) => {
       income +=
-        this.tractorService.upgrades[tractor.upgrade].earningsIncreasePerPlot *
+        this.tractorService.getUpgrades()[tractor.upgrade].earningsIncreasePerPlot *
         plots.length;
     });
 

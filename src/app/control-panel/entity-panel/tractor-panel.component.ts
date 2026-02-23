@@ -1,33 +1,19 @@
 import { Component, computed, inject } from "@angular/core";
+import { BaseService } from "../../services/entities/base.service";
 import {
   TractorBrand,
   TractorService,
 } from "../../services/entities/tractor.service";
 import { SelectionService } from "../../services/selection.service";
-import { BuyTileComponent } from "../buy-tile.component";
+import { EntityUpgradesComponent } from "./entity-upgrades.component";
 
 @Component({
   selector: "app-tractor-panel",
   template: `
-    <div class="flex flex-col gap-2 p-4 w-full h-full items-center">
-      <div class="w-full">
-        <h2 class="text-lg font-bold ">Upgrade Tractor</h2>
-      </div>
-      <div>
-        <div class="flex flex-row flex-wrap gap-4 justify-center">
-          @for (option of options(); track option.brand) {
-            <app-buy-tile
-              image=""
-              [text]="option.brand"
-              [cost]="option.upgradeCost"
-              [disabled]="option.disabled"
-              (buyClick)="upgradeTractor(option.brand)"></app-buy-tile>
-          }
-        </div>
-      </div>
-    </div>
+      <app-entity-upgrades />
   `,
-  imports: [BuyTileComponent],
+  imports: [EntityUpgradesComponent],
+  providers: [{ provide: BaseService, useExisting: TractorService }]
 })
 export class TractorPanelComponent {
   tractorService = inject(TractorService);
@@ -36,21 +22,21 @@ export class TractorPanelComponent {
   tractors = computed(() => {
     const selectedTractorIds = this.selectionService.selectedTractors();
     return this.tractorService
-      .tractors()
+      .entities()
       .filter((p) => selectedTractorIds.includes(p.id));
   });
 
   options = computed(() => {
     const tractors = this.tractors();
     const upgrades = Object.keys(
-      this.tractorService.upgrades,
+      this.tractorService.getUpgrades(),
     ) as TractorBrand[];
 
     return upgrades.map((brand) => {
       const upgradable = tractors.filter((p) => p?.upgrade !== brand).length;
       let upgradeCost = 0;
       for (const tractor of tractors) {
-        const cost = this.tractorService.upgradeCostForSize(tractor.id, brand);
+        const cost = this.tractorService.upgradeCost(tractor.id, brand);
         upgradeCost += cost;
       }
 
@@ -66,7 +52,7 @@ export class TractorPanelComponent {
     const tractors = this.tractors();
 
     for (const tractor of tractors) {
-      this.tractorService.upgradeTractor(tractor.id, brand);
+      this.tractorService.upgrade(tractor.id, brand);
     }
   }
 }

@@ -32,6 +32,17 @@ export class SelectionService {
     return selected.filter((e) => e.type === EntityType.Barn).map((e) => e.id);
   });
 
+  selectedPerType = computed(() => {
+    const selected = this.selectedEntities();
+    const types = Object.values(EntityType).reduce((acc, type) => {
+      acc[type] = selected.filter((e) => e.type === type).map((e) => e.id);
+      return acc;
+    }, {} as Record<EntityType, string[]>);
+
+
+    return types;
+  })
+
   select(entityType: EntityType, id: string): void {
     this.selectedEntities.update((entities) => {
       const ofType = entities.filter((e) => e.type === entityType);
