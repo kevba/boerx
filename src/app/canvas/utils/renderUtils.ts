@@ -8,6 +8,7 @@ export class RenderUtils {
     [EntityType.Plot]: [128, 128],
     [EntityType.Barn]: [192, 192],
     [EntityType.Tractor]: [48, 48],
+    [EntityType.Cow]: [32, 32],
   };
 
   static BrandColors: Record<string, { r: number; g: number; b: number }> = {

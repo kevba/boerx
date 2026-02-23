@@ -1,30 +1,30 @@
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
-import { Barn } from "../../services/entities/barn.service";
+import { Cow } from "../../services/entities/cow.service";
 import { RenderUtils } from "../utils/renderUtils";
 import { Sprite } from "./Sprite";
 
-export class BarnEntity {
-  private image: BarnImage;
+export class CowEntity {
+  private image: CowImage;
   private layer: Konva.Layer;
 
   constructor(
-    barn: Barn,
+    cow: Cow,
     initialCoords: { x: number; y: number },
     layer: Konva.Layer,
   ) {
     this.layer = layer;
-    this.image = new BarnImage({
-      barn: barn,
+    this.image = new CowImage({
+      cow: cow,
       x: initialCoords.x,
       y: initialCoords.y,
     });
 
-    this.update(barn);
+    this.update(cow);
     this.layer.add(this.image);
   }
 
-  update(barn: Barn) {}
+  update(cow: Cow) {}
 
   setSelected(selected: boolean) {
     this.image.setAttr("draggable", selected);
@@ -43,18 +43,18 @@ export class BarnEntity {
   }
 }
 
-class BarnImage extends Sprite {
-  constructor(args: { x: number; y: number; barn: Barn }) {
+class CowImage extends Sprite {
+  constructor(args: { x: number; y: number; cow: Cow }) {
     super({
-      id: `barn_${args.barn.id}`,
-      name: EntityType.Barn,
+      id: `cow_${args.cow.id}`,
+      name: EntityType.Cow,
       x: args.x,
       y: args.y,
-      imageSrc: "/imgs/barn.png",
-      EntityType: EntityType.Barn,
+      imageSrc: "/sprites/cow.png",
+      EntityType: EntityType.Cow,
       totalFrames: 1,
-      frameWidth: 32,
-      frameHeight: 32,
+      frameWidth: 16,
+      frameHeight: 16,
     });
   }
 }

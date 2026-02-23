@@ -2,19 +2,22 @@ import { effect, inject, Injectable } from "@angular/core";
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
 import { BuyService } from "../../services/buy.service";
-import { Barn, BarnService } from "../../services/entities/barn.service";
+import {
+  Cow,
+  CowService,
+} from "../../services/entities/cow.service";
 import { SelectionService } from "../../services/selection.service";
-import { BarnEntity } from "../entities/BarnEntity";
+import { CowEntity } from "../entities/CowEntity";
 
 @Injectable({
   providedIn: "root",
 })
-export class BarnRenderService {
-  private barnService = inject(BarnService);
+export class CowRenderService {
+  private cowsService = inject(CowService);
   private selectionService = inject(SelectionService);
   private buyService = inject(BuyService);
 
-  private entities: Record<string, BarnEntity> = {};
+  private entities: Record<string, CowEntity> = {};
 
   layer = new Konva.Layer({
     imageSmoothingEnabled: false,
@@ -22,13 +25,12 @@ export class BarnRenderService {
 
   constructor() {
     effect(() => {
-      const barns = this.barnService.entities();
-      const selectedBarns = this.selectionService.selectedBarns();
-
-      barns.forEach((element, i) => {
-        const isSelected = selectedBarns.includes(element.id);
-
-        this.renderBarn(element, isSelected);
+      const cows = this.cowsService.entities();
+      const selectedCows = this.selectionService.selectedPerType()[EntityType.Cow];
+      console.log("Rendering cows", cows, selectedCows);
+      cows.forEach((element, i) => {
+        const isSelected = selectedCows.includes(element.id);
+        this.renderCow(element, isSelected);
       });
     });
   }
@@ -37,22 +39,22 @@ export class BarnRenderService {
     stage.add(this.layer);
   }
 
-  private renderBarn(barn: Barn, selected: boolean) {
+  private renderCow(cow: Cow, selected: boolean) {
     const layer = this.layer;
     if (!layer) return;
 
-    let entity = this.entities[barn.id];
+    let entity = this.entities[cow.id];
     if (!entity) {
       const coords = this.buyService.getBuyLocation();
-      entity = new BarnEntity(barn, { x: coords.x, y: coords.y }, layer);
+      entity = new CowEntity(cow, coords, layer);
       entity.onClick((e) => {
         this.selectionService.setMulti(e.evt.shiftKey);
-        this.selectionService.select(EntityType.Barn, barn.id);
+        this.selectionService.select(EntityType.Cow, cow.id);
       });
-      this.entities[barn.id] = entity;
+      this.entities[cow.id] = entity;
     }
 
-    entity.update(barn);
+    entity.update(cow);
     entity.setSelected(selected);
   }
 }

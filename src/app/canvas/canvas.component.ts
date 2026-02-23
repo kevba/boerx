@@ -10,6 +10,7 @@ import Konva from "konva";
 import { SelectionService } from "../services/selection.service";
 import { BuyRenderService } from "./buy-render.service";
 import { BarnRenderService } from "./renderServices/barn-render.service";
+import { CowRenderService } from "./renderServices/cow-render.service";
 import { PlotRenderService } from "./renderServices/plot-render.service";
 import { TractorRenderService } from "./renderServices/tractor-render.service";
 import { SurfaceService } from "./surface.service";
@@ -19,7 +20,7 @@ import { SurfaceService } from "./surface.service";
   template: ` <div
     id="canvas-container"
     #canvas
-    class="w-full h-full min-w-[0px] min-h-[0px]"></div>`,
+    class="w-full h-full min-w-0 min-h-0"></div>`,
 })
 export class CanvasComponent {
   private size = 2500;
@@ -27,7 +28,8 @@ export class CanvasComponent {
   private plotRenderService = inject(PlotRenderService);
   private tractorRenderService = inject(TractorRenderService);
   private barnRenderService = inject(BarnRenderService);
-
+  private cowRenderService = inject(CowRenderService);
+  
   private buyRenderService = inject(BuyRenderService);
   private selectionService = inject(SelectionService);
   private surfaceService = inject(SurfaceService);
@@ -73,6 +75,7 @@ export class CanvasComponent {
       stage.add(this.backgroundLayer);
       this.plotRenderService.setStage(stage);
       this.barnRenderService.setStage(stage);
+      this.cowRenderService.setStage(stage);
       this.tractorRenderService.setStage(stage);
 
       this.buyRenderService.setStage(stage);
