@@ -121,10 +121,15 @@ class PlotRender extends Konva.Group {
     if (!overlay) return this;
 
     const overlayConfig: Konva.ContainerConfig = {};
-    if ("fill" in config) overlayConfig["fill"] = config["fill"];
-    if ("stroke" in config) overlayConfig["stroke"] = config["stroke"];
-    if ("strokeWidth" in config)
+    if ("fill" in config) {
+      overlayConfig["fill"] = config["fill"];
+    }
+    if ("stroke" in config) {
+      overlayConfig["stroke"] = config["stroke"];
+    }
+    if ("strokeWidth" in config) {
       overlayConfig["strokeWidth"] = config["strokeWidth"];
+    }
 
     if (Object.keys(overlayConfig).length > 0) {
       overlay.setAttrs(overlayConfig);
