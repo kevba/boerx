@@ -1,5 +1,7 @@
 import { computed, inject, Injectable } from "@angular/core";
+import { PlotEntity, PlotUpgrade } from "../../canvas/entities/PlotEntity";
 import { EntityType } from "../../models/entity";
+import { BuyService } from "../buy.service";
 import { NutrientsService } from "../nutrients.service";
 import { BaseService } from "./base.service";
 import { Crop, CropService } from "./crop.service";
@@ -7,10 +9,12 @@ import { Crop, CropService } from "./crop.service";
 @Injectable({
   providedIn: "root",
 })
-export class PlotsService extends BaseService<PlotUpgrade, Plot> {
+export class PlotsService extends BaseService<PlotUpgrade, PlotEntity> {
   override entityType = EntityType.Plot;
   private cropService = inject(CropService);
   private nutrientsService = inject(NutrientsService);
+
+  private buyService = inject(BuyService);
 
   protected baseCost = 4000;
 
@@ -62,16 +66,13 @@ export class PlotsService extends BaseService<PlotUpgrade, Plot> {
       if (plotIndex === -1) return plots;
 
       //   Create a new object, otherwise the signal won't detect the change since the reference is the same
-      plots[plotIndex] = {
-        ...plots[plotIndex],
-        crop: crop,
-      };
+      plots[plotIndex].crop = crop;
 
       return [...plots];
     });
   }
 
-  harvest(plot: Plot) {
+  harvest(plot: PlotEntity) {
     const depletion = this.nutrientsService.cropBaseDepletion()[plot.crop];
 
     // TODO: support upgrades that reduce depletion
@@ -81,30 +82,15 @@ export class PlotsService extends BaseService<PlotUpgrade, Plot> {
     this.cropService.updateHarvestCounter(plot.crop);
   }
 
-  harvestEarnings(plot: Plot): number {
+  harvestEarnings(plot: PlotEntity): number {
     const earnings = this.cropService.earnings()[plot.crop];
     const mult = this.nutrientsService.cropValueMult()[plot.crop];
 
     return earnings * mult.water * mult.nutrients;
   }
 
-  createNew(): Plot {
-    return {
-      id: crypto.randomUUID(),
-      crop: Crop.Grass,
-      upgrade: PlotUpgrade.Basic,
-    };
+  createNew(): PlotEntity {
+    const coords = this.buyService.getBuyLocation();
+    return new PlotEntity(coords, this.layer);
   }
-}
-
-export type Plot = {
-  id: string;
-  crop: Crop;
-  upgrade: PlotUpgrade;
-};
-
-export enum PlotUpgrade {
-  Basic = "basic",
-  Moisture = "moisture",
-  Soil = "soil",
 }

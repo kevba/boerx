@@ -1,21 +1,16 @@
-import { Injectable } from "@angular/core";
-
-@Injectable({
-  providedIn: "root",
-})
 export class NoisyImageService {
-  grayScaleColorMap: ColorMap = {
+  static grayScaleColorMap: ColorMap = {
     "-0.5": "#0000000f",
     "-0.2": "#7F7F7F0f",
     "0": "#7F7F7F0f",
     "0.2": "#FFFFFF0f",
   };
 
-  getNoiseImage(
+  static getNoiseImage(
     size: number,
     scale = 10,
     resolution = 0.04,
-    colorMap: ColorMap = this.grayScaleColorMap,
+    colorMap: ColorMap = NoisyImageService.grayScaleColorMap,
   ): string {
     if (size % scale !== 0) {
       throw new Error("Size must be a multiple of scale");
@@ -40,7 +35,7 @@ export class NoisyImageService {
     return this.pixelsToImage(pixels, size);
   }
 
-  pixelsToImage(pixels: string[][], size: number) {
+  static pixelsToImage(pixels: string[][], size: number) {
     var canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;

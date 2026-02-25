@@ -10,7 +10,6 @@ import Konva from "konva";
 import { CanvasStageService } from "../services/canvas-stage.service";
 import { SelectionService } from "../services/selection.service";
 import { BuyRenderService } from "./buy-render.service";
-import { PlotRenderService } from "./renderServices/plot-render.service";
 import { SurfaceService } from "./surface.service";
 
 @Component({
@@ -22,8 +21,6 @@ import { SurfaceService } from "./surface.service";
 })
 export class CanvasComponent {
   private size = 2500;
-
-  private plotRenderService = inject(PlotRenderService);
 
   private buyRenderService = inject(BuyRenderService);
   private selectionService = inject(SelectionService);
@@ -71,8 +68,6 @@ export class CanvasComponent {
 
       stage.add(this.backgroundLayer);
       this.canvasStageService.stage.set(stage);
-
-      this.plotRenderService.setStage(stage);
 
       this.buyRenderService.setStage(stage);
 
