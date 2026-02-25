@@ -1,31 +1,38 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
+import {
+  TractorEntity,
+  TractorUpgrade,
+} from "../../canvas/entities/TractorEntity";
 import { EntityType } from "../../models/entity";
+import { BuyService } from "../buy.service";
 import { BaseService } from "./base.service";
 
 @Injectable({
   providedIn: "root",
 })
-export class TractorService extends BaseService<TractorBrand, Tractor> {
+export class TractorService extends BaseService<TractorUpgrade, TractorEntity> {
   override baseCost = 100000;
   override entityType = EntityType.Tractor;
 
+  private buyService = inject(BuyService);
+
   upgrades = {
-    [TractorBrand.DearJuan]: {
-      next: TractorBrand.OldHillland,
+    [TractorUpgrade.DearJuan]: {
+      next: TractorUpgrade.OldHillland,
       upgradeCost: this.baseCost * 2,
       earningsIncreasePerPlot: 1000,
     },
-    [TractorBrand.OldHillland]: {
-      next: TractorBrand.Kerel,
+    [TractorUpgrade.OldHillland]: {
+      next: TractorUpgrade.Kerel,
       upgradeCost: this.baseCost * 3,
       earningsIncreasePerPlot: 2000,
     },
-    [TractorBrand.Kerel]: {
-      next: TractorBrand.Klaas,
+    [TractorUpgrade.Kerel]: {
+      next: TractorUpgrade.Klaas,
       upgradeCost: this.baseCost * 4,
       earningsIncreasePerPlot: 3000,
     },
-    [TractorBrand.Klaas]: {
+    [TractorUpgrade.Klaas]: {
       next: null,
       upgradeCost: this.baseCost * 5,
       earningsIncreasePerPlot: 4000,
@@ -37,22 +44,8 @@ export class TractorService extends BaseService<TractorBrand, Tractor> {
     this.init();
   }
 
-  createNew(): Tractor {
-    return {
-      id: crypto.randomUUID(),
-      upgrade: TractorBrand.DearJuan,
-    };
+  createNew(): TractorEntity {
+    const coords = this.buyService.getBuyLocation();
+    return new TractorEntity(coords, this.layer);
   }
-}
-
-export type Tractor = {
-  id: string;
-  upgrade: TractorBrand;
-};
-
-export enum TractorBrand {
-  DearJuan = "Dear Juan",
-  OldHillland = "Old Hillland",
-  Kerel = "Kerel",
-  Klaas = "Klaas",
 }

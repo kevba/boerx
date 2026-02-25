@@ -1,59 +1,51 @@
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
-import { Cow } from "../../services/entities/cow.service";
-import { RenderUtils } from "../utils/renderUtils";
-import { Sprite } from "./Sprite";
 import { Direction, MoveBehavior } from "./behaviors/move";
+import { Entity } from "./Entity";
+import { Sprite } from "./Sprite";
 
-export class CowEntity {
-  private image: CowImage;
-  private layer: Konva.Layer;
+export class CowEntity extends Entity<CowImage> {
   private moveBehavior: MoveBehavior;
+  override initialDirection = Direction.left;
+
+  type = EntityType.Cow;
+  selectable = true;
+
+  upgrade: CowUpgrade;
 
   constructor(
-    cow: Cow,
     initialCoords: { x: number; y: number },
     layer: Konva.Layer,
+    upgrade: CowUpgrade = CowUpgrade.Cow,
   ) {
-    this.layer = layer;
-    this.image = new CowImage({
-      cow: cow,
-      x: initialCoords.x,
-      y: initialCoords.y,
+    const id = crypto.randomUUID();
+
+    const node = new CowImage({
+      id,
+      ...initialCoords,
+    });
+    layer.add(node);
+
+    super({
+      id: id,
+      node: node,
     });
 
-    this.moveBehavior = new MoveBehavior(this.image, 12, (direction) =>
+    this.upgrade = upgrade;
+    this.moveBehavior = new MoveBehavior(node, 12, (direction) =>
       this.setDirection(direction),
     );
 
-    this.update(cow);
-    this.layer.add(this.image);
-
-    setInterval(() => {
-      this.followCursor();
-    }, 200);
+    this.init();
   }
 
-  update(cow: Cow) {}
-
-  setSelected(selected: boolean) {
-    this.image.setAttr("draggable", selected);
-    this.image.setAttr(
-      "stroke",
-      selected ? RenderUtils.selectedColor : undefined,
-    );
-  }
-
-  onClick(callback: (e: Konva.KonvaEventObject<MouseEvent>) => void) {
-    this.image.on("click", (e) => callback(e));
-  }
-
-  destroy() {
-    this.image.destroy();
+  override update() {
+    if (this.node.isDragging() || this.node.draggable()) return;
+    this.followCursor();
   }
 
   private followCursor() {
-    const stage = this.image.getStage();
+    const stage = this.node.getStage();
     if (!stage) return;
 
     const mousePos = stage.getRelativePointerPosition();
@@ -61,22 +53,12 @@ export class CowEntity {
 
     this.moveBehavior.moveTo(mousePos, () => {}, 10);
   }
-
-  private setDirection(direction: Direction) {
-    if (direction === Direction.right) {
-      this.image.scaleX(1);
-      this.image.offsetX(0);
-    } else {
-      this.image.scaleX(-1);
-      this.image.offsetX(this.image.width());
-    }
-  }
 }
 
 class CowImage extends Sprite {
-  constructor(args: { x: number; y: number; cow: Cow }) {
+  constructor(args: { x: number; y: number; id: string }) {
     super({
-      id: `cow_${args.cow.id}`,
+      id: `cow_${args.id}`,
       name: EntityType.Cow,
       x: args.x,
       y: args.y,
@@ -87,4 +69,8 @@ class CowImage extends Sprite {
       frameHeight: 16,
     });
   }
+}
+
+export enum CowUpgrade {
+  Cow = "Cow",
 }

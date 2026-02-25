@@ -1,26 +1,29 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
+import { BarnEntity, BarnUpgrade } from "../../canvas/entities/BarnEntity";
 import { EntityType } from "../../models/entity";
+import { BuyService } from "../buy.service";
 import { BaseService } from "./base.service";
 
 @Injectable({
   providedIn: "root",
 })
-export class BarnService extends BaseService<BarnSize, Barn> {
+export class BarnService extends BaseService<BarnUpgrade, BarnEntity> {
   override entityType = EntityType.Barn;
   protected baseCost = 20000;
+  buyService = inject(BuyService);
 
   upgrades = {
-    [BarnSize.Shed]: {
-      next: BarnSize.Storage,
+    [BarnUpgrade.Shed]: {
+      next: BarnUpgrade.Storage,
       upgradeCost: this.baseCost * 2,
       earningsIncreasePerPlot: 1000,
     },
-    [BarnSize.Storage]: {
-      next: BarnSize.Warehouse,
+    [BarnUpgrade.Storage]: {
+      next: BarnUpgrade.Warehouse,
       upgradeCost: this.baseCost * 3,
       earningsIncreasePerPlot: 2000,
     },
-    [BarnSize.Warehouse]: {
+    [BarnUpgrade.Warehouse]: {
       next: null,
       upgradeCost: this.baseCost * 4,
       earningsIncreasePerPlot: 4000,
@@ -32,21 +35,9 @@ export class BarnService extends BaseService<BarnSize, Barn> {
     this.init();
   }
 
-  createNew(): Barn {
-    return {
-      id: crypto.randomUUID(),
-      upgrade: BarnSize.Shed,
-    };
+  createNew(): BarnEntity {
+    const coords = this.buyService.getBuyLocation();
+
+    return new BarnEntity(coords, this.layer);
   }
-}
-
-export type Barn = {
-  id: string;
-  upgrade: BarnSize;
-};
-
-export enum BarnSize {
-  Shed = "Shed",
-  Storage = "Storage",
-  Warehouse = "Warehouse",
 }

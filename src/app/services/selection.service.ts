@@ -1,4 +1,5 @@
 import { computed, Injectable, signal } from "@angular/core";
+import { toObservable } from "@angular/core/rxjs-interop";
 import { EntityType } from "../models/entity";
 
 export type SelectedEntity = {
@@ -34,14 +35,18 @@ export class SelectionService {
 
   selectedPerType = computed(() => {
     const selected = this.selectedEntities();
-    const types = Object.values(EntityType).reduce((acc, type) => {
-      acc[type] = selected.filter((e) => e.type === type).map((e) => e.id);
-      return acc;
-    }, {} as Record<EntityType, string[]>);
-
+    const types = Object.values(EntityType).reduce(
+      (acc, type) => {
+        acc[type] = selected.filter((e) => e.type === type).map((e) => e.id);
+        return acc;
+      },
+      {} as Record<EntityType, string[]>,
+    );
 
     return types;
-  })
+  });
+
+  selectedPerType$ = toObservable(this.selectedPerType);
 
   select(entityType: EntityType, id: string): void {
     this.selectedEntities.update((entities) => {

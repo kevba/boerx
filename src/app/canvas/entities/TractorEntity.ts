@@ -1,84 +1,82 @@
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
-import { Tractor, TractorBrand } from "../../services/entities/tractor.service";
-import { RenderUtils } from "../utils/renderUtils";
-import { Sprite } from "./Sprite";
 import { Direction, MoveBehavior } from "./behaviors/move";
 import { BehaviorUtils } from "./behaviors/utils";
+import { Entity } from "./Entity";
+import { Sprite } from "./Sprite";
 
-export class TractorEntity {
-  private image: TractorImage;
-  private layer: Konva.Layer;
+export class TractorEntity extends Entity<TractorImage> {
+  override selectable = true;
+  override type = EntityType.Tractor;
   private moveBehavior: MoveBehavior;
   private homePlotId: string | null = null;
+  override initialDirection: Direction = Direction.right;
+  upgrade: TractorUpgrade;
 
   private moveEntityTarget: EntityType.Barn | EntityType.Plot = EntityType.Plot;
 
-  private brandSpeed: Record<TractorBrand, number> = {
-    [TractorBrand.DearJuan]: 24,
-    [TractorBrand.OldHillland]: 48,
-    [TractorBrand.Kerel]: 120,
-    [TractorBrand.Klaas]: 240,
+  private brandSpeed: Record<TractorUpgrade, number> = {
+    [TractorUpgrade.DearJuan]: 24,
+    [TractorUpgrade.OldHillland]: 48,
+    [TractorUpgrade.Kerel]: 120,
+    [TractorUpgrade.Klaas]: 240,
+  };
+
+  private brandColors: Record<
+    TractorUpgrade,
+    { r: number; g: number; b: number }
+  > = {
+    [TractorUpgrade.DearJuan]: { r: 54, g: 185, b: 0 },
+    [TractorUpgrade.OldHillland]: { r: 0, g: 102, b: 204 },
+    [TractorUpgrade.Kerel]: { r: 200, g: 16, b: 46 },
+    [TractorUpgrade.Klaas]: { r: 255, g: 128, b: 0 },
   };
 
   constructor(
-    tractor: Tractor,
     initialCoords: { x: number; y: number },
     layer: Konva.Layer,
+    upgrade: TractorUpgrade = TractorUpgrade.DearJuan,
   ) {
-    this.layer = layer;
-    this.image = new TractorImage({
-      tractor: tractor,
+    const id = crypto.randomUUID();
+    const node = new TractorImage({
+      id: id,
       x: initialCoords.x,
       y: initialCoords.y,
     });
+    layer.add(node);
 
-    this.layer.add(this.image);
+    super({
+      id: id,
+      node: node,
+    });
 
+    this.upgrade = upgrade;
     this.moveBehavior = new MoveBehavior(
-      this.image,
-      this.brandSpeed[tractor.upgrade],
+      this.node,
+      this.brandSpeed[this.upgrade],
       (direction) => this.setDirection(direction),
     );
 
-    this.update(tractor);
-    setInterval(() => {
-      this.moveToTarget();
-    }, 200);
+    this.init();
   }
 
-  update(tractor: Tractor) {
-    this.image.setColor(RenderUtils.BrandColors[tractor.upgrade]);
-    this.moveBehavior.setSpeed(this.brandSpeed[tractor.upgrade]);
-  }
+  // update(tractor: Tractor) {
+  //   this.image.setColor(RenderUtils.BrandColors[tractor.upgrade]);
+  //   this.moveBehavior.setSpeed(this.brandSpeed[tractor.upgrade]);
+  // }
 
-  setSelected(selected: boolean) {
-    this.image.setAttr("draggable", selected);
-    this.image.setAttr(
-      "stroke",
-      selected ? RenderUtils.selectedColor : undefined,
-    );
-  }
-
-  onClick(callback: (e: Konva.KonvaEventObject<MouseEvent>) => void) {
-    this.image.on("click", (e) => callback(e));
-  }
-
-  destroy() {
-    this.image.destroy();
+  protected override update(): void {
+    if (this.node.isDragging() || this.node.draggable()) return;
+    this.moveToTarget();
   }
 
   private moveToTarget() {
-    if (this.image.draggable()) {
-      this.moveBehavior.stop();
-      return;
-    }
-
-    const coords = this.image.position();
+    const coords = this.node.position();
     let targetNode: Konva.Node | undefined;
+    const layer = this.node.getLayer()!.getParent()!;
 
     if (this.moveEntityTarget === EntityType.Plot && this.homePlotId) {
-      targetNode = this.layer.getParent()?.findOne(`#${this.homePlotId}`);
+      targetNode = layer.findOne(`#${this.homePlotId}`);
       if (!targetNode) {
         this.homePlotId = null;
       }
@@ -86,8 +84,7 @@ export class TractorEntity {
 
     // If we don't have a home plot or we're moving towards the barn, find the closest target
     if (!targetNode) {
-      const targets =
-        this.layer.getParent()?.find(`.${this.moveEntityTarget}`) || [];
+      const targets = layer.find(`.${this.moveEntityTarget}`) || [];
       targetNode = BehaviorUtils.findClosest(coords, targets);
     }
 
@@ -114,22 +111,12 @@ export class TractorEntity {
       this.moveEntityTarget = nextTarget;
     });
   }
-
-  private setDirection(direction: Direction) {
-    if (direction === Direction.right) {
-      this.image.scaleX(1);
-      this.image.offsetX(0);
-    } else {
-      this.image.scaleX(-1);
-      this.image.offsetX(this.image.width());
-    }
-  }
 }
 
 class TractorImage extends Sprite {
-  constructor(args: { x: number; y: number; tractor: Tractor }) {
+  constructor(args: { x: number; y: number; id: string }) {
     super({
-      id: `tractor_${args.tractor.id}`,
+      id: `tractor_${args.id}`,
       name: EntityType.Tractor,
       x: args.x,
       y: args.y,
@@ -147,4 +134,11 @@ class TractorImage extends Sprite {
       height: this.frameHeight,
     });
   }
+}
+
+export enum TractorUpgrade {
+  DearJuan = "Dear Juan",
+  OldHillland = "Old Hillland",
+  Kerel = "Kerel",
+  Klaas = "Klaas",
 }

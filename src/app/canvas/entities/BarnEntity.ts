@@ -1,52 +1,39 @@
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
-import { Barn } from "../../services/entities/barn.service";
-import { RenderUtils } from "../utils/renderUtils";
+import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
 
-export class BarnEntity {
-  private image: BarnImage;
-  private layer: Konva.Layer;
+export class BarnEntity extends Entity<BarnImage> {
+  type = EntityType.Barn;
+  selectable = true;
+
+  upgrade: BarnUpgrade;
 
   constructor(
-    barn: Barn,
     initialCoords: { x: number; y: number },
     layer: Konva.Layer,
+    upgrade: BarnUpgrade = BarnUpgrade.Shed,
   ) {
-    this.layer = layer;
-    this.image = new BarnImage({
-      barn: barn,
-      x: initialCoords.x,
-      y: initialCoords.y,
+    const id = crypto.randomUUID();
+
+    const node = new BarnImage({
+      ...initialCoords,
+      id,
     });
+    layer.add(node);
 
-    this.update(barn);
-    this.layer.add(this.image);
-  }
-
-  update(barn: Barn) {}
-
-  setSelected(selected: boolean) {
-    this.image.setAttr("draggable", selected);
-    this.image.setAttr(
-      "stroke",
-      selected ? RenderUtils.selectedColor : undefined,
-    );
-  }
-
-  onClick(callback: (e: Konva.KonvaEventObject<MouseEvent>) => void) {
-    this.image.on("click", e => callback(e));
-  }
-
-  destroy() {
-    this.image.destroy();
+    super({
+      id,
+      node,
+    });
+    this.upgrade = upgrade;
   }
 }
 
 class BarnImage extends Sprite {
-  constructor(args: { x: number; y: number; barn: Barn }) {
+  constructor(args: { x: number; y: number; id: string }) {
     super({
-      id: `barn_${args.barn.id}`,
+      id: `barn_${args.id}`,
       name: EntityType.Barn,
       x: args.x,
       y: args.y,
@@ -57,4 +44,10 @@ class BarnImage extends Sprite {
       frameHeight: 32,
     });
   }
+}
+
+export enum BarnUpgrade {
+  Shed = "Shed",
+  Storage = "Storage",
+  Warehouse = "Warehouse",
 }
