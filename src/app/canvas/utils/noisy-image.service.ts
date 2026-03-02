@@ -12,6 +12,21 @@ export class NoisyImageService {
     resolution = 0.04,
     colorMap: ColorMap = NoisyImageService.grayScaleColorMap,
   ): string {
+    const pixels = NoisyImageService.NoisyPattern(
+      size,
+      scale,
+      resolution,
+      colorMap,
+    );
+    return this.PixelsToImage(pixels, size);
+  }
+
+  static NoisyPattern(
+    size: number,
+    scale = 10,
+    resolution = 0.04,
+    colorMap: ColorMap = NoisyImageService.grayScaleColorMap,
+  ): string[][] {
     if (size % scale !== 0) {
       throw new Error("Size must be a multiple of scale");
     }
@@ -31,11 +46,10 @@ export class NoisyImageService {
         return mappingColors[i];
       }),
     );
-
-    return this.pixelsToImage(pixels, size);
+    return pixels;
   }
 
-  static pixelsToImage(pixels: string[][], size: number) {
+  static PixelsToImage(pixels: string[][], size: number) {
     var canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;

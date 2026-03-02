@@ -9,10 +9,10 @@ export class Sprite extends Konva.Image {
   frameHeight: number;
   frameSpeed: number = 1000;
 
-  private color = { r: 255, g: 0, b: 0 };
+  protected color = { r: 255, g: 0, b: 0 };
 
-  private isAnimating = true;
-  private sourceImage: HTMLImageElement | null = null;
+  protected isAnimating = true;
+  protected sourceImage: HTMLImageElement | null = null;
 
   constructor(options: {
     id: string;

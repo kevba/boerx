@@ -1,9 +1,10 @@
-import { inject, Injector, Signal } from "@angular/core";
+import { effect, inject, Injector, Signal } from "@angular/core";
 import Konva from "konva";
 import { map } from "rxjs";
 import { AppInjectorHolder } from "../../../main";
 import { EntityType } from "../../models/entity";
 import { SelectionService } from "../../services/selection.service";
+import { TickService } from "../../services/tick.service";
 import { RenderUtils } from "../utils/renderUtils";
 import { Direction } from "./behaviors/move";
 
@@ -15,6 +16,7 @@ export type EntityOptions<T extends Konva.Node> = {
 export abstract class Entity<T extends Konva.Node, UpgradeType extends string> {
   id: string;
   protected injector = inject(Injector);
+  protected tick = inject(TickService);
 
   protected node: T;
   abstract selectable: boolean;
@@ -40,14 +42,15 @@ export abstract class Entity<T extends Konva.Node, UpgradeType extends string> {
   }
 
   init() {
-    setInterval(() => {
+    effect(() => {
+      const t = this.tick.tick();
       this.update();
-    }, 200);
+    });
   }
 
   protected update() {}
 
-  setSelected(selected: boolean) {
+  protected setSelected(selected: boolean) {
     if (!this.selectable) return;
 
     this.node.setAttr("draggable", selected);

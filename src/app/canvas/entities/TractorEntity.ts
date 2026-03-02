@@ -117,6 +117,13 @@ export class TractorEntity extends Entity<TractorImage, TractorUpgrade> {
   }
 }
 
+export enum TractorUpgrade {
+  DearJuan = "Dear Juan",
+  OldHillland = "Old Hillland",
+  Kerel = "Kerel",
+  Klaas = "Klaas",
+}
+
 class TractorImage extends Sprite {
   constructor(args: { x: number; y: number; id: string }) {
     super({
@@ -138,11 +145,4 @@ class TractorImage extends Sprite {
       height: this.frameHeight,
     });
   }
-}
-
-export enum TractorUpgrade {
-  DearJuan = "Dear Juan",
-  OldHillland = "Old Hillland",
-  Kerel = "Kerel",
-  Klaas = "Klaas",
 }

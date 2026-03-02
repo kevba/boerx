@@ -1,4 +1,4 @@
-import { effect, signal } from "@angular/core";
+import { effect, signal, untracked } from "@angular/core";
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
 import { Crop } from "../../services/entities/crop.service";
@@ -17,10 +17,19 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
 
   private cropColor: Record<Crop, string> = {
     [Crop.Wheat]: "#ebc23e",
-    [Crop.Corn]: "#f0e009",
-    [Crop.Potato]: "#7e4f21",
+    [Crop.Corn]: "#d6c800",
+    [Crop.Potato]: "#a76829",
     [Crop.Grass]: "#2d771a",
   };
+
+  private cropStageCount: Record<Crop, number> = {
+    [Crop.Wheat]: 30 * 1,
+    [Crop.Corn]: 40 * 1,
+    [Crop.Potato]: 50 * 1,
+    [Crop.Grass]: 10 * 1,
+  };
+
+  private cropGrowthStage = signal(0);
 
   constructor(
     initialCoords: { x: number; y: number },
@@ -48,9 +57,12 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
 
   protected override update(): void {
     if (this.node.isDragging() || this.node.draggable()) return;
+    // Untracked to prevent infinite loop of growth -> update -> growth
+    untracked(() => this.grow());
   }
 
   plantCrop(crop: Crop) {
+    this.cropGrowthStage.set(0);
     this.crop.set(crop);
   }
 
@@ -64,6 +76,30 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
   }
 
   _upgradeChangeEffect = effect(() => {});
+
+  private grow() {
+    const crop = this.crop();
+    const growthStage = this.cropGrowthStage();
+    const maxGrowthStage = this.cropStageCount[crop];
+    if (growthStage < maxGrowthStage) {
+      this.cropGrowthStage.set(growthStage + 1);
+    }
+  }
+
+  harvest() {
+    this.crop.set(Crop.Grass);
+    this.cropGrowthStage.set(0);
+  }
+
+  private _growthEffect = effect(() => {
+    const crop = this.crop();
+    const growthStage = this.cropGrowthStage();
+    const maxGrowthStage = this.cropStageCount[crop];
+    const growthFraction = maxGrowthStage ? growthStage / maxGrowthStage : 0;
+    // console.log(`Growth fraction for ${crop}: ${growthFraction}`);
+    const overlayIntensity = 0.5 - growthFraction * 0.3;
+    this.node.renderOverlay(overlayIntensity);
+  });
 }
 
 export enum PlotUpgrade {
@@ -72,7 +108,83 @@ export enum PlotUpgrade {
   Soil = "soil",
 }
 
-class PlotRender extends Konva.Group {
+class PlotRender extends Konva.Image {
+  private canvas: HTMLCanvasElement;
+  private noiseData: string[][];
+
+  constructor(args: { x: number; y: number; id: string }) {
+    const size = RenderUtils.entitySize[EntityType.Plot][0];
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+
+    super({
+      id: `plot_${args.id}`,
+      name: EntityType.Plot,
+      image: canvas,
+      x: args.x,
+      y: args.y,
+    });
+
+    this.noiseData = NoisyImageService.NoisyPattern(
+      size / 8,
+      1,
+      0.9,
+      this.overlayColorMap,
+    );
+
+    this.canvas = canvas;
+    this.renderOverlay();
+  }
+
+  private overlayColorMap: ColorMap = {
+    "-0.9": "#3d3016",
+    "-0.6": "#794e00",
+    "-0.2": "#6e481c",
+    "0": "#5a3301",
+    "0.3": "#643500",
+    "0.7": "#754c00",
+  };
+
+  renderOverlay(overlayIntensity = 0) {
+    const size = this.width();
+
+    const ctx = this.canvas.getContext("2d")!;
+    const img: ImageData = ctx.createImageData(size, size);
+
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        // handle scaling of noise to fit the plot size
+        const noiseY = Math.floor(y / (size / (size / 8)));
+        const noiseX = Math.floor(x / (size / (size / 8)));
+
+        const color = this.noiseData[noiseY][noiseX];
+        const [r, g, b, a] = RenderUtils.hexToRgba(color);
+        const index = (y * size + x) * 4;
+        img.data[index] = r;
+        img.data[index + 1] = g;
+        img.data[index + 2] = b;
+        img.data[index + 3] = overlayIntensity * 255;
+      }
+    }
+
+    ctx.putImageData(img, 0, 0);
+    this.image(this.canvas);
+  }
+
+  // override setColor(color: { r: number; g: number; b: number }) {
+  //   this.color = color;
+  //   if (this.sourceImage?.complete) {
+  //     const processedImage = RenderUtils.preprocessImage(
+  //       this.sourceImage,
+  //       color,
+  //     );
+  //     this.image(processedImage);
+  //   }
+  // }
+}
+
+class OldPlotRender extends Konva.Group {
   constructor(args: { x: number; y: number; id: string }) {
     const width = RenderUtils.entitySize[EntityType.Plot][0];
     const height = RenderUtils.entitySize[EntityType.Plot][1];

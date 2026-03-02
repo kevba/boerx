@@ -1,6 +1,13 @@
 import { EntityType } from "../../models/entity";
 
 export class RenderUtils {
+  static hexToRgba(color: string): [number, number, number, number] {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    const a = color.length === 9 ? parseInt(color.slice(7, 9), 16) : 255;
+    return [r, g, b, a];
+  }
   static selectedColor = "#c49949";
 
   static entitySize: Record<EntityType, [number, number]> = {

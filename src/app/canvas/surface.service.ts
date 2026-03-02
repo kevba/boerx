@@ -15,8 +15,8 @@ export class SurfaceService {
 
   tileImageUrl = computed(() => {
     const image = NoisyImageService.getNoiseImage(
-      500,
-      10,
+      128,
+      8,
       0.9,
       this.surfaceColorMap,
     );
