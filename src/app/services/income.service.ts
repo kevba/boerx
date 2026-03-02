@@ -48,13 +48,13 @@ export class IncomeService {
 
     tractors.forEach((tractor) => {
       income +=
-        this.tractorService.upgrades[tractor.upgrade].earningsIncreasePerPlot *
-        plots.length;
+        this.tractorService.upgrades[tractor.upgrade()]
+          .earningsIncreasePerPlot * plots.length;
     });
 
     barns.forEach((barn) => {
       income +=
-        this.barnService.upgrades[barn.upgrade].earningsIncreasePerPlot *
+        this.barnService.upgrades[barn.upgrade()].earningsIncreasePerPlot *
         plots.length;
     });
 

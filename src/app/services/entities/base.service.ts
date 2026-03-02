@@ -1,5 +1,14 @@
-import { computed, effect, inject, Injectable, signal } from "@angular/core";
+import {
+  computed,
+  effect,
+  inject,
+  Injectable,
+  Injector,
+  runInInjectionContext,
+  signal,
+} from "@angular/core";
 import Konva from "konva";
+import { Entity } from "../../canvas/entities/Entity";
 import { CanvasStageService } from "../canvas-stage.service";
 import { StashService } from "../stash.service";
 import { EntityType } from "./../../models/entity";
@@ -10,19 +19,22 @@ import { Upgrader, UpgradeTable } from "./upgradeUtils";
 })
 export abstract class BaseService<
   UpgradeType extends string,
-  Entity extends { id: string; upgrade: UpgradeType },
+  E extends Entity<any, any>,
 > {
+  private injector = inject(Injector);
   private stageService = inject(CanvasStageService);
   protected layer = new Konva.Layer({
     imageSmoothingEnabled: false,
   });
 
   protected stashService = inject(StashService);
-  protected _entity = signal<Entity[]>([]);
+  protected _entity = signal<E[]>([]);
   protected abstract baseCost: number;
 
   entities = this._entity.asReadonly();
-  cost = computed(() => this.baseCost + (this.entities().length * 10) ** 2);
+  cost = computed(
+    () => this.baseCost + (this.entities().length * (this.baseCost / 100)) ** 2,
+  );
   abstract entityType: EntityType;
 
   abstract upgrades: UpgradeTable<UpgradeType>;
@@ -35,9 +47,12 @@ export abstract class BaseService<
       return;
     }
     this.stashService.addStash(-cost);
-    const base: Entity = this.createNew();
 
-    this._entity.update((entities) => [...entities, base]);
+    runInInjectionContext(this.injector, () => {
+      const base = this.createNew();
+
+      this._entity.update((entities) => [...entities, base]);
+    });
   }
 
   constructor() {
@@ -70,11 +85,7 @@ export abstract class BaseService<
       if (index === -1) return bases;
 
       //   Create a new object, otherwise the signal won't detect the change since the reference is the same
-      bases[index] = {
-        ...bases[index],
-        upgrade: toUpgrade,
-      };
-
+      bases[index].upgradeTo(toUpgrade);
       return [...bases];
     });
   }
@@ -82,8 +93,8 @@ export abstract class BaseService<
   upgradeCost(baseId: string, toUpgrade: UpgradeType): number {
     const base = this._entity().find((base) => base.id === baseId);
     if (!base) return 0;
-    return this.upgrader.fromToCost(base.upgrade, toUpgrade);
+    return this.upgrader.fromToCost(base.upgrade(), toUpgrade);
   }
 
-  abstract createNew(): Entity;
+  abstract createNew(): E;
 }

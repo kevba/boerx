@@ -1,3 +1,4 @@
+import { effect, signal } from "@angular/core";
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
 import { Direction, MoveBehavior } from "./behaviors/move";
@@ -5,13 +6,14 @@ import { BehaviorUtils } from "./behaviors/utils";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
 
-export class TractorEntity extends Entity<TractorImage> {
+export class TractorEntity extends Entity<TractorImage, TractorUpgrade> {
   override selectable = true;
   override type = EntityType.Tractor;
   private moveBehavior: MoveBehavior;
   private homePlotId: string | null = null;
   override initialDirection: Direction = Direction.right;
-  upgrade: TractorUpgrade;
+
+  upgrade = signal<TractorUpgrade>(TractorUpgrade.DearJuan);
 
   private moveEntityTarget: EntityType.Barn | EntityType.Plot = EntityType.Plot;
 
@@ -50,25 +52,27 @@ export class TractorEntity extends Entity<TractorImage> {
       node: node,
     });
 
-    this.upgrade = upgrade;
-    this.moveBehavior = new MoveBehavior(
-      this.node,
-      this.brandSpeed[this.upgrade],
-      (direction) => this.setDirection(direction),
+    this.moveBehavior = new MoveBehavior(this.node, 0, (direction) =>
+      this.setDirection(direction),
     );
 
+    this.upgrade.set(upgrade);
     this.init();
   }
-
-  // update(tractor: Tractor) {
-  //   this.image.setColor(RenderUtils.BrandColors[tractor.upgrade]);
-  //   this.moveBehavior.setSpeed(this.brandSpeed[tractor.upgrade]);
-  // }
 
   protected override update(): void {
     if (this.node.isDragging() || this.node.draggable()) return;
     this.moveToTarget();
   }
+
+  upgradeTo(upgrade: TractorUpgrade) {
+    this.upgrade.set(upgrade);
+  }
+  private _upgradeChangeEffect = effect(() => {
+    const upgrade = this.upgrade();
+    this.node.setColor(this.brandColors[upgrade]);
+    this.moveBehavior.setSpeed(this.brandSpeed[upgrade]);
+  });
 
   private moveToTarget() {
     const coords = this.node.position();

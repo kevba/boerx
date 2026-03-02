@@ -1,3 +1,4 @@
+import { inject, Injector, Signal } from "@angular/core";
 import Konva from "konva";
 import { map } from "rxjs";
 import { AppInjectorHolder } from "../../../main";
@@ -11,13 +12,15 @@ export type EntityOptions<T extends Konva.Node> = {
   id: string;
 };
 
-export abstract class Entity<T extends Konva.Node> {
+export abstract class Entity<T extends Konva.Node, UpgradeType extends string> {
   id: string;
+  protected injector = inject(Injector);
 
   protected node: T;
   abstract selectable: boolean;
   abstract type: EntityType;
   protected initialDirection: Direction = Direction.right;
+  abstract upgrade: Signal<UpgradeType>;
 
   protected get selectionService(): SelectionService {
     return AppInjectorHolder.injector.get(SelectionService);
@@ -74,4 +77,6 @@ export abstract class Entity<T extends Konva.Node> {
       this.node.offsetX(this.node.width());
     }
   }
+
+  abstract upgradeTo(upgrade: UpgradeType): void;
 }

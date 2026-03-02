@@ -19,13 +19,15 @@ export class PlotsService extends BaseService<PlotUpgrade, PlotEntity> {
   protected baseCost = 4000;
 
   hasMoistureUpgrade = computed(() =>
-    this.entities().some((plot) => ![PlotUpgrade.Basic].includes(plot.upgrade)),
+    this.entities().some(
+      (plot) => ![PlotUpgrade.Basic].includes(plot.upgrade()),
+    ),
   );
 
   hasSoilUpgrade = computed(() =>
     this.entities().some(
       (plot) =>
-        ![PlotUpgrade.Basic, PlotUpgrade.Moisture].includes(plot.upgrade),
+        ![PlotUpgrade.Basic, PlotUpgrade.Moisture].includes(plot.upgrade()),
     ),
   );
 
@@ -65,26 +67,25 @@ export class PlotsService extends BaseService<PlotUpgrade, PlotEntity> {
       const plotIndex = plots.findIndex((plot) => plot.id === plotId);
       if (plotIndex === -1) return plots;
 
-      //   Create a new object, otherwise the signal won't detect the change since the reference is the same
-      plots[plotIndex].crop = crop;
+      plots[plotIndex].crop.set(crop);
 
-      return [...plots];
+      return plots;
     });
   }
 
   harvest(plot: PlotEntity) {
-    const depletion = this.nutrientsService.cropBaseDepletion()[plot.crop];
+    const depletion = this.nutrientsService.cropBaseDepletion()[plot.crop()];
 
     // TODO: support upgrades that reduce depletion
     this.nutrientsService.addWater(-depletion.water);
     this.nutrientsService.addFertilizer(-depletion.nutrients);
 
-    this.cropService.updateHarvestCounter(plot.crop);
+    this.cropService.updateHarvestCounter(plot.crop());
   }
 
   harvestEarnings(plot: PlotEntity): number {
-    const earnings = this.cropService.earnings()[plot.crop];
-    const mult = this.nutrientsService.cropValueMult()[plot.crop];
+    const earnings = this.cropService.earnings()[plot.crop()];
+    const mult = this.nutrientsService.cropValueMult()[plot.crop()];
 
     return earnings * mult.water * mult.nutrients;
   }

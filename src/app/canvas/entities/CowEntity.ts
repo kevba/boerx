@@ -1,17 +1,18 @@
+import { signal } from "@angular/core";
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
 import { Direction, MoveBehavior } from "./behaviors/move";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
 
-export class CowEntity extends Entity<CowImage> {
+export class CowEntity extends Entity<CowImage, CowUpgrade> {
   private moveBehavior: MoveBehavior;
   override initialDirection = Direction.left;
 
   type = EntityType.Cow;
   selectable = true;
 
-  upgrade: CowUpgrade;
+  upgrade = signal<CowUpgrade>(CowUpgrade.Cow);
 
   constructor(
     initialCoords: { x: number; y: number },
@@ -31,7 +32,7 @@ export class CowEntity extends Entity<CowImage> {
       node: node,
     });
 
-    this.upgrade = upgrade;
+    this.upgrade.set(upgrade);
     this.moveBehavior = new MoveBehavior(node, 12, (direction) =>
       this.setDirection(direction),
     );
@@ -43,6 +44,8 @@ export class CowEntity extends Entity<CowImage> {
     if (this.node.isDragging() || this.node.draggable()) return;
     this.followCursor();
   }
+
+  override upgradeTo(upgrade: CowUpgrade): void {}
 
   private followCursor() {
     const stage = this.node.getStage();

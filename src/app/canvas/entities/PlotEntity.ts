@@ -1,3 +1,4 @@
+import { effect, signal } from "@angular/core";
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
 import { Crop } from "../../services/entities/crop.service";
@@ -6,13 +7,13 @@ import { RenderUtils } from "../utils/renderUtils";
 import { Direction } from "./behaviors/move";
 import { Entity } from "./Entity";
 
-export class PlotEntity extends Entity<PlotRender> {
+export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
   override selectable = true;
   override type = EntityType.Plot;
 
   override initialDirection: Direction = Direction.right;
-  upgrade: PlotUpgrade;
-  crop: Crop;
+  upgrade = signal<PlotUpgrade>(PlotUpgrade.Basic);
+  crop = signal<Crop>(Crop.Grass);
 
   private cropColor: Record<Crop, string> = {
     [Crop.Wheat]: "#ebc23e",
@@ -40,15 +41,31 @@ export class PlotEntity extends Entity<PlotRender> {
       node: node,
     });
 
-    this.upgrade = upgrade;
-    this.crop = crop;
+    this.upgrade.set(upgrade);
+    this.crop.set(crop);
     this.init();
   }
 
   protected override update(): void {
     if (this.node.isDragging() || this.node.draggable()) return;
   }
+
+  plantCrop(crop: Crop) {
+    this.crop.set(crop);
+  }
+
+  _cropChangeEffect = effect(() => {
+    const crop = this.crop();
+    this.node.setAttr("fill", this.cropColor[crop]);
+  });
+
+  upgradeTo(upgrade: PlotUpgrade) {
+    this.upgrade.set(upgrade);
+  }
+
+  _upgradeChangeEffect = effect(() => {});
 }
+
 export enum PlotUpgrade {
   Basic = "basic",
   Moisture = "moisture",

@@ -1,13 +1,14 @@
+import { signal } from "@angular/core";
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
 
-export class BarnEntity extends Entity<BarnImage> {
+export class BarnEntity extends Entity<BarnImage, BarnUpgrade> {
   type = EntityType.Barn;
   selectable = true;
 
-  upgrade: BarnUpgrade;
+  upgrade = signal<BarnUpgrade>(BarnUpgrade.Shed);
 
   constructor(
     initialCoords: { x: number; y: number },
@@ -26,8 +27,18 @@ export class BarnEntity extends Entity<BarnImage> {
       id,
       node,
     });
-    this.upgrade = upgrade;
+    this.upgrade.set(upgrade);
   }
+
+  upgradeTo(upgrade: BarnUpgrade) {
+    this.upgrade.set(upgrade);
+  }
+}
+
+export enum BarnUpgrade {
+  Shed = "Shed",
+  Storage = "Storage",
+  Warehouse = "Warehouse",
 }
 
 class BarnImage extends Sprite {
@@ -44,10 +55,4 @@ class BarnImage extends Sprite {
       frameHeight: 32,
     });
   }
-}
-
-export enum BarnUpgrade {
-  Shed = "Shed",
-  Storage = "Storage",
-  Warehouse = "Warehouse",
 }
