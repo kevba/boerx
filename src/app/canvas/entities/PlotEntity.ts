@@ -1,4 +1,4 @@
-import { effect, signal, untracked } from "@angular/core";
+import { computed, effect, signal, untracked } from "@angular/core";
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
 import { Crop } from "../../services/entities/crop.service";
@@ -14,6 +14,12 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
   override initialDirection: Direction = Direction.right;
   upgrade = signal<PlotUpgrade>(PlotUpgrade.Basic);
   crop = signal<Crop>(Crop.Grass);
+  canHarvest = computed(() => {
+    const crop = this.crop();
+    const growthStage = this.cropGrowthStage();
+    const maxGrowthStage = this.cropStageCount[crop];
+    return growthStage >= maxGrowthStage;
+  });
 
   private cropColor: Record<Crop, string> = {
     [Crop.Wheat]: "#ebc23e",

@@ -41,9 +41,11 @@ export class IncomeService {
     const tractors = this.tractorService.entities();
     const barns = this.barnService.entities();
 
-    let income = 10;
+    let income = 0;
     plots.forEach((plot) => {
+      if (!plot.canHarvest()) return;
       income += this.plotService.harvestEarnings(plot);
+      plot.harvest();
     });
 
     tractors.forEach((tractor) => {
