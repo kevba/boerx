@@ -21,6 +21,10 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
     return growthStage >= maxGrowthStage;
   });
 
+  manuallyHarvested = signal(false);
+
+  private harvestManuallyNode: Konva.Text | null = null;
+
   private cropColor: Record<Crop, string> = {
     [Crop.Wheat]: "#ebc23e",
     [Crop.Corn]: "#d6c800",
@@ -102,10 +106,39 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
     const growthStage = this.cropGrowthStage();
     const maxGrowthStage = this.cropStageCount[crop];
     const growthFraction = maxGrowthStage ? growthStage / maxGrowthStage : 0;
-    // console.log(`Growth fraction for ${crop}: ${growthFraction}`);
+
     const overlayIntensity = 0.5 - growthFraction * 0.3;
     this.node.renderOverlay(overlayIntensity);
+
+    if (growthStage < maxGrowthStage) {
+      this.harvestManuallyNode?.destroy();
+      this.harvestManuallyNode = null;
+      return;
+    }
+
+    if (!this.harvestManuallyNode) {
+      this.harvestManuallyNode = this.buildHarvestTextNode();
+      this.node.getLayer()!.add(this.harvestManuallyNode);
+
+      this.harvestManuallyNode.on("click", () => {
+        this.manuallyHarvested.set(true);
+      });
+    }
   });
+
+  private buildHarvestTextNode() {
+    return new Konva.Text({
+      x: this.node.x() + this.node.width() / 2,
+      y: this.node.y() + this.node.height() / 2,
+      text: "Harvest",
+      fontSize: 18,
+      fill: "oklch(76.9% 0.188 70.08)",
+      fontFamily: "pixel",
+      offsetX: 40,
+      offsetY: 8,
+      hoverCursor: "pointer",
+    });
+  }
 }
 
 export enum PlotUpgrade {

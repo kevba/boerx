@@ -43,6 +43,14 @@ export class IncomeService {
 
     let income = 0;
 
+    plots.forEach((plot) => {
+      if (!plot.canHarvest()) return;
+      if (!plot.manuallyHarvested()) return;
+      plot.manuallyHarvested.set(false);
+      income += this.plotService.harvestEarnings(plot);
+      plot.harvest();
+    });
+
     tractors.forEach((tractor) => {
       if (!tractor.atHomePlot()) return;
 
