@@ -42,23 +42,29 @@ export class IncomeService {
     const barns = this.barnService.entities();
 
     let income = 0;
-    plots.forEach((plot) => {
-      if (!plot.canHarvest()) return;
-      income += this.plotService.harvestEarnings(plot);
-      plot.harvest();
-    });
 
     tractors.forEach((tractor) => {
-      income +=
-        this.tractorService.upgrades[tractor.upgrade()]
-          .earningsIncreasePerPlot * plots.length;
+      if (!tractor.atHomePlot()) return;
+
+      const plot = plots.find((p) => p.id === tractor.homePlotId!);
+
+      if (!plot) {
+        tractor.homePlotId = null;
+        return;
+      }
+
+      if (!plot.canHarvest()) return;
+
+      income += this.plotService.harvestEarnings(plot);
+      plot.harvest();
+      tractor.setTargetToBarn();
     });
 
-    barns.forEach((barn) => {
-      income +=
-        this.barnService.upgrades[barn.upgrade()].earningsIncreasePerPlot *
-        plots.length;
-    });
+    // barns.forEach((barn) => {
+    //   income +=
+    //     this.barnService.upgrades[barn.upgrade()].earningsIncreasePerPlot *
+    //     plots.length;
+    // });
 
     this.stashService.addStash(income);
   }

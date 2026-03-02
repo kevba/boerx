@@ -14,6 +14,10 @@ import { StashService } from "../stash.service";
 import { EntityType } from "./../../models/entity";
 import { Upgrader, UpgradeTable } from "./upgradeUtils";
 
+const entityLayers = new Konva.Layer({
+  imageSmoothingEnabled: false,
+});
+
 @Injectable({
   providedIn: "root",
 })
@@ -23,9 +27,7 @@ export abstract class BaseService<
 > {
   private injector = inject(Injector);
   private stageService = inject(CanvasStageService);
-  protected layer = new Konva.Layer({
-    imageSmoothingEnabled: false,
-  });
+  protected layer = entityLayers;
 
   protected stashService = inject(StashService);
   protected _entity = signal<E[]>([]);

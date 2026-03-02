@@ -10,8 +10,10 @@ export class TractorEntity extends Entity<TractorImage, TractorUpgrade> {
   override selectable = true;
   override type = EntityType.Tractor;
   private moveBehavior: MoveBehavior;
-  private homePlotId: string | null = null;
+
   override initialDirection: Direction = Direction.right;
+  homePlotId: string | null = null;
+  atHomePlot = signal(false);
 
   upgrade = signal<TractorUpgrade>(TractorUpgrade.DearJuan);
 
@@ -75,12 +77,14 @@ export class TractorEntity extends Entity<TractorImage, TractorUpgrade> {
   });
 
   private moveToTarget() {
+    this.atHomePlot.set(false);
+
     const coords = this.node.position();
     let targetNode: Konva.Node | undefined;
-    const layer = this.node.getLayer()!.getParent()!;
+    const layer = this.node.getLayer()!;
 
     if (this.moveEntityTarget === EntityType.Plot && this.homePlotId) {
-      targetNode = layer.findOne(`#${this.homePlotId}`);
+      targetNode = layer.findOne(`#plot_${this.homePlotId}`);
       if (!targetNode) {
         this.homePlotId = null;
       }
@@ -92,28 +96,29 @@ export class TractorEntity extends Entity<TractorImage, TractorUpgrade> {
       targetNode = BehaviorUtils.findClosest(coords, targets);
     }
 
-    const nextTarget =
-      this.moveEntityTarget === EntityType.Plot
-        ? EntityType.Barn
-        : EntityType.Plot;
-
     if (!targetNode) {
       this.moveBehavior.stop();
-      this.moveEntityTarget = nextTarget;
-
       return;
     }
 
     this.moveBehavior.moveToTarget(targetNode, () => {
-      if (
-        this.moveEntityTarget === EntityType.Plot &&
-        this.homePlotId === null
-      ) {
-        this.homePlotId = targetNode.id();
+      if (this.moveEntityTarget === EntityType.Plot) {
+        if (this.homePlotId === null) {
+          this.homePlotId = targetNode.id();
+        }
+
+        this.atHomePlot.set(true);
       }
 
-      this.moveEntityTarget = nextTarget;
+      // After reaching the barn, switch back to moving towards the home plot
+      if (this.moveEntityTarget === EntityType.Barn) {
+        this.moveEntityTarget = EntityType.Plot;
+      }
     });
+  }
+
+  setTargetToBarn() {
+    this.moveEntityTarget = EntityType.Barn;
   }
 }
 

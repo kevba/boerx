@@ -125,7 +125,7 @@ class PlotRender extends Konva.Image {
     canvas.height = size;
 
     super({
-      id: `plot_${args.id}`,
+      id: `${args.id}`,
       name: EntityType.Plot,
       image: canvas,
       x: args.x,
