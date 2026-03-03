@@ -12,18 +12,16 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
   override type = EntityType.Plot;
 
   override initialDirection: Direction = Direction.right;
+
   upgrade = signal<PlotUpgrade>(PlotUpgrade.Basic);
   crop = signal<Crop>(Crop.Grass);
+
   canHarvest = computed(() => {
     const crop = this.crop();
     const growthStage = this.cropGrowthStage();
     const maxGrowthStage = this.cropStageCount[crop];
     return growthStage >= maxGrowthStage;
   });
-
-  manuallyHarvested = signal(false);
-
-  private harvestManuallyNode: Konva.Text | null = null;
 
   private cropColor: Record<Crop, string> = {
     [Crop.Wheat]: "#ebc23e",
@@ -59,6 +57,7 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
       id: id,
       node: node,
     });
+    node.entity = this;
 
     this.upgrade.set(upgrade);
     this.crop.set(crop);
@@ -96,9 +95,12 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
     }
   }
 
-  harvest() {
+  harvest(): { crop: Crop; amount: number } {
+    const harvestedCrop = this.crop();
     this.crop.set(Crop.Grass);
     this.cropGrowthStage.set(0);
+
+    return { crop: harvestedCrop, amount: 1 };
   }
 
   private _growthEffect = effect(() => {
@@ -109,36 +111,7 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
 
     const overlayIntensity = 0.5 - growthFraction * 0.3;
     this.node.renderOverlay(overlayIntensity);
-
-    if (growthStage < maxGrowthStage) {
-      this.harvestManuallyNode?.destroy();
-      this.harvestManuallyNode = null;
-      return;
-    }
-
-    if (!this.harvestManuallyNode) {
-      this.harvestManuallyNode = this.buildHarvestTextNode();
-      this.node.getLayer()!.add(this.harvestManuallyNode);
-
-      this.harvestManuallyNode.on("click", () => {
-        this.manuallyHarvested.set(true);
-      });
-    }
   });
-
-  private buildHarvestTextNode() {
-    return new Konva.Text({
-      x: this.node.x() + this.node.width() / 2,
-      y: this.node.y() + this.node.height() / 2,
-      text: "Harvest",
-      fontSize: 18,
-      fill: "oklch(76.9% 0.188 70.08)",
-      fontFamily: "pixel",
-      offsetX: 40,
-      offsetY: 8,
-      hoverCursor: "pointer",
-    });
-  }
 }
 
 export enum PlotUpgrade {
@@ -147,9 +120,10 @@ export enum PlotUpgrade {
   Soil = "soil",
 }
 
-class PlotRender extends Konva.Image {
+export class PlotRender extends Konva.Image {
   private canvas: HTMLCanvasElement;
   private noiseData: string[][];
+  entity!: PlotEntity;
 
   constructor(args: { x: number; y: number; id: string }) {
     const size = RenderUtils.entitySize[EntityType.Plot][0];
@@ -209,109 +183,5 @@ class PlotRender extends Konva.Image {
 
     ctx.putImageData(img, 0, 0);
     this.image(this.canvas);
-  }
-
-  // override setColor(color: { r: number; g: number; b: number }) {
-  //   this.color = color;
-  //   if (this.sourceImage?.complete) {
-  //     const processedImage = RenderUtils.preprocessImage(
-  //       this.sourceImage,
-  //       color,
-  //     );
-  //     this.image(processedImage);
-  //   }
-  // }
-}
-
-class OldPlotRender extends Konva.Group {
-  constructor(args: { x: number; y: number; id: string }) {
-    const width = RenderUtils.entitySize[EntityType.Plot][0];
-    const height = RenderUtils.entitySize[EntityType.Plot][1];
-
-    super({
-      name: EntityType.Plot,
-      id: "plot-" + args.id,
-      width: width,
-      height: height,
-      x: args.x,
-      y: args.y,
-      draggable: true,
-    });
-
-    const plotBase = new Konva.Rect({
-      id: this.id() + "-base",
-      stroke: "#b86a37ab",
-      strokeWidth: 4,
-      // Coords within the plot group, the group itself is positioned at the plot's coordinates
-      x: 0,
-      y: 0,
-      width: width,
-      height: height,
-      fill: "#ff8000",
-    });
-
-    const plotOverlay = new Konva.Rect({
-      id: this.id() + "-overlay",
-      // Coords within the plot group, the group itself is positioned at the plot's coordinates
-      x: 0,
-      y: 0,
-      width: width,
-      height: height,
-      listening: false,
-      draggable: false,
-    });
-
-    const fillPatternImage = new Image();
-    fillPatternImage.onload = () => {
-      plotOverlay.setAttr("fillPatternImage", fillPatternImage);
-    };
-    fillPatternImage.src = NoisyImageService.getNoiseImage(
-      120,
-      10,
-      0.9,
-      this.transparentColorMap,
-    );
-
-    this.add(plotBase);
-    this.add(plotOverlay);
-  }
-
-  private transparentColorMap: ColorMap = {
-    "-0.5": "#1010101f",
-    "-0.2": "#7F7F7F1f",
-    "0": "#7F7F7F1f",
-    "0.3": "#FFFFFF1f",
-  };
-
-  override setAttrs(config: Konva.ContainerConfig) {
-    super.setAttrs(config);
-    const overlay = this.findOne(`#${this.id()}-base`);
-    if (!overlay) return this;
-
-    const overlayConfig: Konva.ContainerConfig = {};
-    if ("fill" in config) {
-      overlayConfig["fill"] = config["fill"];
-    }
-    if ("stroke" in config) {
-      overlayConfig["stroke"] = config["stroke"];
-    }
-    if ("strokeWidth" in config) {
-      overlayConfig["strokeWidth"] = config["strokeWidth"];
-    }
-
-    if (Object.keys(overlayConfig).length > 0) {
-      overlay.setAttrs(overlayConfig);
-    }
-
-    return this;
-  }
-
-  override setAttr(attr: string | number, value: any) {
-    super.setAttr(attr, value);
-    const overlay = this.findOne(`#${this.id()}-base`);
-    if (!overlay) return this;
-
-    this.setAttrs({ [attr]: value });
-    return this;
   }
 }

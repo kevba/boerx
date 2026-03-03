@@ -1,9 +1,12 @@
 import { effect, signal } from "@angular/core";
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
+import { Item } from "../../services/wares.service";
+import { BarnImage } from "./BarnEntity";
 import { Direction, MoveBehavior } from "./behaviors/move";
 import { BehaviorUtils } from "./behaviors/utils";
 import { Entity } from "./Entity";
+import { PlotRender } from "./PlotEntity";
 import { Sprite } from "./Sprite";
 
 export class TractorEntity extends Entity<TractorImage, TractorUpgrade> {
@@ -14,6 +17,8 @@ export class TractorEntity extends Entity<TractorImage, TractorUpgrade> {
   override initialDirection: Direction = Direction.right;
   homePlotId: string | null = null;
   atHomePlot = signal(false);
+
+  cargo = signal<Item | null>(null);
 
   upgrade = signal<TractorUpgrade>(TractorUpgrade.DearJuan);
 
@@ -77,48 +82,71 @@ export class TractorEntity extends Entity<TractorImage, TractorUpgrade> {
   });
 
   private moveToTarget() {
-    this.atHomePlot.set(false);
-
-    const coords = this.node.position();
-    let targetNode: Konva.Node | undefined;
-    const layer = this.node.getLayer()!;
-
-    if (this.moveEntityTarget === EntityType.Plot && this.homePlotId) {
-      targetNode = layer.findOne(`#plot_${this.homePlotId}`);
-      if (!targetNode) {
-        this.homePlotId = null;
-      }
+    if (this.moveEntityTarget === EntityType.Barn) {
+      this.atHomePlot.set(false);
+      this.barnMovingBehavior();
     }
 
-    // If we don't have a home plot or we're moving towards the barn, find the closest target
-    if (!targetNode) {
+    if (this.moveEntityTarget === EntityType.Plot) {
+      this.atHomePlot.set(false);
+
+      this.plotMovingBehavoir();
+    }
+  }
+
+  setTargetToBarn() {
+    this.moveEntityTarget = EntityType.Barn;
+  }
+
+  private plotMovingBehavoir() {
+    let targetNode: Konva.Node | undefined;
+    const coords = this.node.position();
+    const layer = this.node.getLayer()!;
+
+    if (this.homePlotId) {
+      targetNode = layer.findOne(`#${this.homePlotId}`);
+    } else {
       const targets = layer.find(`.${this.moveEntityTarget}`) || [];
       targetNode = BehaviorUtils.findClosest(coords, targets);
     }
 
     if (!targetNode) {
-      this.moveBehavior.stop();
+      this.homePlotId = null;
       return;
     }
 
-    this.moveBehavior.moveToTarget(targetNode, () => {
-      if (this.moveEntityTarget === EntityType.Plot) {
-        if (this.homePlotId === null) {
-          this.homePlotId = targetNode.id();
-        }
+    this.homePlotId = targetNode.id();
+    const plot = targetNode as PlotRender;
 
-        this.atHomePlot.set(true);
-      }
-
-      // After reaching the barn, switch back to moving towards the home plot
-      if (this.moveEntityTarget === EntityType.Barn) {
-        this.moveEntityTarget = EntityType.Plot;
+    this.moveBehavior.moveToTarget(plot, () => {
+      this.atHomePlot.set(true);
+      if (plot.entity.canHarvest()) {
+        const harvested = plot.entity.harvest();
+        this.cargo.set({ type: harvested.crop, amount: harvested.amount });
+        this.setTargetToBarn();
       }
     });
   }
 
-  setTargetToBarn() {
-    this.moveEntityTarget = EntityType.Barn;
+  private barnMovingBehavior() {
+    const layer = this.node.getLayer()!;
+
+    let targetNode = layer.findOne(`.${EntityType.Barn}`);
+    if (!targetNode) return;
+
+    this.moveBehavior.moveToTarget(targetNode, () => {
+      // After reaching the barn, switch back to moving towards the home plot
+      const barn = targetNode as BarnImage;
+      const cargo = this.cargo();
+      if (!cargo) return;
+
+      // Cargo that can not be stored will be dumped :(
+      barn.entity.store(cargo);
+      this.cargo.set(null);
+      this.moveEntityTarget = EntityType.Plot;
+    });
+
+    return;
   }
 }
 
