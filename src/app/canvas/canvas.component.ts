@@ -7,7 +7,7 @@ import {
   viewChild,
 } from "@angular/core";
 import Konva from "konva";
-import { CanvasStageService } from "../services/canvas-stage.service";
+import { EntityLayerService } from "../services/entity-layer.service";
 import { SelectionService } from "../services/selection.service";
 import { BuyRenderService } from "./buy-render.service";
 import { SurfaceService } from "./surface.service";
@@ -26,7 +26,7 @@ export class CanvasComponent {
   private selectionService = inject(SelectionService);
   private surfaceService = inject(SurfaceService);
 
-  private canvasStageService = inject(CanvasStageService);
+  private entityLayerService = inject(EntityLayerService);
 
   private backgroundLayer = new Konva.Layer();
   private backgroudRect = new Konva.Rect({
@@ -67,8 +67,7 @@ export class CanvasComponent {
       if (!stage) return;
 
       stage.add(this.backgroundLayer);
-      this.canvasStageService.stage.set(stage);
-
+      stage.add(this.entityLayerService.layer);
       this.buyRenderService.setStage(stage);
 
       stage.on("click", (e) => {

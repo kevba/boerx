@@ -1,22 +1,16 @@
 import {
   computed,
-  effect,
   inject,
   Injectable,
   Injector,
   runInInjectionContext,
   signal,
 } from "@angular/core";
-import Konva from "konva";
 import { Entity } from "../../canvas/entities/Entity";
-import { CanvasStageService } from "../canvas-stage.service";
+import { EntityLayerService } from "../entity-layer.service";
 import { StashService } from "../stash.service";
 import { EntityType } from "./../../models/entity";
 import { Upgrader, UpgradeTable } from "./upgradeUtils";
-
-const entityLayers = new Konva.Layer({
-  imageSmoothingEnabled: false,
-});
 
 @Injectable({
   providedIn: "root",
@@ -26,8 +20,8 @@ export abstract class BaseService<
   E extends Entity<any, any>,
 > {
   private injector = inject(Injector);
-  private stageService = inject(CanvasStageService);
-  protected layer = entityLayers;
+  private entityLayerService = inject(EntityLayerService);
+  protected layer = this.entityLayerService.layer;
 
   protected stashService = inject(StashService);
   protected _entity = signal<E[]>([]);
@@ -57,14 +51,7 @@ export abstract class BaseService<
     });
   }
 
-  constructor() {
-    effect(() => {
-      const stage = this.stageService.stage();
-      if (stage) {
-        stage.add(this.layer);
-      }
-    });
-  }
+  constructor() {}
 
   protected init() {
     this.upgrader = new Upgrader<UpgradeType>(this.upgrades);

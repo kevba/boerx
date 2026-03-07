@@ -18,7 +18,6 @@ export class BuyRenderService {
 
   setStage(stage: Konva.Stage) {
     stage.add(this.layer);
-
     stage.on("mousemove", () => {
       const entity = this.buyService.buyingEntity();
       if (entity) {
