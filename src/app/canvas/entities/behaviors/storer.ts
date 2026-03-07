@@ -41,15 +41,23 @@ export class Storer {
     const currentStorage = this.storage();
     const itemIndex = currentStorage.findIndex((i) => i.type === item.type);
     const unstorable = Math.max(item.amount - this.spaceLeft(), 0);
-    const toStore = { ...item, amount: item.amount - unstorable };
     const remainingItem = { ...item, amount: unstorable };
 
     if (itemIndex === -1) {
-      this.storage.set([...currentStorage, toStore]);
+      this.storage.set([
+        ...currentStorage,
+        {
+          type: item.type,
+          amount: item.amount - unstorable,
+        },
+      ]);
       return unstorable > 0 ? remainingItem : null;
     }
 
-    currentStorage[itemIndex] = toStore;
+    currentStorage[itemIndex] = {
+      type: item.type,
+      amount: currentStorage[itemIndex].amount + item.amount - unstorable,
+    };
     this.storage.set([...currentStorage]);
     return unstorable > 0 ? remainingItem : null;
   }
@@ -103,9 +111,15 @@ export class Storer {
   }
 
   retrieveAll(): Item[] | null {
+    const result: Item[] = [];
     const items = this.storage();
-
-    return items;
+    items.forEach((item) => {
+      const retrieved = this.retrieveMax(item.type);
+      if (retrieved) {
+        result.push(retrieved);
+      }
+    });
+    return result;
   }
 
   clear() {

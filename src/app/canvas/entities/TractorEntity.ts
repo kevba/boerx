@@ -125,14 +125,19 @@ export class TractorEntity
 
     this.moveBehavior.moveToTarget(plot, () => {
       this.atHomePlot.set(true);
+      const inStorage = plot.entity.storage.retrieveAll();
+      if (inStorage) {
+        this.storage.storeAll(inStorage);
+      }
+
       if (plot.entity.canHarvest()) {
         plot.entity.harvest();
         const harvested = plot.entity.storage.retrieveAll();
-
         if (!harvested) return;
-
         this.storage.storeAll(harvested);
+      }
 
+      if (this.storage.storedItems().length > 0) {
         this.setTargetToBarn();
       }
     });
@@ -151,7 +156,7 @@ export class TractorEntity
       if (!cargo) return;
 
       // Cargo that can not be stored will be dumped :(
-      barn.entity.storage.storeAll(cargo);
+      const _remain = barn.entity.storage.storeAll(cargo);
       this.moveEntityTarget = EntityType.Plot;
     });
 

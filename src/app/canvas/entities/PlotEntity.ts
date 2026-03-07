@@ -208,7 +208,6 @@ export class PlotRender extends Konva.Group {
     clickable.on("mouseleave", (e) => {
       clickable.setAttr("fill", textColor);
     });
-    console.log(clickable);
     return clickable;
   }
 }
