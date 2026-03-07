@@ -50,7 +50,7 @@ export class ShopPanelComponent {
   buyService = inject(BuyService);
   EntityType = EntityType;
 
-  activeBuyingEntity = computed(() => this.buyService.buyingEntity());
+  activeBuyingEntity = computed(() => this.buyService.buyingEntityType());
 
   canBuyPlot = computed(() => {
     const cost = this.plotService.cost();

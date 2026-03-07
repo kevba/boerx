@@ -10,6 +10,8 @@ import { RenderUtils } from "./utils/renderUtils";
 export class BuyRenderService {
   private buyService = inject(BuyService);
   private ghost: Konva.Rect | null = null;
+  private validLocation = false;
+
   private layer = new Konva.Layer({
     imageSmoothingEnabled: false,
   });
@@ -19,10 +21,10 @@ export class BuyRenderService {
   setStage(stage: Konva.Stage) {
     stage.add(this.layer);
     stage.on("mousemove", () => {
-      const entity = this.buyService.buyingEntity();
-      if (entity) {
+      const entityType = this.buyService.buyingEntityType();
+      if (entityType) {
         const pos = stage.getRelativePointerPosition()!;
-        this.drawGhost(entity, pos.x, pos.y);
+        this.drawGhost(entityType, pos.x, pos.y);
       } else {
         this.removeGhost();
       }
@@ -30,7 +32,7 @@ export class BuyRenderService {
 
     stage.on("contextmenu", (e) => {
       e.evt.preventDefault();
-      const entity = this.buyService.buyingEntity();
+      const entity = this.buyService.buyingEntityType();
       if (entity) {
         this.buyService.clear();
         this.removeGhost();
@@ -39,7 +41,9 @@ export class BuyRenderService {
 
     stage.on("click", (e) => {
       e.evt.preventDefault();
-      const entity = this.buyService.buyingEntity();
+      if (!this.validLocation) return;
+
+      const entity = this.buyService.buyingEntityType();
       if (entity) {
         const pos = stage.getRelativePointerPosition()!;
         const width = RenderUtils.entitySize[entity][0];
@@ -63,6 +67,15 @@ export class BuyRenderService {
     if (this.ghost) {
       this.ghost.setSize({ width, height });
       this.ghost.position({ x: centerX, y: centerY });
+      this.detectCollision();
+
+      if (this.detectCollision()) {
+        this.ghost.stroke("red");
+        this.validLocation = false;
+      } else {
+        this.ghost.stroke(RenderUtils.selectedColor);
+        this.validLocation = true;
+      }
       return;
     }
 
@@ -79,10 +92,33 @@ export class BuyRenderService {
     });
     this.layer.add(ghostRec);
     this.ghost = ghostRec;
+    this.ghost.on("dragover", (e) => {
+      console.log("dragover", e);
+    });
   }
 
   removeGhost() {
     this.ghost?.destroy();
     this.ghost = null;
+  }
+
+  private detectCollision() {
+    if (!this.ghost) return false;
+
+    const entities =
+      (this.layer.parent! as Konva.Stage)
+        .getLayers()
+        .find((layer) => layer.id() === "entityLayer")?.children || [];
+
+    for (const child of entities) {
+      const intersect = RenderUtils.intersect(
+        this.ghost.getClientRect(),
+        child.getClientRect(),
+      );
+      if (intersect) {
+        return true;
+      }
+    }
+    return false;
   }
 }

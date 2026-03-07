@@ -6,6 +6,7 @@ import Konva from "konva";
 })
 export class EntityLayerService {
   layer = new Konva.Layer({
+    id: "entityLayer",
     imageSmoothingEnabled: false,
   });
 

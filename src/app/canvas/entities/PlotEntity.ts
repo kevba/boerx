@@ -155,6 +155,8 @@ export class PlotRender extends Konva.Group {
     this.harvestButton = this.setupHarvestButton();
     this.add(this.image);
     this.add(this.harvestButton);
+
+    this.dragHandler();
   }
 
   renderOverlay(overlayIntensity: number) {
@@ -209,6 +211,81 @@ export class PlotRender extends Konva.Group {
       clickable.setAttr("fill", textColor);
     });
     return clickable;
+  }
+
+  private dragHandler() {
+    this.on("dragmove", (e) => {
+      const collidingNode = this.detectCollision();
+      if (!collidingNode) return;
+      const moving = e.target.getClientRect(); // moving node
+      const collider = collidingNode.getClientRect(); // stationary node
+
+      let safeX = moving.x;
+      let safeY = moving.y;
+
+      let constrainedX = 0;
+      let constrainedY = 0;
+
+      const penX = Math.min(
+        moving.x + moving.width - collider.x,
+        collider.x + collider.width - moving.x,
+      );
+      const penY = Math.min(
+        moving.y + moving.height - collider.y,
+        collider.y + collider.height - moving.y,
+      );
+
+      if (moving.x < collider.x && moving.x + moving.width > collider.x) {
+        constrainedX = collider.x - moving.width;
+      } else if (
+        moving.x > collider.x &&
+        collider.x + collider.width > moving.x
+      ) {
+        constrainedX = collider.x + collider.width;
+      }
+
+      if (moving.y < collider.y && moving.y + moving.height > collider.y) {
+        constrainedY = collider.y - moving.height;
+      } else if (
+        moving.y > collider.y &&
+        collider.y + collider.height > moving.y
+      ) {
+        constrainedY = collider.y + collider.height;
+      }
+
+      const parentTransform = e.target
+        .getParent()!
+        .getAbsoluteTransform()
+        .copy()
+        .invert();
+
+      if (penX < penY) {
+        safeX = constrainedX;
+      } else {
+        safeY = constrainedY;
+      }
+
+      const safeCoords = parentTransform.point({ x: safeX, y: safeY });
+
+      // set the safe position
+      e.target.position(safeCoords);
+    });
+  }
+
+  private detectCollision(): Konva.Node | null {
+    const entities = this.getLayer!()?.children || [];
+
+    for (const child of entities) {
+      if (child === this) continue;
+      const intersect = RenderUtils.intersect(
+        this.getClientRect(),
+        child.getClientRect(),
+      );
+      if (intersect) {
+        return child;
+      }
+    }
+    return null;
   }
 }
 

@@ -10,7 +10,7 @@ export class BuyService {
     callback: () => void;
   } | null>(null);
 
-  buyingEntity = computed(() => this._buying()?.entityType ?? null);
+  buyingEntityType = computed(() => this._buying()?.entityType ?? null);
   private buyLocation: { x: number; y: number } | null = null;
 
   setBuying(entityType: EntityType, callback: () => void) {
