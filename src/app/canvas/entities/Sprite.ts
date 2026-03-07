@@ -1,8 +1,9 @@
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
 import { RenderUtils } from "../utils/renderUtils";
+import { Entity, EntityRender } from "./Entity";
 
-export class Sprite extends Konva.Image {
+export class Sprite<T extends Entity<any, any>> extends EntityRender<T> {
   frame = 0;
   totalFrames: number;
   frameWidth: number;
@@ -13,6 +14,7 @@ export class Sprite extends Konva.Image {
 
   protected isAnimating = true;
   protected sourceImage: HTMLImageElement | null = null;
+  protected imageNode: Konva.Image;
 
   constructor(options: {
     id: string;
@@ -26,25 +28,26 @@ export class Sprite extends Konva.Image {
     frameHeight: number;
     color?: { r: number; g: number; b: number };
   }) {
-    const width = RenderUtils.entitySize[options.EntityType][0];
-    const height = RenderUtils.entitySize[options.EntityType][1];
-
     super({
       id: options.id,
-      name: options.name,
       x: options.x,
       y: options.y,
-      width: width,
-      height: height,
+      type: options.EntityType,
       // This image is a dummy
-      image: new Image(),
-      draggable: false,
     });
+
+    this.imageNode = new Konva.Image({
+      height: this.height(),
+      width: this.width(),
+      image: new Image(),
+    });
+    this.add(this.imageNode);
+
     this.totalFrames = options.totalFrames;
     this.frameWidth = options.frameWidth;
     this.frameHeight = options.frameHeight;
 
-    this.setAttr("crop", {
+    this.imageNode.setAttr("crop", {
       x: 0,
       y: 0,
       width: this.frameWidth,
@@ -58,14 +61,14 @@ export class Sprite extends Konva.Image {
         this.sourceImage!,
         this.color,
       );
-      this.image(processedImage);
+      this.imageNode.image(processedImage);
       this.animateSprite();
     };
   }
 
   animateSprite() {
     this.frame = (this.frame + 1) % this.totalFrames;
-    this.cropX(this.frame * this.frameWidth); // move crop to the next frame
+    this.imageNode.cropX(this.frame * this.frameWidth); // move crop to the next frame
     this.getLayer()?.batchDraw();
     if (this.isAnimating) {
       setTimeout(() => this.animateSprite(), this.frameSpeed); // frame delay
@@ -79,7 +82,7 @@ export class Sprite extends Konva.Image {
         this.sourceImage,
         color,
       );
-      this.image(processedImage);
+      this.imageNode.image(processedImage);
     }
   }
 

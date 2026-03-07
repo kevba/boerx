@@ -34,16 +34,6 @@ export class TractorEntity
     [TractorUpgrade.Klaas]: 240,
   };
 
-  private brandColors: Record<
-    TractorUpgrade,
-    { r: number; g: number; b: number }
-  > = {
-    [TractorUpgrade.DearJuan]: { r: 54, g: 185, b: 0 },
-    [TractorUpgrade.OldHillland]: { r: 0, g: 102, b: 204 },
-    [TractorUpgrade.Kerel]: { r: 200, g: 16, b: 46 },
-    [TractorUpgrade.Klaas]: { r: 255, g: 128, b: 0 },
-  };
-
   constructor(
     initialCoords: { x: number; y: number },
     layer: Konva.Layer,
@@ -61,6 +51,7 @@ export class TractorEntity
       id: id,
       node: node,
     });
+    node.entity = this;
 
     this.moveBehavior = new MoveBehavior(this.node, 0, (direction) =>
       this.setDirection(direction),
@@ -82,7 +73,6 @@ export class TractorEntity
   }
   private _upgradeChangeEffect = effect(() => {
     const upgrade = this.upgrade();
-    this.node.setColor(this.brandColors[upgrade]);
     this.moveBehavior.setSpeed(this.brandSpeed[upgrade]);
   });
 
@@ -171,7 +161,19 @@ export enum TractorUpgrade {
   Klaas = "Klaas",
 }
 
-class TractorImage extends Sprite {
+class TractorImage extends Sprite<TractorEntity> {
+  override hasCollision = false;
+
+  private brandColors: Record<
+    TractorUpgrade,
+    { r: number; g: number; b: number }
+  > = {
+    [TractorUpgrade.DearJuan]: { r: 54, g: 185, b: 0 },
+    [TractorUpgrade.OldHillland]: { r: 0, g: 102, b: 204 },
+    [TractorUpgrade.Kerel]: { r: 200, g: 16, b: 46 },
+    [TractorUpgrade.Klaas]: { r: 255, g: 128, b: 0 },
+  };
+
   constructor(args: { x: number; y: number; id: string }) {
     super({
       id: `tractor_${args.id}`,
@@ -192,4 +194,9 @@ class TractorImage extends Sprite {
       height: this.frameHeight,
     });
   }
+
+  _upgradeEffect = effect(() => {
+    const upgrade = this.entity.upgrade();
+    this.setColor(this.brandColors[upgrade]);
+  });
 }

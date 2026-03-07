@@ -58,7 +58,9 @@ export class CowEntity extends Entity<CowImage, CowUpgrade> {
   }
 }
 
-class CowImage extends Sprite {
+class CowImage extends Sprite<CowEntity> {
+  override hasCollision = false;
+
   constructor(args: { x: number; y: number; id: string }) {
     super({
       id: `cow_${args.id}`,

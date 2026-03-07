@@ -6,7 +6,7 @@ import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
 import { RenderUtils } from "../utils/renderUtils";
 import { Direction } from "./behaviors/move";
 import { IStorer, Storer } from "./behaviors/storer";
-import { Entity } from "./Entity";
+import { Entity, EntityRender } from "./Entity";
 
 export class PlotEntity
   extends Entity<PlotRender, PlotUpgrade>
@@ -28,14 +28,14 @@ export class PlotEntity
     return growthStage >= maxGrowthStage;
   });
 
-  private cropStageCount: Record<Crop, number> = {
+  cropStageCount: Record<Crop, number> = {
     [Crop.Wheat]: 30 * 1,
     [Crop.Corn]: 40 * 1,
     [Crop.Potato]: 50 * 1,
     [Crop.Grass]: 10 * 1,
   };
 
-  private cropGrowthStage = signal(0);
+  cropGrowthStage = signal(0);
 
   constructor(
     initialCoords: { x: number; y: number },
@@ -104,18 +104,6 @@ export class PlotEntity
     this.storage.clear();
     this.storage.store({ type: harvestedCrop, amount: 1 });
   }
-
-  private _growthEffect = effect(() => {
-    const crop = this.crop();
-    const growthStage = this.cropGrowthStage();
-    const maxGrowthStage = this.cropStageCount[crop];
-    const growthFraction = maxGrowthStage ? growthStage / maxGrowthStage : 0;
-
-    this.node.setHarvestVisible(this.canHarvest());
-
-    const overlayIntensity = 0.5 - growthFraction * 0.3;
-    this.node.renderOverlay(overlayIntensity);
-  });
 }
 
 export enum PlotUpgrade {
@@ -124,10 +112,9 @@ export enum PlotUpgrade {
   Soil = "soil",
 }
 
-export class PlotRender extends Konva.Group {
+export class PlotRender extends EntityRender<PlotEntity> {
   private image: PlotRenderImage;
   private harvestButton: Konva.Text;
-  entity!: PlotEntity;
 
   private cropColor: Record<Crop, string> = {
     [Crop.Wheat]: "#ebc23e",
@@ -137,15 +124,9 @@ export class PlotRender extends Konva.Group {
   };
 
   constructor(args: { x: number; y: number; id: string }) {
-    const size = RenderUtils.entitySize[EntityType.Plot][0];
-
     super({
-      id: `${args.id}`,
-      name: EntityType.Plot,
-      x: args.x,
-      y: args.y,
-      width: size,
-      height: size,
+      ...args,
+      type: EntityType.Plot,
     });
     this.image = new PlotRenderImage({
       x: 0,
@@ -155,8 +136,6 @@ export class PlotRender extends Konva.Group {
     this.harvestButton = this.setupHarvestButton();
     this.add(this.image);
     this.add(this.harvestButton);
-
-    this.dragHandler();
   }
 
   renderOverlay(overlayIntensity: number) {
@@ -165,18 +144,6 @@ export class PlotRender extends Konva.Group {
 
   setCrop(crop: Crop) {
     this.image.setAttr("fill", this.cropColor[crop]);
-  }
-
-  // Hacky, create a base entityRender group that implements selection functions
-  override setAttr(...args: Parameters<Konva.Group["setAttr"]>) {
-    super.setAttr(...args);
-    if (args[0] === "draggable") {
-      this.image.setAttr(
-        "stroke",
-        args[1] ? RenderUtils.selectedColor : undefined,
-      );
-    }
-    return this;
   }
 
   setHarvestVisible(visible: boolean) {
@@ -213,80 +180,17 @@ export class PlotRender extends Konva.Group {
     return clickable;
   }
 
-  private dragHandler() {
-    this.on("dragmove", (e) => {
-      const collidingNode = this.detectCollision();
-      if (!collidingNode) return;
-      const moving = e.target.getClientRect(); // moving node
-      const collider = collidingNode.getClientRect(); // stationary node
+  private _growthEffect = effect(() => {
+    const crop = this.entity.crop();
+    const growthStage = this.entity.cropGrowthStage();
+    const maxGrowthStage = this.entity.cropStageCount[crop];
+    const growthFraction = maxGrowthStage ? growthStage / maxGrowthStage : 0;
 
-      let safeX = moving.x;
-      let safeY = moving.y;
+    this.setHarvestVisible(this.entity.canHarvest());
 
-      let constrainedX = 0;
-      let constrainedY = 0;
-
-      const penX = Math.min(
-        moving.x + moving.width - collider.x,
-        collider.x + collider.width - moving.x,
-      );
-      const penY = Math.min(
-        moving.y + moving.height - collider.y,
-        collider.y + collider.height - moving.y,
-      );
-
-      if (moving.x < collider.x && moving.x + moving.width > collider.x) {
-        constrainedX = collider.x - moving.width;
-      } else if (
-        moving.x > collider.x &&
-        collider.x + collider.width > moving.x
-      ) {
-        constrainedX = collider.x + collider.width;
-      }
-
-      if (moving.y < collider.y && moving.y + moving.height > collider.y) {
-        constrainedY = collider.y - moving.height;
-      } else if (
-        moving.y > collider.y &&
-        collider.y + collider.height > moving.y
-      ) {
-        constrainedY = collider.y + collider.height;
-      }
-
-      const parentTransform = e.target
-        .getParent()!
-        .getAbsoluteTransform()
-        .copy()
-        .invert();
-
-      if (penX < penY) {
-        safeX = constrainedX;
-      } else {
-        safeY = constrainedY;
-      }
-
-      const safeCoords = parentTransform.point({ x: safeX, y: safeY });
-
-      // set the safe position
-      e.target.position(safeCoords);
-    });
-  }
-
-  private detectCollision(): Konva.Node | null {
-    const entities = this.getLayer!()?.children || [];
-
-    for (const child of entities) {
-      if (child === this) continue;
-      const intersect = RenderUtils.intersect(
-        this.getClientRect(),
-        child.getClientRect(),
-      );
-      if (intersect) {
-        return child;
-      }
-    }
-    return null;
-  }
+    const overlayIntensity = 0.5 - growthFraction * 0.3;
+    this.renderOverlay(overlayIntensity);
+  });
 }
 
 export class PlotRenderImage extends Konva.Image {

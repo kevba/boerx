@@ -61,9 +61,7 @@ export enum BarnUpgrade {
   Warehouse = "Warehouse",
 }
 
-export class BarnImage extends Sprite {
-  entity!: BarnEntity;
-
+export class BarnImage extends Sprite<BarnEntity> {
   constructor(args: { x: number; y: number; id: string }) {
     super({
       id: `barn_${args.id}`,
