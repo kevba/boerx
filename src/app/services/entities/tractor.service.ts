@@ -46,6 +46,6 @@ export class TractorService extends BaseService<TractorUpgrade, TractorEntity> {
 
   createNew(): TractorEntity {
     const coords = this.buyService.getBuyLocation();
-    return new TractorEntity(coords, this.layer);
+    return new TractorEntity(coords, this.entityLayerService.topLayer);
   }
 }

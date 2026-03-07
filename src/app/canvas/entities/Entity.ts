@@ -21,7 +21,7 @@ export abstract class Entity<
   protected injector = inject(Injector);
   protected tick = inject(TickService);
 
-  protected node: T;
+  public node: T;
   abstract selectable: boolean;
   abstract type: EntityType;
   protected initialDirection: Direction = Direction.right;

@@ -5,8 +5,12 @@ import Konva from "konva";
   providedIn: "root",
 })
 export class EntityLayerService {
-  layer = new Konva.Layer({
-    id: "entityLayer",
+  topLayer = new Konva.Layer({
+    id: "entityTopLayer",
+    imageSmoothingEnabled: false,
+  });
+  bottomLayer = new Konva.Layer({
+    id: "entityBottomLayer",
     imageSmoothingEnabled: false,
   });
 

@@ -20,8 +20,7 @@ export abstract class BaseService<
   E extends Entity<any, any>,
 > {
   private injector = inject(Injector);
-  private entityLayerService = inject(EntityLayerService);
-  protected layer = this.entityLayerService.layer;
+  protected entityLayerService = inject(EntityLayerService);
 
   protected stashService = inject(StashService);
   protected _entity = signal<E[]>([]);
@@ -35,6 +34,10 @@ export abstract class BaseService<
 
   abstract upgrades: UpgradeTable<UpgradeType>;
   protected upgrader!: Upgrader<UpgradeType>;
+
+  getById(id: string): E | undefined {
+    return this.entities().find((entity) => entity.id === id);
+  }
 
   add() {
     const cost = this.cost();
@@ -51,14 +54,8 @@ export abstract class BaseService<
     });
   }
 
-  constructor() {}
-
-  protected init() {
-    this.upgrader = new Upgrader<UpgradeType>(this.upgrades);
-  }
-
   upgrade(baseId: string, toUpgrade: UpgradeType) {
-    const base = this._entity().find((base) => base.id === baseId);
+    const base = this.getById(baseId);
     if (!base) return;
 
     const upgradeCost = this.upgradeCost(baseId, toUpgrade);
@@ -80,9 +77,15 @@ export abstract class BaseService<
   }
 
   upgradeCost(baseId: string, toUpgrade: UpgradeType): number {
-    const base = this._entity().find((base) => base.id === baseId);
+    const base = this.getById(baseId);
     if (!base) return 0;
     return this.upgrader.fromToCost(base.upgrade(), toUpgrade);
+  }
+
+  constructor() {}
+
+  protected init() {
+    this.upgrader = new Upgrader<UpgradeType>(this.upgrades);
   }
 
   abstract createNew(): E;

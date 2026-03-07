@@ -108,7 +108,7 @@ export class BuyRenderService {
     const entities =
       (this.layer.parent! as Konva.Stage)
         .getLayers()
-        .find((layer) => layer.id() === "entityLayer")?.children || [];
+        .find((layer) => layer.id() === "entityBottomLayer")?.children || [];
 
     for (const child of entities) {
       const intersect = RenderUtils.intersect(

@@ -23,7 +23,7 @@ export class CowService extends BaseService<CowUpgrade, CowEntity> {
 
   createNew(): CowEntity {
     const coords = this.buyService.getBuyLocation();
-    const entity = new CowEntity(coords, this.layer);
+    const entity = new CowEntity(coords, this.entityLayerService.topLayer);
     return entity;
   }
 }

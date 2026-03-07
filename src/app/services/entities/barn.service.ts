@@ -38,6 +38,6 @@ export class BarnService extends BaseService<BarnUpgrade, BarnEntity> {
   createNew(): BarnEntity {
     const coords = this.buyService.getBuyLocation();
 
-    return new BarnEntity(coords, this.layer);
+    return new BarnEntity(coords, this.entityLayerService.bottomLayer);
   }
 }

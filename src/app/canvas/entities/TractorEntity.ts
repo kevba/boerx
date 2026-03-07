@@ -1,11 +1,15 @@
-import { effect, signal } from "@angular/core";
+import { effect, inject, signal } from "@angular/core";
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
+import { BarnService } from "../../services/entities/barn.service";
+import { PlotsService } from "../../services/entities/plots.service";
+import { TractorService } from "../../services/entities/tractor.service";
 import { BarnImage } from "./BarnEntity";
 import { Direction, MoveBehavior } from "./behaviors/move";
 import { IStorer, Storer } from "./behaviors/storer";
+import { BehaviorUtils } from "./behaviors/utils";
 import { Entity } from "./Entity";
-import { PlotRender } from "./PlotEntity";
+import { PlotEntity } from "./PlotEntity";
 import { Sprite } from "./Sprite";
 
 export class TractorEntity
@@ -15,6 +19,9 @@ export class TractorEntity
   override selectable = true;
   override type = EntityType.Tractor;
   private moveBehavior: MoveBehavior;
+  private plotService = inject(PlotsService);
+  private tractorService = inject(TractorService);
+  private barnService = inject(BarnService);
 
   override initialDirection: Direction = Direction.right;
 
@@ -45,7 +52,6 @@ export class TractorEntity
       y: initialCoords.y,
     });
     layer.add(node);
-    node.setZIndex(1000); // Ensure tractors are on top of other entities
 
     super({
       id: id,
@@ -92,32 +98,31 @@ export class TractorEntity
   }
 
   private plotMovingBehavoir() {
-    let targetNode: Konva.Node | undefined;
-    const layer = this.node.getLayer()!;
+    let plot: PlotEntity | undefined;
 
     if (this.currentPlotTargetId) {
-      targetNode = layer.findOne(`#${this.currentPlotTargetId}`);
+      plot = this.plotService.getById(this.currentPlotTargetId);
     } else {
-      targetNode = this.getTargetPlot();
+      plot = this.getTargetPlot();
     }
 
-    if (!targetNode) {
+    if (!plot) {
       this.currentPlotTargetId = null;
       return;
     }
 
-    const plot = targetNode as PlotRender;
-    this.currentPlotTargetId = plot.id();
+    const plotNode = plot.node;
+    this.currentPlotTargetId = plotNode.id();
 
-    this.moveBehavior.moveToTarget(plot, () => {
-      const inStorage = plot.entity.storage.retrieveAll();
+    this.moveBehavior.moveToTarget(plotNode, () => {
+      const inStorage = plotNode.entity.storage.retrieveAll();
       if (inStorage) {
         this.storage.storeAll(inStorage);
       }
 
-      if (plot.entity.canHarvest()) {
-        plot.entity.harvest();
-        const harvested = plot.entity.storage.retrieveAll();
+      if (plot.canHarvest()) {
+        plot.harvest();
+        const harvested = plot.storage.retrieveAll();
         if (!harvested) return;
         this.storage.storeAll(harvested);
       }
@@ -129,14 +134,15 @@ export class TractorEntity
   }
 
   private barnMovingBehavior() {
-    const layer = this.node.getLayer()!;
+    const barn = this.barnService.entities();
+    const closest = BehaviorUtils.findClosest(
+      this.node.position(),
+      barn.map((b) => b.node),
+    );
 
-    let targetNode = layer.findOne(`.${EntityType.Barn}`);
-    if (!targetNode) return;
-
-    this.moveBehavior.moveToTarget(targetNode, () => {
+    this.moveBehavior.moveToTarget(closest, () => {
       // After reaching the barn, switch back to moving towards the home plot
-      const barn = targetNode as BarnImage;
+      const barn = closest as BarnImage;
       const cargo = this.storage.retrieveAll();
       if (!cargo) return;
 
@@ -148,46 +154,29 @@ export class TractorEntity
     return;
   }
 
-  private getTargetPlot() {
-    const layer = this.node.getLayer()!;
-    const otherTractorTargets = layer
-      .find(`.${EntityType.Tractor}`)
-      .filter((node) => {
-        return node.id() !== this.node.id();
-      })
-      .map((node) => (node as TractorRender).entity.currentPlotTargetId);
+  private getTargetPlot(): PlotEntity | undefined {
+    const otherTractorTargets = this.tractorService
+      .entities()
+      .map((tractor) => tractor.currentPlotTargetId);
 
-    let targets = layer.find(`.${this.moveEntityTarget}`) || [];
-    targets = targets
-      .filter((node) => {
-        if (!(node instanceof Konva.Group)) return false;
-        const plot = node as PlotRender;
-
-        if (!plot.entity) return false;
-
-        if (otherTractorTargets.includes(plot.id())) {
+    let plots = this.plotService
+      .entities()
+      .filter((plot) => {
+        if (otherTractorTargets.includes(plot.id)) {
           return false;
         }
 
         return true;
       })
       .sort((a, b) => {
-        const bEntity = (b as PlotRender).entity;
-        const aEntity = (a as PlotRender).entity;
-
-        if (
-          bEntity.cropGrowthStageFraction() ===
-          aEntity.cropGrowthStageFraction()
-        ) {
-          return bEntity.cropGrowthStage() - aEntity.cropGrowthStage();
+        if (a.cropGrowthStageFraction() === b.cropGrowthStageFraction()) {
+          return b.cropGrowthStage() - a.cropGrowthStage();
         }
 
-        return (
-          bEntity.cropGrowthStageFraction() - aEntity.cropGrowthStageFraction()
-        );
+        return b.cropGrowthStageFraction() - a.cropGrowthStageFraction();
       });
 
-    return targets[0];
+    return plots[0];
   }
 }
 

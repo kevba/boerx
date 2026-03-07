@@ -67,7 +67,9 @@ export class CanvasComponent {
       if (!stage) return;
 
       stage.add(this.backgroundLayer);
-      stage.add(this.entityLayerService.layer);
+      stage.add(this.entityLayerService.bottomLayer);
+
+      stage.add(this.entityLayerService.topLayer);
       this.buyRenderService.setStage(stage);
 
       stage.on("click", (e) => {

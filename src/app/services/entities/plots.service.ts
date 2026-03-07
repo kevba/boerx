@@ -73,6 +73,6 @@ export class PlotsService extends BaseService<PlotUpgrade, PlotEntity> {
 
   createNew(): PlotEntity {
     const coords = this.buyService.getBuyLocation();
-    return new PlotEntity(coords, this.layer);
+    return new PlotEntity(coords, this.entityLayerService.bottomLayer);
   }
 }
