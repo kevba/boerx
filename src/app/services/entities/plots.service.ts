@@ -2,9 +2,8 @@ import { computed, inject, Injectable } from "@angular/core";
 import { PlotEntity, PlotUpgrade } from "../../canvas/entities/PlotEntity";
 import { EntityType } from "../../models/entity";
 import { BuyService } from "../buy.service";
-import { NutrientsService } from "../nutrients.service";
+import { Crop, CropService } from "../items/crop.service";
 import { BaseService } from "./base.service";
-import { Crop, CropService } from "./crop.service";
 
 @Injectable({
   providedIn: "root",
@@ -12,7 +11,6 @@ import { Crop, CropService } from "./crop.service";
 export class PlotsService extends BaseService<PlotUpgrade, PlotEntity> {
   override entityType = EntityType.Plot;
   private cropService = inject(CropService);
-  private nutrientsService = inject(NutrientsService);
 
   private buyService = inject(BuyService);
 
@@ -71,23 +69,6 @@ export class PlotsService extends BaseService<PlotUpgrade, PlotEntity> {
 
       return plots;
     });
-  }
-
-  harvest(plot: PlotEntity) {
-    const depletion = this.nutrientsService.cropBaseDepletion()[plot.crop()];
-
-    // TODO: support upgrades that reduce depletion
-    this.nutrientsService.addWater(-depletion.water);
-    this.nutrientsService.addFertilizer(-depletion.nutrients);
-
-    this.cropService.updateHarvestCounter(plot.crop());
-  }
-
-  harvestEarnings(plot: PlotEntity): number {
-    const earnings = this.cropService.earnings()[plot.crop()];
-    const mult = this.nutrientsService.cropValueMult()[plot.crop()];
-
-    return earnings * mult.water * mult.nutrients;
   }
 
   createNew(): PlotEntity {

@@ -1,6 +1,6 @@
 import { DecimalPipe } from "@angular/common";
 import { Component, computed, inject } from "@angular/core";
-import { Crop, CropService } from "../services/entities/crop.service";
+import { Crop, CropService } from "../services/items/crop.service";
 import { StashService } from "../services/stash.service";
 
 @Component({

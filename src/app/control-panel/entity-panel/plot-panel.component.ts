@@ -1,8 +1,8 @@
 import { Component, computed, inject } from "@angular/core";
 import { EntityType } from "../../models/entity";
 import { BaseService } from "../../services/entities/base.service";
-import { Crop, CropService } from "../../services/entities/crop.service";
 import { PlotsService } from "../../services/entities/plots.service";
+import { Crop, CropService } from "../../services/items/crop.service";
 import { SelectionService } from "../../services/selection.service";
 import { BuyTileComponent } from "../buy-tile.component";
 import { EntityUpgradesComponent } from "./entity-upgrades.component";

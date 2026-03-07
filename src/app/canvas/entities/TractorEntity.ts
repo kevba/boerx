@@ -1,15 +1,18 @@
 import { effect, signal } from "@angular/core";
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
-import { Item } from "../../services/wares.service";
 import { BarnImage } from "./BarnEntity";
 import { Direction, MoveBehavior } from "./behaviors/move";
+import { IStorer, Storer } from "./behaviors/storer";
 import { BehaviorUtils } from "./behaviors/utils";
 import { Entity } from "./Entity";
 import { PlotRender } from "./PlotEntity";
 import { Sprite } from "./Sprite";
 
-export class TractorEntity extends Entity<TractorImage, TractorUpgrade> {
+export class TractorEntity
+  extends Entity<TractorImage, TractorUpgrade>
+  implements IStorer
+{
   override selectable = true;
   override type = EntityType.Tractor;
   private moveBehavior: MoveBehavior;
@@ -18,7 +21,7 @@ export class TractorEntity extends Entity<TractorImage, TractorUpgrade> {
   homePlotId: string | null = null;
   atHomePlot = signal(false);
 
-  cargo = signal<Item | null>(null);
+  storage: Storer;
 
   upgrade = signal<TractorUpgrade>(TractorUpgrade.DearJuan);
 
@@ -64,6 +67,8 @@ export class TractorEntity extends Entity<TractorImage, TractorUpgrade> {
     );
 
     this.upgrade.set(upgrade);
+    this.storage = new Storer();
+
     this.init();
   }
 
@@ -121,8 +126,13 @@ export class TractorEntity extends Entity<TractorImage, TractorUpgrade> {
     this.moveBehavior.moveToTarget(plot, () => {
       this.atHomePlot.set(true);
       if (plot.entity.canHarvest()) {
-        const harvested = plot.entity.harvest();
-        this.cargo.set({ type: harvested.crop, amount: harvested.amount });
+        plot.entity.harvest();
+        const harvested = plot.entity.storage.retrieveAll();
+
+        if (!harvested) return;
+
+        this.storage.storeAll(harvested);
+
         this.setTargetToBarn();
       }
     });
@@ -137,12 +147,11 @@ export class TractorEntity extends Entity<TractorImage, TractorUpgrade> {
     this.moveBehavior.moveToTarget(targetNode, () => {
       // After reaching the barn, switch back to moving towards the home plot
       const barn = targetNode as BarnImage;
-      const cargo = this.cargo();
+      const cargo = this.storage.retrieveAll();
       if (!cargo) return;
 
       // Cargo that can not be stored will be dumped :(
-      barn.entity.store(cargo);
-      this.cargo.set(null);
+      barn.entity.storage.storeAll(cargo);
       this.moveEntityTarget = EntityType.Plot;
     });
 

@@ -77,6 +77,12 @@ export class CanvasComponent {
         }
       });
 
+      stage.on("dragstart", (e) => {
+        if (e.target === stage) {
+          this.selectionService.clear();
+        }
+      });
+
       this.handleZoom(stage);
     });
 

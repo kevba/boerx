@@ -1,71 +1,78 @@
-import { effect, inject, Injectable } from "@angular/core";
-import { BarnService } from "./entities/barn.service";
-import { PlotsService } from "./entities/plots.service";
-import { TractorService } from "./entities/tractor.service";
+import { inject, Injectable } from "@angular/core";
+import { CropService } from "./items/crop.service";
 import { StashService } from "./stash.service";
-import { TickService } from "./tick.service";
+import { CropItem } from "./wares.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class IncomeService {
   private stashService = inject(StashService);
-  private tickService = inject(TickService);
-  private plotService = inject(PlotsService);
-  private tractorService = inject(TractorService);
-  private barnService = inject(BarnService);
+  private cropService = inject(CropService);
 
-  constructor() {
-    effect(() => {
-      const _ = this.tickService.tick();
-      this.updateOnTick();
-    });
-    effect(() => {
-      const _ = this.tickService.calculate();
-      this.updateEarnings();
+  sellCrop(item: CropItem) {
+    const sellPrice = this.cropService.earnings()[item.type];
+    const totalEarnings = sellPrice * item.amount;
+    this.stashService.addStash(totalEarnings);
+  }
+
+  sellCrops(items: CropItem[]) {
+    items.forEach((item) => {
+      this.sellCrop(item);
     });
   }
 
-  private updateOnTick() {
-    const _ = this.tickService.tick();
-    const plots = this.plotService.entities();
+  // constructor() {
+  //   effect(() => {
+  //     const _ = this.tickService.tick();
+  //     this.updateOnTick();
+  //   });
+  //   effect(() => {
+  //     const _ = this.tickService.calculate();
+  //     this.updateEarnings();
+  //   });
+  // }
 
-    // harvest count update must happen first, and also in a separate effect to prevent haniging reactive updates
-    plots.forEach((plot) => {
-      this.plotService.harvest(plot);
-    });
-  }
+  // private updateOnTick() {
+  //   const _ = this.tickService.tick();
+  //   const plots = this.plotService.entities();
 
-  private updateEarnings() {
-    const plots = this.plotService.entities();
-    const tractors = this.tractorService.entities();
-    const barns = this.barnService.entities();
+  //   // harvest count update must happen first, and also in a separate effect to prevent haniging reactive updates
+  //   plots.forEach((plot) => {
+  //     this.plotService.harvest(plot);
+  //   });
+  // }
 
-    let income = 0;
+  // private updateEarnings() {
+  //   const plots = this.plotService.entities();
+  //   const tractors = this.tractorService.entities();
+  //   const barns = this.barnService.entities();
 
-    tractors.forEach((tractor) => {
-      if (!tractor.atHomePlot()) return;
+  //   let income = 0;
 
-      const plot = plots.find((p) => p.id === tractor.homePlotId!);
+  //   tractors.forEach((tractor) => {
+  //     if (!tractor.atHomePlot()) return;
 
-      if (!plot) {
-        tractor.homePlotId = null;
-        return;
-      }
+  //     const plot = plots.find((p) => p.id === tractor.homePlotId!);
 
-      if (!plot.canHarvest()) return;
+  //     if (!plot) {
+  //       tractor.homePlotId = null;
+  //       return;
+  //     }
 
-      income += this.plotService.harvestEarnings(plot);
-      plot.harvest();
-      tractor.setTargetToBarn();
-    });
+  //     if (!plot.canHarvest()) return;
 
-    // barns.forEach((barn) => {
-    //   income +=
-    //     this.barnService.upgrades[barn.upgrade()].earningsIncreasePerPlot *
-    //     plots.length;
-    // });
+  //     income += this.plotService.harvestEarnings(plot);
+  //     plot.harvest();
+  //     tractor.setTargetToBarn();
+  //   });
 
-    this.stashService.addStash(income);
-  }
+  // barns.forEach((barn) => {
+  //   income +=
+  //     this.barnService.upgrades[barn.upgrade()].earningsIncreasePerPlot *
+  //     plots.length;
+  // });
+
+  // this.stashService.addStash(income);
+  // }
 }

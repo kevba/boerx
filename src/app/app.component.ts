@@ -5,7 +5,6 @@ import { ControlPanelComponent } from "./control-panel/control-panel.component";
 import { FinancialBarComponent } from "./databars/financial-bar.component";
 import { NutrientsBarComponent } from "./databars/nutrients-bar.component";
 import { CheatsService } from "./services/cheats.service";
-import { IncomeService } from "./services/income.service";
 
 @Component({
   selector: "app-root",
@@ -45,8 +44,5 @@ import { IncomeService } from "./services/income.service";
   `,
 })
 export class AppComponent {
-  // Injecting the service to make sure it is initialized and running
-  _incomeService = inject(IncomeService);
-
   cheatsService = inject(CheatsService);
 }

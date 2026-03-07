@@ -2,10 +2,11 @@ import { Component, computed, inject, signal } from "@angular/core";
 import { CheatsService } from "../services/cheats.service";
 import { CheatsPanelComponent } from "./cheats-panel.component";
 import { ShopPanelComponent } from "./shop-panel.component";
+import { StoragePanelComponent } from "./storage-panel.component";
 
 @Component({
   selector: "app-main-panel",
-  imports: [ShopPanelComponent, CheatsPanelComponent],
+  imports: [ShopPanelComponent, StoragePanelComponent, CheatsPanelComponent],
   template: `
     <div class="p-4 flex flex-col h-full">
       <div
@@ -21,6 +22,9 @@ import { ShopPanelComponent } from "./shop-panel.component";
         @switch (selectedMenu().type) {
           @case (PanelType.Shop) {
             <app-shop-panel />
+          }
+          @case (PanelType.Storage) {
+            <app-storage-panel />
           }
           @case (PanelType.Cheats) {
             <app-cheats-panel />
@@ -78,6 +82,7 @@ export class MainPanelComponent {
 
 enum PanelType {
   Shop = "Shop",
+  Storage = "Storage",
   Stats = "Stats",
   Cheats = "Cheats",
 }

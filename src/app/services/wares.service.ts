@@ -1,6 +1,10 @@
-import { Crop } from "./entities/crop.service";
+import { Crop } from "./items/crop.service";
 
-export type Item = {
-  type: Crop;
+export interface Item {
+  type: string;
   amount: number;
-};
+}
+
+export interface CropItem extends Item {
+  type: Crop;
+}

@@ -1,13 +1,17 @@
 import { computed, effect, signal, untracked } from "@angular/core";
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
-import { Crop } from "../../services/entities/crop.service";
+import { Crop } from "../../services/items/crop.service";
 import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
 import { RenderUtils } from "../utils/renderUtils";
 import { Direction } from "./behaviors/move";
+import { IStorer, Storer } from "./behaviors/storer";
 import { Entity } from "./Entity";
 
-export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
+export class PlotEntity
+  extends Entity<PlotRender, PlotUpgrade>
+  implements IStorer
+{
   override selectable = true;
   override type = EntityType.Plot;
 
@@ -15,6 +19,7 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
 
   upgrade = signal<PlotUpgrade>(PlotUpgrade.Basic);
   crop = signal<Crop>(Crop.Grass);
+  storage: Storer;
 
   canHarvest = computed(() => {
     const crop = this.crop();
@@ -22,13 +27,6 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
     const maxGrowthStage = this.cropStageCount[crop];
     return growthStage >= maxGrowthStage;
   });
-
-  private cropColor: Record<Crop, string> = {
-    [Crop.Wheat]: "#ebc23e",
-    [Crop.Corn]: "#d6c800",
-    [Crop.Potato]: "#a76829",
-    [Crop.Grass]: "#2d771a",
-  };
 
   private cropStageCount: Record<Crop, number> = {
     [Crop.Wheat]: 30 * 1,
@@ -59,8 +57,11 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
     });
     node.entity = this;
 
+    this.storage = new Storer(5);
+
     this.upgrade.set(upgrade);
     this.crop.set(crop);
+
     this.init();
   }
 
@@ -77,7 +78,7 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
 
   _cropChangeEffect = effect(() => {
     const crop = this.crop();
-    this.node.setAttr("fill", this.cropColor[crop]);
+    this.node.setCrop(crop);
   });
 
   upgradeTo(upgrade: PlotUpgrade) {
@@ -95,12 +96,13 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
     }
   }
 
-  harvest(): { crop: Crop; amount: number } {
+  harvest() {
     const harvestedCrop = this.crop();
     this.crop.set(Crop.Grass);
     this.cropGrowthStage.set(0);
 
-    return { crop: harvestedCrop, amount: 1 };
+    this.storage.clear();
+    this.storage.store({ type: harvestedCrop, amount: 1 });
   }
 
   private _growthEffect = effect(() => {
@@ -108,6 +110,8 @@ export class PlotEntity extends Entity<PlotRender, PlotUpgrade> {
     const growthStage = this.cropGrowthStage();
     const maxGrowthStage = this.cropStageCount[crop];
     const growthFraction = maxGrowthStage ? growthStage / maxGrowthStage : 0;
+
+    this.node.setHarvestVisible(this.canHarvest());
 
     const overlayIntensity = 0.5 - growthFraction * 0.3;
     this.node.renderOverlay(overlayIntensity);
@@ -120,10 +124,98 @@ export enum PlotUpgrade {
   Soil = "soil",
 }
 
-export class PlotRender extends Konva.Image {
+export class PlotRender extends Konva.Group {
+  private image: PlotRenderImage;
+  private harvestButton: Konva.Text;
+  entity!: PlotEntity;
+
+  private cropColor: Record<Crop, string> = {
+    [Crop.Wheat]: "#ebc23e",
+    [Crop.Corn]: "#d6c800",
+    [Crop.Potato]: "#a76829",
+    [Crop.Grass]: "#2d771a",
+  };
+
+  constructor(args: { x: number; y: number; id: string }) {
+    const size = RenderUtils.entitySize[EntityType.Plot][0];
+
+    super({
+      id: `${args.id}`,
+      name: EntityType.Plot,
+      x: args.x,
+      y: args.y,
+      width: size,
+      height: size,
+    });
+    this.image = new PlotRenderImage({
+      x: 0,
+      y: 0,
+      id: `${args.id}-image`,
+    });
+    this.harvestButton = this.setupHarvestButton();
+    this.add(this.image);
+    this.add(this.harvestButton);
+  }
+
+  renderOverlay(overlayIntensity: number) {
+    this.image.renderOverlay(overlayIntensity);
+  }
+
+  setCrop(crop: Crop) {
+    this.image.setAttr("fill", this.cropColor[crop]);
+  }
+
+  // Hacky, create a base entityRender group that implements selection functions
+  override setAttr(...args: Parameters<Konva.Group["setAttr"]>) {
+    super.setAttr(...args);
+    if (args[0] === "draggable") {
+      this.image.setAttr(
+        "stroke",
+        args[1] ? RenderUtils.selectedColor : undefined,
+      );
+    }
+    return this;
+  }
+
+  setHarvestVisible(visible: boolean) {
+    this.harvestButton.setAttr("visible", visible);
+  }
+
+  private setupHarvestButton() {
+    const textColor = "oklch(76.9% 0.188 70.08)";
+    const testHoverColor = "oklch(76.9% 0.188 50.08)";
+
+    const clickable = new Konva.Text({
+      text: "Harvest",
+      fontSize: 20,
+      fontFamily: "pixel",
+      fill: textColor,
+      visible: false,
+
+      height: this.height(),
+      width: this.width(),
+      align: "center",
+      verticalAlign: "middle",
+    });
+    clickable.on("click", (e) => {
+      e.cancelBubble = true;
+      // Ugly two way bindings
+      this.entity.harvest();
+    });
+    clickable.on("mouseenter", (e) => {
+      clickable.setAttr("fill", testHoverColor);
+    });
+    clickable.on("mouseleave", (e) => {
+      clickable.setAttr("fill", textColor);
+    });
+    console.log(clickable);
+    return clickable;
+  }
+}
+
+export class PlotRenderImage extends Konva.Image {
   private canvas: HTMLCanvasElement;
   private noiseData: string[][];
-  entity!: PlotEntity;
 
   constructor(args: { x: number; y: number; id: string }) {
     const size = RenderUtils.entitySize[EntityType.Plot][0];

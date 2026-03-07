@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from "@angular/core";
-import { Crop } from "./entities/crop.service";
+import { Crop } from "./items/crop.service";
 
 @Injectable({
   providedIn: "root",
