@@ -31,11 +31,11 @@ import { CheatsService } from "./services/cheats.service";
       <div class="h-[3rem] p-2 bg-stone-600 border-stone-600 flex items-center">
         <app-financial-bar class="flex-1" />
       </div>
-      <div class="flex-1 flex no-wrap h-full w-full">
-        <app-canvas class="flex-1 content-baseline" />
-        <app-control-panel />
+      <div class="flex-1 flex no-wrap h-full w-full md:flex-row flex-col">
+        <app-canvas class="h-[70%] md:flex-1 content-baseline" />
+        <app-control-panel class="flex-1 md:flex-0" />
       </div>
-      <div class="h-[3rem] bg-stone-600 ">
+      <div class="h-[3rem] bg-stone-600 hidden md:visible">
         <div class="flex flex-row gap-4 p-4 h-full">
           <app-nutrients-bar />
         </div>

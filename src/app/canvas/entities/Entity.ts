@@ -36,7 +36,7 @@ export abstract class Entity<
     this.node.entity = this as any;
     this.id = options.id;
 
-    this.node.on("click", (e) => this.onSelect(e));
+    this.node.on("click tap", (e) => this.onSelect(e));
 
     this.selectionService.selectedPerType$
       .pipe(map((entities) => entities[this.type]?.includes(this.id) || false))

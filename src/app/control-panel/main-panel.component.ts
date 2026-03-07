@@ -18,16 +18,17 @@ import { StoragePanelComponent } from "./storage-panel.component";
         <button class="text pr-2!" (click)="nextMenu()">{{ ">" }}</button>
       </div>
 
-      <div class="flex flex-col gap-4 pt-4 items-center">
+      <div
+        class="flex flex-col gap-4 pt-4 items-center h-full w-full md:overflow-y-auto overflow-y-scroll">
         @switch (selectedMenu().type) {
           @case (PanelType.Shop) {
-            <app-shop-panel />
+            <app-shop-panel class="w-full h-full" />
           }
           @case (PanelType.Storage) {
-            <app-storage-panel />
+            <app-storage-panel class="w-full h-full" />
           }
           @case (PanelType.Cheats) {
-            <app-cheats-panel />
+            <app-cheats-panel class="w-full h-full" />
           }
           @default {
             <div>Select an option</div>

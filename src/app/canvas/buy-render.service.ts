@@ -39,7 +39,7 @@ export class BuyRenderService {
       }
     });
 
-    stage.on("click", (e) => {
+    stage.on("click tap", (e) => {
       e.evt.preventDefault();
       if (!this.validLocation) return;
 

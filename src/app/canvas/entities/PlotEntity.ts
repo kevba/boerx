@@ -172,7 +172,7 @@ export class PlotRender extends EntityRender<PlotEntity> {
       align: "center",
       verticalAlign: "middle",
     });
-    clickable.on("click", (e) => {
+    clickable.on("click tap", (e) => {
       e.cancelBubble = true;
       // Ugly two way bindings
       this.entity.harvest();

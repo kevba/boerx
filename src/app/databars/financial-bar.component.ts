@@ -16,14 +16,16 @@ import { StashService } from "../services/stash.service";
         </span>
       </div>
       <div class="flex-1" w-full></div>
-      @for (option of cropPrices(); track option.crop) {
-        <div class="text-sm font-bold">
-          <span>{{ option.crop }}: </span>
-          <span class="text-green-500">
-            {{ option.income | number: "1.0-0" }}{{ stashService.stashUnit }}
-          </span>
-        </div>
-      }
+      <div class="md:visible hidden">
+        @for (option of cropPrices(); track option.crop) {
+          <div class="text-sm font-bold">
+            <span>{{ option.crop }}: </span>
+            <span class="text-green-500">
+              {{ option.income | number: "1.0-0" }}{{ stashService.stashUnit }}
+            </span>
+          </div>
+        }
+      </div>
     </div>
   `,
 })

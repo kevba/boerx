@@ -72,7 +72,7 @@ export class CanvasComponent {
       stage.add(this.entityLayerService.topLayer);
       this.buyRenderService.setStage(stage);
 
-      stage.on("click", (e) => {
+      stage.on("click tap", (e) => {
         if (e.target === stage) {
           this.selectionService.clear();
         }

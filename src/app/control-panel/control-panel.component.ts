@@ -15,13 +15,14 @@ import { MainPanelComponent } from "./main-panel.component";
   ],
 
   template: `
-    <div class="w-[20rem] flex flex-col h-full bg-stone-500 ">
+    <div
+      class="md:w-[20rem] w-full h-[20rem] md:h-full flex flex-col h-full bg-stone-500 ">
       <div class="relative w-full h-full flex-1 ">
         <app-main-panel
-          class="absolute top-0 left-0 w-full h-full border-l-8 border-stone-600" />
+          class="absolute top-0 left-0 w-full h-full md:border-l-8 md:border-stone-600" />
         @if (showSelectedControl()) {
           <div
-            class="absolute top-0 left-0 w-full h-full bg-stone-500 border-l-8 border-stone-600"
+            class="absolute top-0 left-0 w-full h-full bg-stone-500 md:border-l-8 md:border-stone-600"
             animate.enter="slide-in-enter"
             animate.leave="slide-in-leave">
             <div class="flex flex-col h-full w-full">

@@ -12,7 +12,8 @@ import { BuyTileComponent } from "./buy-tile.component";
   selector: "app-shop-panel",
   imports: [BuyTileComponent],
   template: `
-    <div class="flex flex-row flex-wrap gap-4">
+    <div
+      class="flex flex-row flex-nowrap gap-4 overflow-x-scroll md:overflow-auto md:flex-wrap md:pb-0 pb-4">
       <app-buy-tile
         image=""
         text="Plot"
