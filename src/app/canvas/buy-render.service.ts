@@ -20,7 +20,7 @@ export class BuyRenderService {
 
   setStage(stage: Konva.Stage) {
     stage.add(this.layer);
-    stage.on("mousemove", () => {
+    stage.on("mousemove ", () => {
       const entityType = this.buyService.buyingEntityType();
       if (entityType) {
         const pos = stage.getRelativePointerPosition()!;
@@ -39,11 +39,19 @@ export class BuyRenderService {
       }
     });
 
+    stage.on("tap", (e) => {});
+
     stage.on("click tap", (e) => {
       e.evt.preventDefault();
-      if (!this.validLocation) return;
-
       const entity = this.buyService.buyingEntityType();
+      if (entity === null) return;
+
+      const pos = stage.getRelativePointerPosition()!;
+      this.drawGhost(entity!, pos.x, pos.y);
+
+      if (!this.validLocation) return;
+      console.log("click tap touchstart", e);
+
       if (entity) {
         const pos = stage.getRelativePointerPosition()!;
         const width = RenderUtils.entitySize[entity][0];
@@ -69,13 +77,6 @@ export class BuyRenderService {
       this.ghost.position({ x: centerX, y: centerY });
       this.detectCollision();
 
-      if (this.detectCollision()) {
-        this.ghost.stroke("red");
-        this.validLocation = false;
-      } else {
-        this.ghost.stroke(RenderUtils.selectedColor);
-        this.validLocation = true;
-      }
       return;
     }
 
@@ -95,6 +96,14 @@ export class BuyRenderService {
     this.ghost.on("dragover", (e) => {
       console.log("dragover", e);
     });
+
+    if (this.detectCollision()) {
+      this.ghost.stroke("red");
+      this.validLocation = false;
+    } else {
+      this.ghost.stroke(RenderUtils.selectedColor);
+      this.validLocation = true;
+    }
   }
 
   removeGhost() {
