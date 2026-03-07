@@ -26,6 +26,7 @@ export class CowEntity extends Entity<CowImage, CowUpgrade> {
       ...initialCoords,
     });
     layer.add(node);
+    node.setZIndex(1001); // Ensure cows are on top of other entities
 
     super({
       id: id,

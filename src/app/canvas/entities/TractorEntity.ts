@@ -4,13 +4,12 @@ import { EntityType } from "../../models/entity";
 import { BarnImage } from "./BarnEntity";
 import { Direction, MoveBehavior } from "./behaviors/move";
 import { IStorer, Storer } from "./behaviors/storer";
-import { BehaviorUtils } from "./behaviors/utils";
 import { Entity } from "./Entity";
 import { PlotRender } from "./PlotEntity";
 import { Sprite } from "./Sprite";
 
 export class TractorEntity
-  extends Entity<TractorImage, TractorUpgrade>
+  extends Entity<TractorRender, TractorUpgrade>
   implements IStorer
 {
   override selectable = true;
@@ -18,8 +17,8 @@ export class TractorEntity
   private moveBehavior: MoveBehavior;
 
   override initialDirection: Direction = Direction.right;
-  homePlotId: string | null = null;
-  atHomePlot = signal(false);
+
+  currentPlotTargetId: string | null = null;
 
   storage: Storer;
 
@@ -40,12 +39,13 @@ export class TractorEntity
     upgrade: TractorUpgrade = TractorUpgrade.DearJuan,
   ) {
     const id = crypto.randomUUID();
-    const node = new TractorImage({
+    const node = new TractorRender({
       id: id,
       x: initialCoords.x,
       y: initialCoords.y,
     });
     layer.add(node);
+    node.setZIndex(1000); // Ensure tractors are on top of other entities
 
     super({
       id: id,
@@ -78,13 +78,11 @@ export class TractorEntity
 
   private moveToTarget() {
     if (this.moveEntityTarget === EntityType.Barn) {
-      this.atHomePlot.set(false);
+      this.currentPlotTargetId = null;
       this.barnMovingBehavior();
     }
 
     if (this.moveEntityTarget === EntityType.Plot) {
-      this.atHomePlot.set(false);
-
       this.plotMovingBehavoir();
     }
   }
@@ -95,26 +93,23 @@ export class TractorEntity
 
   private plotMovingBehavoir() {
     let targetNode: Konva.Node | undefined;
-    const coords = this.node.position();
     const layer = this.node.getLayer()!;
 
-    if (this.homePlotId) {
-      targetNode = layer.findOne(`#${this.homePlotId}`);
+    if (this.currentPlotTargetId) {
+      targetNode = layer.findOne(`#${this.currentPlotTargetId}`);
     } else {
-      const targets = layer.find(`.${this.moveEntityTarget}`) || [];
-      targetNode = BehaviorUtils.findClosest(coords, targets);
+      targetNode = this.getTargetPlot();
     }
 
     if (!targetNode) {
-      this.homePlotId = null;
+      this.currentPlotTargetId = null;
       return;
     }
 
-    this.homePlotId = targetNode.id();
     const plot = targetNode as PlotRender;
+    this.currentPlotTargetId = plot.id();
 
     this.moveBehavior.moveToTarget(plot, () => {
-      this.atHomePlot.set(true);
       const inStorage = plot.entity.storage.retrieveAll();
       if (inStorage) {
         this.storage.storeAll(inStorage);
@@ -152,6 +147,48 @@ export class TractorEntity
 
     return;
   }
+
+  private getTargetPlot() {
+    const layer = this.node.getLayer()!;
+    const otherTractorTargets = layer
+      .find(`.${EntityType.Tractor}`)
+      .filter((node) => {
+        return node.id() !== this.node.id();
+      })
+      .map((node) => (node as TractorRender).entity.currentPlotTargetId);
+
+    let targets = layer.find(`.${this.moveEntityTarget}`) || [];
+    targets = targets
+      .filter((node) => {
+        if (!(node instanceof Konva.Group)) return false;
+        const plot = node as PlotRender;
+
+        if (!plot.entity) return false;
+
+        if (otherTractorTargets.includes(plot.id())) {
+          return false;
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        const bEntity = (b as PlotRender).entity;
+        const aEntity = (a as PlotRender).entity;
+
+        if (
+          bEntity.cropGrowthStageFraction() ===
+          aEntity.cropGrowthStageFraction()
+        ) {
+          return bEntity.cropGrowthStage() - aEntity.cropGrowthStage();
+        }
+
+        return (
+          bEntity.cropGrowthStageFraction() - aEntity.cropGrowthStageFraction()
+        );
+      });
+
+    return targets[0];
+  }
 }
 
 export enum TractorUpgrade {
@@ -161,7 +198,7 @@ export enum TractorUpgrade {
   Klaas = "Klaas",
 }
 
-class TractorImage extends Sprite<TractorEntity> {
+class TractorRender extends Sprite<TractorEntity> {
   override hasCollision = false;
 
   private brandColors: Record<
@@ -186,7 +223,6 @@ class TractorImage extends Sprite<TractorEntity> {
       frameWidth: 16,
       frameHeight: 16,
     });
-
     this.setAttr("crop", {
       x: 0,
       y: 0,

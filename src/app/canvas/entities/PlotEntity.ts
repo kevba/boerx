@@ -36,6 +36,12 @@ export class PlotEntity
   };
 
   cropGrowthStage = signal(0);
+  cropGrowthStageFraction = computed(() => {
+    const crop = this.crop();
+    const growthStage = this.cropGrowthStage();
+    const maxGrowthStage = this.cropStageCount[crop];
+    return maxGrowthStage ? growthStage / maxGrowthStage : 0;
+  });
 
   constructor(
     initialCoords: { x: number; y: number },
@@ -131,7 +137,7 @@ export class PlotRender extends EntityRender<PlotEntity> {
     this.image = new PlotRenderImage({
       x: 0,
       y: 0,
-      id: `${args.id}-image`,
+      id: `${this.id}-image`,
     });
     this.harvestButton = this.setupHarvestButton();
     this.add(this.image);
@@ -181,10 +187,7 @@ export class PlotRender extends EntityRender<PlotEntity> {
   }
 
   private _growthEffect = effect(() => {
-    const crop = this.entity.crop();
-    const growthStage = this.entity.cropGrowthStage();
-    const maxGrowthStage = this.entity.cropStageCount[crop];
-    const growthFraction = maxGrowthStage ? growthStage / maxGrowthStage : 0;
+    const growthFraction = this.entity.cropGrowthStageFraction();
 
     this.setHarvestVisible(this.entity.canHarvest());
 
