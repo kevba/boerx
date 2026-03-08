@@ -35,10 +35,10 @@ export class TractorEntity
   private moveEntityTarget: EntityType.Barn | EntityType.Plot = EntityType.Plot;
 
   private brandSpeed: Record<TractorUpgrade, number> = {
-    [TractorUpgrade.DearJuan]: 24,
-    [TractorUpgrade.OldHillland]: 48,
-    [TractorUpgrade.Kerel]: 120,
-    [TractorUpgrade.Klaas]: 240,
+    [TractorUpgrade.DearJuan]: 48,
+    [TractorUpgrade.OldHillland]: 60,
+    [TractorUpgrade.Kerel]: 72,
+    [TractorUpgrade.Klaas]: 84,
   };
 
   constructor(

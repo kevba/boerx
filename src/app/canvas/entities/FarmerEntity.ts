@@ -98,10 +98,12 @@ export class FarmerEntity
 
       if (plot.canHarvest()) {
         plot.harvest();
+        this.currentPlotTargetId = null;
       }
 
       if (plot.canPlant() && !plot.storage.isFull()) {
         this.plotService.plantOnPlot(plot.id, Crop.Potato);
+        this.currentPlotTargetId = null;
       }
     });
   }
