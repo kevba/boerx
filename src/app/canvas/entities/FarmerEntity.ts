@@ -99,6 +99,7 @@ export enum FarmerUpgrade {
 
 class FarmerRender extends Sprite<FarmerEntity> {
   override hasCollision = false;
+  override frameSpeed = 250;
 
   private upgradeColor: Record<
     FarmerUpgrade,

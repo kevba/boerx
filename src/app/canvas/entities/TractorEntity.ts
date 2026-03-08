@@ -75,7 +75,7 @@ export class TractorEntity
   protected override update(): void {
     if (this.node.isDragging() || this.node.draggable()) return;
 
-    const actOrder = [this.harvester, this.cropTransporter].sort((a, b) => {
+    const actOrder = [this.cropTransporter, this.harvester].sort((a, b) => {
       if (a.targetId && !b.targetId) return -1;
       if (!a.targetId && b.targetId) return 1;
       return 0;

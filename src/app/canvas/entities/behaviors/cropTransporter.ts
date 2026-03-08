@@ -85,10 +85,14 @@ export class CropTransporter {
       .entities()
       .filter((e) => e.type === this.movingToType)
       .filter((e) => "storage" in e)
-      .filter(
-        (e) =>
-          (e as Entity<any, any> & IStorer).storage.storedItems().length > 0,
-      )
+      .filter((e) => {
+        if (this.movingToType === this.destinationType) {
+          return true;
+        }
+        return (
+          (e as Entity<any, any> & IStorer).storage.storedItems().length > 0
+        );
+      })
       .filter((e) => !otherCropTransporters.includes(e.id))
       // TODO: in range checks
       .sort((a, b) => {
