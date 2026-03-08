@@ -4,7 +4,7 @@ import { BuyService } from "../services/buy.service";
 import { BarnService } from "../services/entities/barn.service";
 import { CowService } from "../services/entities/cow.service";
 import { FarmerService } from "../services/entities/farmer.service";
-import { PlotsService } from "../services/entities/plots.service";
+import { PlotService } from "../services/entities/plots.service";
 import { TractorService } from "../services/entities/tractor.service";
 import { StashService } from "../services/stash.service";
 import { BuyTileComponent } from "./buy-tile.component";
@@ -48,7 +48,7 @@ import { BuyTileComponent } from "./buy-tile.component";
   `,
 })
 export class ShopPanelComponent {
-  plotService = inject(PlotsService);
+  plotService = inject(PlotService);
   farmerService = inject(FarmerService);
   tractorService = inject(TractorService);
   barnService = inject(BarnService);

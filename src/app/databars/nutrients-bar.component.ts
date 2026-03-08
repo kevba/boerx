@@ -1,6 +1,6 @@
 import { NgClass } from "@angular/common";
 import { Component, computed, inject } from "@angular/core";
-import { PlotsService } from "../services/entities/plots.service";
+import { PlotService } from "../services/entities/plots.service";
 import { NutrientsService } from "../services/nutrients.service";
 import { StashService } from "../services/stash.service";
 
@@ -79,11 +79,11 @@ import { StashService } from "../services/stash.service";
 })
 export class NutrientsBarComponent {
   stashService = inject(StashService);
-  plotsService = inject(PlotsService);
+  PlotService = inject(PlotService);
   nutrientsService = inject(NutrientsService);
 
-  showWaterBar = computed(() => this.plotsService.hasMoistureUpgrade());
-  showFertilizerBar = computed(() => this.plotsService.hasSoilUpgrade());
+  showWaterBar = computed(() => this.PlotService.hasMoistureUpgrade());
+  showFertilizerBar = computed(() => this.PlotService.hasSoilUpgrade());
 
   waterStatusClass = computed(() => {
     const waterRatio =

@@ -6,7 +6,7 @@ import { TractorPanelComponent } from "./entity-panel/tractor-panel.component";
 import { MainPanelComponent } from "./main-panel.component";
 
 @Component({
-  selector: "app-control-panel",
+  selector: "app-context-panel",
   imports: [
     PlotPanelComponent,
     MainPanelComponent,
@@ -73,7 +73,7 @@ import { MainPanelComponent } from "./main-panel.component";
     }
   `,
 })
-export class ControlPanelComponent {
+export class ContextPanelComponent {
   selectionService = inject(SelectionService);
 
   showSelectedControl = computed(

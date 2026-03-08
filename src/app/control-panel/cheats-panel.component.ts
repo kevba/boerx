@@ -1,5 +1,5 @@
 import { Component, inject } from "@angular/core";
-import { PlotsService } from "../services/entities/plots.service";
+import { PlotService } from "../services/entities/plots.service";
 import { TractorService } from "../services/entities/tractor.service";
 import { StashService } from "../services/stash.service";
 import { BuyTileComponent } from "./buy-tile.component";
@@ -18,7 +18,7 @@ import { BuyTileComponent } from "./buy-tile.component";
   `,
 })
 export class CheatsPanelComponent {
-  plotService = inject(PlotsService);
+  plotService = inject(PlotService);
   tractorService = inject(TractorService);
   stashService = inject(StashService);
 

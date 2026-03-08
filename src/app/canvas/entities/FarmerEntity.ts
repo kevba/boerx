@@ -3,7 +3,7 @@ import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { FarmerService } from "../../services/entities/farmer.service";
-import { PlotsService } from "../../services/entities/plots.service";
+import { PlotService } from "../../services/entities/plots.service";
 import { Crop } from "../../services/items/crop.service";
 import { Direction, MoveBehavior } from "./behaviors/move";
 import { IStorer, Storer } from "./behaviors/storer";
@@ -18,7 +18,7 @@ export class FarmerEntity
   override selectable = true;
   override type = EntityType.Farmer;
   private moveBehavior: MoveBehavior;
-  private plotService = inject(PlotsService);
+  private plotService = inject(PlotService);
   private farmerService = inject(FarmerService);
 
   // This should be on the sprite

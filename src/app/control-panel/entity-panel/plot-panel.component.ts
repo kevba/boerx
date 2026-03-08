@@ -1,7 +1,7 @@
 import { Component, computed, inject } from "@angular/core";
 import { EntityType } from "../../models/entity";
 import { BaseService } from "../../services/entities/base.service";
-import { PlotsService } from "../../services/entities/plots.service";
+import { PlotService } from "../../services/entities/plots.service";
 import { Crop, CropService } from "../../services/items/crop.service";
 import { SelectionService } from "../../services/selection.service";
 import { BuyTileComponent } from "../buy-tile.component";
@@ -32,11 +32,11 @@ import { EntityUpgradesComponent } from "./entity-upgrades.component";
     </div>
     <app-entity-upgrades />
   `,
-  providers: [{ provide: BaseService, useExisting: PlotsService }],
+  providers: [{ provide: BaseService, useExisting: PlotService }],
   imports: [BuyTileComponent, EntityUpgradesComponent],
 })
 export class PlotPanelComponent {
-  plotService = inject(PlotsService);
+  plotService = inject(PlotService);
   selectionService = inject(SelectionService);
   cropService = inject(CropService);
 

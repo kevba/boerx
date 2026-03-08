@@ -1,7 +1,7 @@
 import { NgClass } from "@angular/common";
 import { Component, inject } from "@angular/core";
 import { CanvasComponent } from "./canvas/canvas.component";
-import { ControlPanelComponent } from "./control-panel/control-panel.component";
+import { ContextPanelComponent } from "./control-panel/context-panel.component";
 import { FinancialBarComponent } from "./databars/financial-bar.component";
 import { NutrientsBarComponent } from "./databars/nutrients-bar.component";
 import { CheatsService } from "./services/cheats.service";
@@ -10,7 +10,7 @@ import { InitService } from "./services/init.service";
 @Component({
   selector: "app-root",
   imports: [
-    ControlPanelComponent,
+    ContextPanelComponent,
     FinancialBarComponent,
     NutrientsBarComponent,
     CanvasComponent,
@@ -35,7 +35,7 @@ import { InitService } from "./services/init.service";
       <div class="flex-1 flex no-wrap h-full w-full md:flex-row flex-col">
         <app-canvas
           class="flex-grow-1 flex-shrink-0 md:flex-1 content-baseline" />
-        <app-control-panel class="md:flex-0" />
+        <app-context-panel class="md:flex-0" />
       </div>
       <div class="h-[3rem] bg-stone-600 hidden md:visible">
         <div class="flex flex-row gap-4 p-4 h-full">

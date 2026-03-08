@@ -1,7 +1,7 @@
 import { Component, computed, inject } from "@angular/core";
 import { IStorer } from "../canvas/entities/behaviors/storer";
 import { BarnService } from "../services/entities/barn.service";
-import { PlotsService } from "../services/entities/plots.service";
+import { PlotService } from "../services/entities/plots.service";
 import { IncomeService } from "../services/income.service";
 import { Crop } from "../services/items/crop.service";
 import { StashService } from "../services/stash.service";
@@ -42,7 +42,7 @@ import { CropItem } from "../services/wares.service";
   `,
 })
 export class StoragePanelComponent {
-  plotService = inject(PlotsService);
+  plotService = inject(PlotService);
   barnService = inject(BarnService);
   stashService = inject(StashService);
 

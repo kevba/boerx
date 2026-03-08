@@ -3,7 +3,7 @@ import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { BarnService } from "../../services/entities/barn.service";
-import { PlotsService } from "../../services/entities/plots.service";
+import { PlotService } from "../../services/entities/plots.service";
 import { TractorService } from "../../services/entities/tractor.service";
 import { BarnImage } from "./BarnEntity";
 import { Direction, MoveBehavior } from "./behaviors/move";
@@ -20,7 +20,7 @@ export class TractorEntity
   override selectable = true;
   override type = EntityType.Tractor;
   private moveBehavior: MoveBehavior;
-  private plotService = inject(PlotsService);
+  private plotService = inject(PlotService);
   private tractorService = inject(TractorService);
   private barnService = inject(BarnService);
 

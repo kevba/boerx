@@ -7,7 +7,7 @@ import { BaseService } from "./base.service";
 @Injectable({
   providedIn: "root",
 })
-export class PlotsService extends BaseService<PlotUpgrade, PlotEntity> {
+export class PlotService extends BaseService<PlotUpgrade, PlotEntity> {
   override entityType = EntityType.Plot;
   private cropService = inject(CropService);
 
