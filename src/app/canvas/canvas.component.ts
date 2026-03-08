@@ -11,6 +11,7 @@ import { EntityLayerService } from "../services/entity-layer.service";
 import { SelectionService } from "../services/selection.service";
 import { BuyRenderService } from "./buy-render.service";
 import { SurfaceService } from "./surface.service";
+import { WeatherRenderService } from "./weather-render.service";
 
 @Component({
   selector: "app-canvas",
@@ -25,16 +26,9 @@ export class CanvasComponent {
   private buyRenderService = inject(BuyRenderService);
   private selectionService = inject(SelectionService);
   private surfaceService = inject(SurfaceService);
+  private weatherRenderService = inject(WeatherRenderService);
 
   private entityLayerService = inject(EntityLayerService);
-
-  private backgroundLayer = new Konva.Layer();
-  private backgroudRect = new Konva.Rect({
-    id: "background",
-    width: this.size,
-    height: this.size,
-    listening: false,
-  });
 
   private canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>(
     "canvas",
@@ -60,17 +54,16 @@ export class CanvasComponent {
   });
 
   constructor() {
-    this.backgroundLayer.add(this.backgroudRect);
-
     effect(() => {
       const stage = this.stage();
       if (!stage) return;
 
-      stage.add(this.backgroundLayer);
+      stage.add(this.surfaceService.backgroundLayer);
       stage.add(this.entityLayerService.bottomLayer);
-
       stage.add(this.entityLayerService.topLayer);
       this.buyRenderService.setStage(stage);
+
+      stage.add(this.weatherRenderService.layer);
 
       stage.on("click tap", (e) => {
         if (e.target === stage) {
@@ -86,26 +79,6 @@ export class CanvasComponent {
 
       this.handleZoom(stage);
     });
-
-    effect(() => {
-      const url = this.surfaceService.tileImageUrl();
-      if (!url) return;
-      this.setBackgroundImage(url);
-    });
-  }
-
-  private setBackgroundImage(imageUrl: string) {
-    const imageObj = new Image();
-
-    const bg = this.backgroundLayer.findOne("#background");
-    if (!bg) return;
-
-    // Image must be loaded before setting as fill pattern, otherwise it won't render
-    imageObj.onload = () => {
-      bg.setAttrs({ fillPatternImage: imageObj });
-    };
-
-    imageObj.src = imageUrl;
   }
 
   private handleZoom(stage: Konva.Stage) {

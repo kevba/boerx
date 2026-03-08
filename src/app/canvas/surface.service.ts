@@ -1,10 +1,26 @@
-import { computed, Injectable } from "@angular/core";
+import { Injectable } from "@angular/core";
+import Konva from "konva";
 import { ColorMap, NoisyImageService } from "./utils/noisy-image.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class SurfaceService {
+  // TODO: Duplicated from canvas.component
+  private size = 2500;
+
+  backgroundLayer = new Konva.Layer({
+    listening: false,
+    imageSmoothingEnabled: false,
+  });
+
+  private backgroudRect = new Konva.Rect({
+    id: "background",
+    width: this.size,
+    height: this.size,
+    listening: false,
+  });
+
   surfaceColorMap: ColorMap = {
     "-0.8": "#09770e",
     "-0.2": "#04800a",
@@ -13,15 +29,26 @@ export class SurfaceService {
     "1": "#7A8450",
   };
 
-  tileImageUrl = computed(() => {
-    const image = NoisyImageService.getNoiseImage(
+  constructor() {
+    this.setBackgroundImage();
+    this.backgroundLayer.add(this.backgroudRect);
+  }
+
+  private setBackgroundImage() {
+    const imageUrl = NoisyImageService.getNoiseImage(
       128,
       8,
       0.9,
       this.surfaceColorMap,
     );
-    return image;
-  });
 
-  constructor() {}
+    const imageObj = new Image();
+
+    // Image must be loaded before setting as fill pattern, otherwise it won't render
+    imageObj.onload = () => {
+      this.backgroudRect.setAttrs({ fillPatternImage: imageObj });
+    };
+
+    imageObj.src = imageUrl;
+  }
 }
