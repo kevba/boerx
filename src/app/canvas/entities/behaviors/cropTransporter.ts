@@ -33,14 +33,14 @@ export class CropTransporter {
     if (!this.targetId) {
       target = this.findTarget();
       this.targetId = target?.id || null;
-      return false;
     } else {
       target = this.findTargetById(this.targetId);
       if (!target) {
         this.targetId = null;
-        return false;
       }
     }
+
+    if (!target) return false;
 
     this.entity.move.moveToTarget(target?.node, () => {
       if (!target?.storage) return;
