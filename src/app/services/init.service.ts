@@ -6,6 +6,7 @@ import { EntitiesService } from "./entities/entities.service";
 import { FarmerService } from "./entities/farmer.service";
 import { MarketService } from "./entities/market.service";
 import { PlotService } from "./entities/plots.service";
+import { TractorService } from "./entities/tractor.service";
 import { EntityLayerService } from "./entity-layer.service";
 import { StashService } from "./stash.service";
 import { TickService } from "./tick.service";
@@ -19,6 +20,7 @@ export class InitService {
   private plotService = inject(PlotService);
   private barnService = inject(BarnService);
   private farmerService = inject(FarmerService);
+  private tractorService = inject(TractorService);
   private layerService = inject(EntityLayerService);
   private tickService = inject(TickService);
   private stashService = inject(StashService);
@@ -114,6 +116,9 @@ export class InitService {
             break;
           case EntityType.Farmer:
             this.farmerService.add({ x: e.x, y: e.y });
+            break;
+          case EntityType.Tractor:
+            this.tractorService.add({ x: e.x, y: e.y });
             break;
         }
       },
