@@ -1,6 +1,7 @@
 export enum EntityType {
   Plot = "plot",
-  Tractor = "tractor",
   Barn = "barn",
+  Farmer = "farmer",
+  Tractor = "tractor",
   Cow = "cow",
 }

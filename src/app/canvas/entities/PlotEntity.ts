@@ -29,6 +29,10 @@ export class PlotEntity
     return growthStage >= maxGrowthStage;
   });
 
+  canPlant = computed(() => {
+    return this.crop() === Crop.Grass && !this.canHarvest();
+  });
+
   cropStageCount: Record<Crop, number> = {
     [Crop.Wheat]: 30 * 1,
     [Crop.Corn]: 40 * 1,

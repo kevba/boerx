@@ -3,6 +3,7 @@ import { EntityType } from "../models/entity";
 import { BuyService } from "../services/buy.service";
 import { BarnService } from "../services/entities/barn.service";
 import { CowService } from "../services/entities/cow.service";
+import { FarmerService } from "../services/entities/farmer.service";
 import { PlotsService } from "../services/entities/plots.service";
 import { TractorService } from "../services/entities/tractor.service";
 import { StashService } from "../services/stash.service";
@@ -14,11 +15,17 @@ import { BuyTileComponent } from "./buy-tile.component";
   template: `
     <div class="buy-tile-group">
       <app-buy-tile
-        image=""
+        image="/imgs/plot.png"
         text="Plot"
         [active]="activeBuyingEntity() === EntityType.Plot"
         [cost]="plotService.cost()"
         (buyClick)="onBuy(EntityType.Plot)"></app-buy-tile>
+      <app-buy-tile
+        image="/imgs/farmer.png"
+        text="Farmer"
+        [active]="activeBuyingEntity() === EntityType.Farmer"
+        [cost]="farmerService.cost()"
+        (buyClick)="onBuy(EntityType.Farmer)"></app-buy-tile>
       <app-buy-tile
         image="/imgs/barn.png"
         text="Barn"
@@ -42,6 +49,7 @@ import { BuyTileComponent } from "./buy-tile.component";
 })
 export class ShopPanelComponent {
   plotService = inject(PlotsService);
+  farmerService = inject(FarmerService);
   tractorService = inject(TractorService);
   barnService = inject(BarnService);
   cowService = inject(CowService);
@@ -54,6 +62,12 @@ export class ShopPanelComponent {
 
   canBuyPlot = computed(() => {
     const cost = this.plotService.cost();
+    const stash = this.stashService.stash();
+    return stash >= cost;
+  });
+
+  canBuyFarmer = computed(() => {
+    const cost = this.farmerService.cost();
     const stash = this.stashService.stash();
     return stash >= cost;
   });
@@ -80,6 +94,8 @@ export class ShopPanelComponent {
     this.buyService.setBuying(entity, () => {
       if (entity === EntityType.Plot) {
         this.plotService.add();
+      } else if (entity === EntityType.Farmer) {
+        this.farmerService.add();
       } else if (entity === EntityType.Tractor) {
         this.tractorService.add();
       } else if (entity === EntityType.Barn) {

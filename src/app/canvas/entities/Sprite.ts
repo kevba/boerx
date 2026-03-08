@@ -67,12 +67,16 @@ export class Sprite<T extends Entity<any, any>> extends EntityRender<T> {
   }
 
   animateSprite() {
-    this.frame = (this.frame + 1) % this.totalFrames;
+    this.updateFrame();
     this.imageNode.cropX(this.frame * this.frameWidth); // move crop to the next frame
     this.getLayer()?.batchDraw();
     if (this.isAnimating) {
       setTimeout(() => this.animateSprite(), this.frameSpeed); // frame delay
     }
+  }
+
+  updateFrame() {
+    this.frame = (this.frame + 1) % this.totalFrames;
   }
 
   setColor(color: { r: number; g: number; b: number }) {
