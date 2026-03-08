@@ -93,15 +93,15 @@ export class ShopPanelComponent {
   onBuy(entity: EntityType) {
     this.buyService.setBuying(entity, () => {
       if (entity === EntityType.Plot) {
-        this.plotService.add();
+        this.plotService.buy();
       } else if (entity === EntityType.Farmer) {
-        this.farmerService.add();
+        this.farmerService.buy();
       } else if (entity === EntityType.Tractor) {
-        this.tractorService.add();
+        this.tractorService.buy();
       } else if (entity === EntityType.Barn) {
-        this.barnService.add();
+        this.barnService.buy();
       } else if (entity === EntityType.Cow) {
-        this.cowService.add();
+        this.cowService.buy();
       }
     });
   }

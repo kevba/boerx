@@ -7,6 +7,7 @@ import {
   signal,
 } from "@angular/core";
 import { Entity } from "../../canvas/entities/Entity";
+import { BuyService } from "../buy.service";
 import { EntityLayerService } from "../entity-layer.service";
 import { StashService } from "../stash.service";
 import { EntityType } from "./../../models/entity";
@@ -21,6 +22,7 @@ export abstract class BaseService<
 > {
   private injector = inject(Injector);
   protected entityLayerService = inject(EntityLayerService);
+  private buyService = inject(BuyService);
 
   protected stashService = inject(StashService);
   protected _entity = signal<E[]>([]);
@@ -39,17 +41,21 @@ export abstract class BaseService<
     return this.entities().find((entity) => entity.id === id);
   }
 
-  add() {
+  buy() {
     const cost = this.cost();
     const stash = this.stashService.stash();
     if (stash < cost) {
       return;
     }
     this.stashService.addStash(-cost);
+    const coords = this.buyService.getBuyLocation();
 
+    this.add(coords);
+  }
+
+  add(coords: { x: number; y: number }) {
     runInInjectionContext(this.injector, () => {
-      const base = this.createNew();
-
+      const base = this.createNew(coords);
       this._entity.update((entities) => [...entities, base]);
     });
   }
@@ -88,5 +94,5 @@ export abstract class BaseService<
     this.upgrader = new Upgrader<UpgradeType>(this.upgrades);
   }
 
-  abstract createNew(): E;
+  abstract createNew(coords: { x: number; y: number }): E;
 }

@@ -1,10 +1,9 @@
-import { inject, Injectable } from "@angular/core";
+import { Injectable } from "@angular/core";
 import {
   TractorEntity,
   TractorUpgrade,
 } from "../../canvas/entities/TractorEntity";
 import { EntityType } from "../../models/entity";
-import { BuyService } from "../buy.service";
 import { BaseService } from "./base.service";
 
 @Injectable({
@@ -13,8 +12,6 @@ import { BaseService } from "./base.service";
 export class TractorService extends BaseService<TractorUpgrade, TractorEntity> {
   override baseCost = 60000;
   override entityType = EntityType.Tractor;
-
-  private buyService = inject(BuyService);
 
   upgrades = {
     [TractorUpgrade.DearJuan]: {
@@ -44,8 +41,7 @@ export class TractorService extends BaseService<TractorUpgrade, TractorEntity> {
     this.init();
   }
 
-  createNew(): TractorEntity {
-    const coords = this.buyService.getBuyLocation();
+  createNew(coords: { x: number; y: number }): TractorEntity {
     return new TractorEntity(coords, this.entityLayerService.topLayer);
   }
 }

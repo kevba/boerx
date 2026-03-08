@@ -4,4 +4,5 @@ export enum EntityType {
   Farmer = "farmer",
   Tractor = "tractor",
   Cow = "cow",
+  Market = "market",
 }

@@ -1,7 +1,6 @@
-import { inject, Injectable } from "@angular/core";
+import { Injectable } from "@angular/core";
 import { BarnEntity, BarnUpgrade } from "../../canvas/entities/BarnEntity";
 import { EntityType } from "../../models/entity";
-import { BuyService } from "../buy.service";
 import { BaseService } from "./base.service";
 
 @Injectable({
@@ -10,7 +9,6 @@ import { BaseService } from "./base.service";
 export class BarnService extends BaseService<BarnUpgrade, BarnEntity> {
   override entityType = EntityType.Barn;
   protected baseCost = 10000;
-  buyService = inject(BuyService);
 
   upgrades = {
     [BarnUpgrade.Shed]: {
@@ -35,9 +33,7 @@ export class BarnService extends BaseService<BarnUpgrade, BarnEntity> {
     this.init();
   }
 
-  createNew(): BarnEntity {
-    const coords = this.buyService.getBuyLocation();
-
+  createNew(coords: { x: number; y: number }): BarnEntity {
     return new BarnEntity(coords, this.entityLayerService.bottomLayer);
   }
 }

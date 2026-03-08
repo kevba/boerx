@@ -5,6 +5,7 @@ import { ControlPanelComponent } from "./control-panel/control-panel.component";
 import { FinancialBarComponent } from "./databars/financial-bar.component";
 import { NutrientsBarComponent } from "./databars/nutrients-bar.component";
 import { CheatsService } from "./services/cheats.service";
+import { InitService } from "./services/init.service";
 
 @Component({
   selector: "app-root",
@@ -46,4 +47,9 @@ import { CheatsService } from "./services/cheats.service";
 })
 export class AppComponent {
   cheatsService = inject(CheatsService);
+  initService = inject(InitService);
+
+  ngOnInit() {
+    this.initService.init();
+  }
 }

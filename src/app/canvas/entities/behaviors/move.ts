@@ -1,12 +1,16 @@
+import { effect } from "@angular/core";
 import Konva from "konva";
+import { EntityRender } from "../Entity";
 
 export class MoveBehavior {
   private moving = false;
   private moveTimeout: ReturnType<typeof setTimeout> | null = null;
+  // interval of movement loop in ms, lower is smoother but more CPU intensive
+  private movementLoopTime = 100;
 
   constructor(
-    private entity: Konva.Node,
-    // Speed in pixels
+    private entity: EntityRender<any>,
+    // Speed in pixels per second
     private speed: number = 24,
     private directionCallback: (direction: Direction) => void = () => {},
   ) {}
@@ -23,6 +27,13 @@ export class MoveBehavior {
     this.moving = true;
     this.moveTo({ x: centerX, y: centerY }, onReach, shortestSide / 3);
   }
+
+  private _selectedEffect = effect(() => {
+    const selected = this.entity.isSelected();
+    if (selected) {
+      this.stop();
+    }
+  });
 
   moveTo(
     target: { x: number; y: number },
@@ -77,10 +88,16 @@ export class MoveBehavior {
       return;
     }
 
+    const movementDistance = this.speed * (this.movementLoopTime / 1000);
+
     const xMovement =
-      distance > 0 ? (-xDiff / distance) * Math.min(this.speed, distance) : 0;
+      distance > 0
+        ? (-xDiff / distance) * Math.min(movementDistance, distance)
+        : 0;
     const yMovement =
-      distance > 0 ? (-yDiff / distance) * Math.min(this.speed, distance) : 0;
+      distance > 0
+        ? (-yDiff / distance) * Math.min(movementDistance, distance)
+        : 0;
 
     if (xMovement <= 0) {
       this.directionCallback(Direction.left);
@@ -91,10 +108,13 @@ export class MoveBehavior {
     this.entity.to({
       x: entityPosition.x + xMovement,
       y: entityPosition.y + yMovement,
-      duration: 1,
+      duration: 1 / (1000 / this.movementLoopTime),
     });
 
-    this.moveTimeout = setTimeout(() => this.movementLoop(destination), 1000);
+    this.moveTimeout = setTimeout(
+      () => this.movementLoop(destination),
+      this.movementLoopTime,
+    );
   }
 }
 

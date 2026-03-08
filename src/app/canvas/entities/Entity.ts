@@ -1,4 +1,4 @@
-import { effect, inject, Injector, Signal } from "@angular/core";
+import { effect, inject, Injector, signal, Signal } from "@angular/core";
 import Konva from "konva";
 import { map } from "rxjs";
 import { AppInjectorHolder } from "../../../main";
@@ -88,6 +88,8 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
   selectedRect: Konva.Rect | null = null;
   entity!: T;
   protected hasCollision = true;
+  protected selected = signal(false);
+  isSelected = this.selected.asReadonly();
 
   constructor(args: { x: number; y: number; id: string; type: EntityType }) {
     const size = RenderUtils.entitySize[args.type][0];
@@ -116,11 +118,16 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
   }
 
   setSelected(selected: boolean) {
+    this.selected.set(selected);
+  }
+
+  _selectedEffect = effect(() => {
+    const selected = this.selected();
     this.setAttr("draggable", selected);
     if (this.selectedRect) {
       this.selectedRect.visible(selected);
     }
-  }
+  });
 
   private dragHandler() {
     this.on("dragmove", (e) => {

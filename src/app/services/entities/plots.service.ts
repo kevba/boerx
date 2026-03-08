@@ -1,7 +1,6 @@
 import { computed, inject, Injectable } from "@angular/core";
 import { PlotEntity, PlotUpgrade } from "../../canvas/entities/PlotEntity";
 import { EntityType } from "../../models/entity";
-import { BuyService } from "../buy.service";
 import { Crop, CropService } from "../items/crop.service";
 import { BaseService } from "./base.service";
 
@@ -11,8 +10,6 @@ import { BaseService } from "./base.service";
 export class PlotsService extends BaseService<PlotUpgrade, PlotEntity> {
   override entityType = EntityType.Plot;
   private cropService = inject(CropService);
-
-  private buyService = inject(BuyService);
 
   protected baseCost = 2000;
 
@@ -71,8 +68,7 @@ export class PlotsService extends BaseService<PlotUpgrade, PlotEntity> {
     });
   }
 
-  createNew(): PlotEntity {
-    const coords = this.buyService.getBuyLocation();
+  createNew(coords: { x: number; y: number }): PlotEntity {
     return new PlotEntity(coords, this.entityLayerService.bottomLayer);
   }
 }
