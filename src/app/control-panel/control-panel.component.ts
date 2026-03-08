@@ -16,21 +16,20 @@ import { MainPanelComponent } from "./main-panel.component";
 
   template: `
     <div
-      class="md:w-[20rem] w-full h-[20rem] md:h-full flex flex-col h-full bg-stone-500 ">
-      <div class="relative w-full h-full flex-1 ">
-        <app-main-panel
-          class="absolute top-0 left-0 w-full h-full md:border-l-8 md:border-stone-600" />
+      class="md:w-[20rem] w-full md:h-full h-[11rem] md:h-full flex flex-col ">
+      <div class="relative w-full h-full flex-1">
+        <app-main-panel class="context-panel" />
         @if (showSelectedControl()) {
           <div
-            class="absolute top-0 left-0 w-full h-full bg-stone-500 md:border-l-8 md:border-stone-600"
+            class="context-panel"
             animate.enter="slide-in-enter"
             animate.leave="slide-in-leave">
-            <div class="flex flex-col h-full w-full">
-              <div class="w-full flex flex-row items-center gap-4 px-4 pt-4">
-                <button class="text " (click)="selectionService.clear()">
+            <div class="p-2 md:p-4 flex flex-col h-full">
+              <div class="w-full flex flex-row items-center gap-2 md:gap-4">
+                <button class="text pl-2!" (click)="selectionService.clear()">
                   {{ "<" }}
                 </button>
-                <span class="text-2xl">Upgrades</span>
+                <span class="text-xl md:text-2xl">Upgrades</span>
               </div>
               <div class=" h-full w-full overflow-scroll">
                 @if (showPlotControl()) {

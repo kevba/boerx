@@ -27,3 +27,10 @@ body {
   @apply text-zinc-200 uppercase; 
 }
 
+.buy-tile-group {
+  @apply flex flex-row flex-nowrap gap-2 md:gap-4 overflow-x-scroll md:overflow-auto md:flex-wrap md:pb-0 pb-3 md:pl-0 pl-2
+}
+
+.context-panel {
+  @apply absolute top-0 left-0 w-full h-full md:border-l-8 md:border-stone-600 bg-stone-500;
+}

@@ -16,11 +16,11 @@ import { CheatsService } from "./services/cheats.service";
     NgClass,
   ],
   template: `
-    <div class="flex flex-col w-full h-screen">
+    <div class="flex flex-col w-full h-dvh">
       <div
-        class="h-[5rem] bg-gradient-to-r from-amber-800 via-lime-800 to-green-800 flex items-center ">
+        class="md:h-[5rem] h-[4rem]  bg-gradient-to-r from-amber-800 via-lime-800 to-green-800 flex items-center ">
         <h1
-          class="text-5xl font-bold  pl-4 select-none transistion-colors duration-500"
+          class="md:text-5xl text-4xl font-bold  pl-4 select-none transistion-colors duration-500"
           [ngClass]="
             cheatsService.unlocked() ? 'text-amber-600' : 'text-green-600'
           "
@@ -32,8 +32,9 @@ import { CheatsService } from "./services/cheats.service";
         <app-financial-bar class="flex-1" />
       </div>
       <div class="flex-1 flex no-wrap h-full w-full md:flex-row flex-col">
-        <app-canvas class="flex-1 md:flex-1 content-baseline" />
-        <app-control-panel class="h-[16rem] md:flex-0" />
+        <app-canvas
+          class="flex-grow-1 flex-shrink-0 md:flex-1 content-baseline" />
+        <app-control-panel class="md:flex-0" />
       </div>
       <div class="h-[3rem] bg-stone-600 hidden md:visible">
         <div class="flex flex-row gap-4 p-4 h-full">

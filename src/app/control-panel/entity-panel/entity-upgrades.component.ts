@@ -6,22 +6,15 @@ import { BuyTileComponent } from "../buy-tile.component";
 @Component({
   selector: "app-entity-upgrades",
   template: `
-    <div class="flex flex-col gap-2 p-4 w-full h-full">
-      <div class="w-full">
-        <h2 class="text-lg font-bold ">Upgrades</h2>
-      </div>
-      <div>
-        <div class="flex flex-row flex-wrap gap-4 justify-center">
-          @for (option of options(); track option.upgrade) {
-            <app-buy-tile
-              image=""
-              [text]="option.upgrade"
-              [cost]="option.upgradeCost"
-              [disabled]="option.disabled"
-              (buyClick)="upgrade(option.upgrade)"></app-buy-tile>
-          }
-        </div>
-      </div>
+    <div class="buy-tile-group ">
+      @for (option of options(); track option.upgrade) {
+        <app-buy-tile
+          image=""
+          [text]="option.upgrade"
+          [cost]="option.upgradeCost"
+          [disabled]="option.disabled"
+          (buyClick)="upgrade(option.upgrade)"></app-buy-tile>
+      }
     </div>
   `,
   imports: [BuyTileComponent],
@@ -32,7 +25,8 @@ export class EntityUpgradesComponent {
   entityService = inject(BaseService<any, any>);
 
   selectedEntities = computed(() => {
-    const selectedIds = this.selectionService.selectedPerType()[this.entityService.entityType];
+    const selectedIds =
+      this.selectionService.selectedPerType()[this.entityService.entityType];
     return this.entityService
       .entities()
       .filter((p) => selectedIds.includes(p.id));
@@ -40,9 +34,7 @@ export class EntityUpgradesComponent {
 
   options = computed(() => {
     const entities = this.selectedEntities();
-    const upgrades = Object.keys(
-      this.entityService.upgrades,
-    )
+    const upgrades = Object.keys(this.entityService.upgrades);
 
     return upgrades.map((upgrade) => {
       const upgradable = entities.filter((p) => p.upgrade !== upgrade).length;

@@ -8,7 +8,7 @@ import { StoragePanelComponent } from "./storage-panel.component";
   selector: "app-main-panel",
   imports: [ShopPanelComponent, StoragePanelComponent, CheatsPanelComponent],
   template: `
-    <div class="p-4 flex flex-col h-full">
+    <div class="p-2 md:p-4 flex flex-col h-full">
       <div
         class="w-full text-2xl flex flex-row items-center justify-between gap-4">
         <button class="text pl-2!" (click)="previousMenu()">{{ "<" }}</button>
@@ -19,7 +19,7 @@ import { StoragePanelComponent } from "./storage-panel.component";
       </div>
 
       <div
-        class="flex flex-col gap-4 pt-4 items-center h-full w-full md:overflow-y-auto overflow-y-scroll">
+        class="flex flex-col gap-4 pt-1 md:pt-4 items-center h-full w-full md:overflow-y-auto overflow-y-scroll">
         @switch (selectedMenu().type) {
           @case (PanelType.Shop) {
             <app-shop-panel class="w-full h-full" />

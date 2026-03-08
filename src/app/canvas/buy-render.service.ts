@@ -50,7 +50,6 @@ export class BuyRenderService {
       this.drawGhost(entity!, pos.x, pos.y);
 
       if (!this.validLocation) return;
-      console.log("click tap touchstart", e);
 
       if (entity) {
         const pos = stage.getRelativePointerPosition()!;

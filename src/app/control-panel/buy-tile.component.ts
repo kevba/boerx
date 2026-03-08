@@ -7,12 +7,12 @@ import { StashService } from "../services/stash.service";
   imports: [NgClass],
   template: `
     <div
-      class="h-[8rem] w-[8rem] border-2 border-zinc-300 bg-zinc-700 rounded-md select-none flex flex-col items-center transition-colors duration-200"
+      class="md:h-[8rem] md:w-[8rem] md:text-sm text-xs h-[6rem] w-[6rem] border-2 border-zinc-300 bg-zinc-700 rounded-md select-none flex flex-col items-center transition-colors duration-200"
       [ngClass]="classes()"
       (click)="onClick()">
       <img [src]="image()" class="flex-1 pixelated" />
-      <span class="text-sm">{{ text() }}</span>
-      <span class="text-sm">{{ costText() }}</span>
+      <span class="">{{ text() }}</span>
+      <span class="">{{ costText() }}</span>
     </div>
   `,
   styles: `
