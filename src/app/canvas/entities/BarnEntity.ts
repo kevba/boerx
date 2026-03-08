@@ -1,5 +1,6 @@
 import { signal } from "@angular/core";
 import Konva from "konva";
+import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
@@ -27,7 +28,7 @@ export class BarnEntity
     layer: Konva.Layer,
     upgrade: BarnUpgrade = BarnUpgrade.Shed,
   ) {
-    const id = crypto.randomUUID();
+    const id = uuidv4();
 
     const node = new BarnImage({
       ...initialCoords,

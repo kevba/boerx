@@ -1,5 +1,6 @@
 import { signal } from "@angular/core";
 import Konva from "konva";
+import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { Direction, MoveBehavior } from "./behaviors/move";
 import { Entity } from "./Entity";
@@ -19,7 +20,7 @@ export class CowEntity extends Entity<CowImage, CowUpgrade> {
     layer: Konva.Layer,
     upgrade: CowUpgrade = CowUpgrade.Cow,
   ) {
-    const id = crypto.randomUUID();
+    const id = uuidv4();
 
     const node = new CowImage({
       id,

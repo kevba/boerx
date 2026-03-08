@@ -1,5 +1,6 @@
 import { computed, effect, signal, untracked } from "@angular/core";
 import Konva from "konva";
+import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { Crop } from "../../services/items/crop.service";
 import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
@@ -49,7 +50,7 @@ export class PlotEntity
     upgrade: PlotUpgrade = PlotUpgrade.Basic,
     crop: Crop = Crop.Grass,
   ) {
-    const id = crypto.randomUUID();
+    const id = uuidv4();
     const node = new PlotRender({
       id: id,
       x: initialCoords.x,

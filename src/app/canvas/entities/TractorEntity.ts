@@ -1,5 +1,6 @@
 import { effect, inject, signal } from "@angular/core";
 import Konva from "konva";
+import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { BarnService } from "../../services/entities/barn.service";
 import { PlotsService } from "../../services/entities/plots.service";
@@ -45,7 +46,7 @@ export class TractorEntity
     layer: Konva.Layer,
     upgrade: TractorUpgrade = TractorUpgrade.DearJuan,
   ) {
-    const id = crypto.randomUUID();
+    const id = uuidv4();
     const node = new TractorRender({
       id: id,
       x: initialCoords.x,

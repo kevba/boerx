@@ -39,9 +39,7 @@ export class BuyRenderService {
       }
     });
 
-    stage.on("tap", (e) => {});
-
-    stage.on("click tap", (e) => {
+    stage.on("click ", (e) => {
       e.evt.preventDefault();
       const entity = this.buyService.buyingEntityType();
       if (entity === null) return;
@@ -62,6 +60,30 @@ export class BuyRenderService {
         this.removeGhost();
       }
     });
+
+    stage.on("tap", (e) => {
+      e.evt.preventDefault();
+      const entity = this.buyService.buyingEntityType();
+      if (entity === null) return;
+
+      const pos = stage.getRelativePointerPosition()!;
+      this.drawGhost(entity!, pos.x, pos.y);
+      if (!this.validLocation) return;
+
+      this.ghost?.off("tap");
+      this.ghost?.on("tap", () => {
+        if (!this.validLocation) return;
+
+        const pos = stage.getRelativePointerPosition()!;
+        const width = RenderUtils.entitySize[entity][0];
+        const height = RenderUtils.entitySize[entity][1];
+
+        const centerX = pos.x - width / 2;
+        const centerY = pos.y - height / 2;
+        this.buyService.confirm(centerX, centerY);
+        this.removeGhost();
+      });
+    });
   }
 
   drawGhost(entity: EntityType, x: number, y: number) {
@@ -71,31 +93,24 @@ export class BuyRenderService {
     const centerX = x - width / 2;
     const centerY = y - height / 2;
 
-    if (this.ghost) {
-      this.ghost.setSize({ width, height });
-      this.ghost.position({ x: centerX, y: centerY });
-      this.detectCollision();
-
-      return;
+    if (!this.ghost) {
+      const ghostRec = new Konva.Rect({
+        x: centerX,
+        y: centerY,
+        width: width,
+        height: height,
+        fill: "#a5743ba2",
+        stroke: RenderUtils.selectedColor,
+        strokeWidth: 4,
+        id: "buy-ghost",
+        dash: [4, 4], // [dot size, gap size]
+      });
+      this.layer.add(ghostRec);
+      this.ghost = ghostRec;
     }
 
-    const ghostRec = new Konva.Rect({
-      x: centerX,
-      y: centerY,
-      width: width,
-      height: height,
-      fill: "#a5743ba2",
-      stroke: RenderUtils.selectedColor,
-      strokeWidth: 4,
-      id: "buy-ghost",
-      dash: [4, 4], // [dot size, gap size]
-    });
-    this.layer.add(ghostRec);
-    this.ghost = ghostRec;
-    this.ghost.on("dragover", (e) => {
-      console.log("dragover", e);
-    });
-
+    this.ghost.setSize({ width, height });
+    this.ghost.position({ x: centerX, y: centerY });
     if (this.detectCollision()) {
       this.ghost.stroke("red");
       this.validLocation = false;
@@ -103,6 +118,7 @@ export class BuyRenderService {
       this.ghost.stroke(RenderUtils.selectedColor);
       this.validLocation = true;
     }
+    return;
   }
 
   removeGhost() {
