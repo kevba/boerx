@@ -54,7 +54,7 @@ export class FarmerEntity
     );
 
     this.upgrade.set(upgrade);
-    this.storage = new Storer();
+    this.storage = new Storer(1);
 
     this.init();
   }
@@ -96,21 +96,15 @@ export class FarmerEntity
     this.moveBehavior.moveToTarget(plotNode, () => {
       this.node.isMoving.set(false);
 
-      const inStorage = plotNode.entity.storage.retrieveAll();
-      if (inStorage) {
-        this.storage.storeAll(inStorage);
-      }
-
       if (plot.canHarvest()) {
         plot.harvest();
-        const harvested = plot.storage.retrieveAll();
-        if (!harvested) return;
-        this.storage.storeAll(harvested);
       }
 
-      if (plot.canPlant()) {
+      if (plot.canPlant() && !plot.storage.isFull()) {
         this.plotService.plantOnPlot(plot.id, Crop.Potato);
       }
+
+      this.currentPlotTargetId = null;
     });
   }
 
@@ -129,6 +123,14 @@ export class FarmerEntity
         return true;
       })
       .sort((a, b) => {
+        if (a.crop() === Crop.Grass && b.crop() !== Crop.Grass) {
+          return -1;
+        }
+
+        if (b.crop() === Crop.Grass && a.crop() !== Crop.Grass) {
+          return 1;
+        }
+
         if (a.cropGrowthStageFraction() === b.cropGrowthStageFraction()) {
           return b.cropGrowthStage() - a.cropGrowthStage();
         }

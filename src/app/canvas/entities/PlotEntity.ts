@@ -1,8 +1,10 @@
-import { computed, effect, signal, untracked } from "@angular/core";
+import { computed, effect, inject, signal, untracked } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
+import { IncomeService } from "../../services/income.service";
 import { Crop } from "../../services/items/crop.service";
+import { CropItem } from "../../services/wares.service";
 import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
 import { RenderUtils } from "../utils/renderUtils";
 import { Direction } from "./behaviors/move";
@@ -13,10 +15,13 @@ export class PlotEntity
   extends Entity<PlotRender, PlotUpgrade>
   implements IStorer
 {
+  private incomeService = inject(IncomeService);
+
   override selectable = true;
   override type = EntityType.Plot;
 
   override initialDirection: Direction = Direction.right;
+  private autoSell = signal(true);
 
   upgrade = signal<PlotUpgrade>(PlotUpgrade.Basic);
   crop = signal<Crop>(Crop.Grass);
@@ -34,10 +39,10 @@ export class PlotEntity
   });
 
   cropStageCount: Record<Crop, number> = {
-    [Crop.Wheat]: 30 * 1,
-    [Crop.Corn]: 40 * 1,
-    [Crop.Potato]: 50 * 1,
-    [Crop.Grass]: 10 * 1,
+    [Crop.Wheat]: 10 * 1,
+    [Crop.Corn]: 18 * 1,
+    [Crop.Potato]: 24 * 1,
+    [Crop.Grass]: 5 * 100,
   };
 
   cropGrowthStage = signal(0);
@@ -115,6 +120,19 @@ export class PlotEntity
     this.storage.clear();
     this.storage.store({ type: harvestedCrop, amount: 1 });
   }
+
+  _sellEffect = effect(() => {
+    const autoSell = this.autoSell();
+    if (!autoSell) return;
+
+    const crops = Object.values(Crop);
+    for (const crop of crops) {
+      const cropItems = this.storage.retrieveMax(crop);
+      if (!cropItems) continue;
+
+      this.incomeService.sellCrop(cropItems as CropItem);
+    }
+  });
 }
 
 export enum PlotUpgrade {

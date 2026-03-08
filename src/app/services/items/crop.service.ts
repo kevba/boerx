@@ -5,10 +5,10 @@ import { computed, Injectable, signal } from "@angular/core";
 })
 export class CropService {
   plantCost = signal<Record<Crop, number>>({
-    [Crop.Grass]: 10,
-    [Crop.Wheat]: 300,
-    [Crop.Corn]: 500,
-    [Crop.Potato]: 600,
+    [Crop.Grass]: 1,
+    [Crop.Wheat]: 30,
+    [Crop.Corn]: 50,
+    [Crop.Potato]: 60,
   });
 
   private harvestCounter = signal<Record<Crop, number>>({
