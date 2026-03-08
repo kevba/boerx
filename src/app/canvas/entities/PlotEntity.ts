@@ -2,6 +2,7 @@ import { computed, effect, inject, signal, untracked } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
+import { MarketService } from "../../services/entities/market.service";
 import { IncomeService } from "../../services/income.service";
 import { Crop } from "../../services/items/crop.service";
 import { CropItem } from "../../services/wares.service";
@@ -10,18 +11,20 @@ import { RenderUtils } from "../utils/renderUtils";
 import { Direction } from "./behaviors/move";
 import { IStorer, Storer } from "./behaviors/storer";
 import { Entity, EntityRender } from "./Entity";
+import { Harvestable, Plantable } from "./models";
 
 export class PlotEntity
   extends Entity<PlotRender, PlotUpgrade>
-  implements IStorer
+  implements IStorer, Plantable, Harvestable
 {
   private incomeService = inject(IncomeService);
+  private marketService = inject(MarketService);
 
   override selectable = true;
   override type = EntityType.Plot;
 
   override initialDirection: Direction = Direction.right;
-  private autoSell = signal(true);
+  private autoSell = computed(() => this.marketService.isPlotAutoSell());
 
   upgrade = signal<PlotUpgrade>(PlotUpgrade.Basic);
   crop = signal<Crop>(Crop.Grass);
@@ -87,7 +90,7 @@ export class PlotEntity
     untracked(() => this.grow());
   }
 
-  plantCrop(crop: Crop) {
+  plant(crop: Crop) {
     this.cropGrowthStage.set(0);
     this.crop.set(crop);
   }

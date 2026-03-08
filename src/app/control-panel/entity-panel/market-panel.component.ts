@@ -1,22 +1,24 @@
 import { Component, computed, inject } from "@angular/core";
-import { IStorer } from "../canvas/entities/behaviors/storer";
-import { BarnService } from "../services/entities/barn.service";
-import { PlotService } from "../services/entities/plots.service";
-import { IncomeService } from "../services/income.service";
-import { Crop } from "../services/items/crop.service";
-import { StashService } from "../services/stash.service";
-import { CropItem } from "../services/wares.service";
+import { FormsModule } from "@angular/forms";
+import { IStorer } from "../../canvas/entities/behaviors/storer";
+import { BarnService } from "../../services/entities/barn.service";
+import { MarketService } from "../../services/entities/market.service";
+import { PlotService } from "../../services/entities/plots.service";
+import { IncomeService } from "../../services/income.service";
+import { Crop } from "../../services/items/crop.service";
+import { StashService } from "../../services/stash.service";
+import { CropItem } from "../../services/wares.service";
 
 @Component({
-  selector: "app-storage-panel",
-  imports: [],
+  selector: "app-market-panel",
+  imports: [FormsModule],
   host: {
     class: "w-full",
   },
   template: `
     <div class="flex flex-col flex-wrap gap-4 w-full">
       <div>
-        <h3 class="text-xl text-green-500">Barn</h3>
+        <h3 class="text-xl pb-1">Barn</h3>
         <div class="grid grid-cols-[max-content_1fr] flex-col gap-x-6 gap-y-1">
           @for (crop of storedCropsInBarn(); track crop.crop) {
             <div>{{ crop.crop }}</div>
@@ -25,9 +27,16 @@ import { CropItem } from "../services/wares.service";
             <div class="text-rose-400">No crops in barn</div>
           }
         </div>
+        <input
+          type="checkbox"
+          id="toggleBarnAutoSell"
+          [checked]="autoSellBarn()"
+          (change)="setBarnAutoSell($event.target.checked)" />
+        <label for="toggleBarnAutoSell"> Auto sell crops</label>
       </div>
       <div>
-        <h3 class="text-xl text-green-500">Plot</h3>
+        <h3 class="text-xl pb-1">Plot</h3>
+
         <div class="grid grid-cols-[max-content_1fr] flex-col gap-x-6 gap-y-1">
           @for (crop of storedCropsInPlots(); track crop.crop) {
             <div>{{ crop.crop }}</div>
@@ -36,17 +45,34 @@ import { CropItem } from "../services/wares.service";
             <div class="text-rose-400">No crops in plots</div>
           }
         </div>
+        <input
+          type="checkbox"
+          id="togglePlotAutoSell"
+          [checked]="autoSellPlot()"
+          (change)="setPlotAutoSell($event.target.checked)" />
+        <label for="togglePlotAutoSell"> Auto sell crops</label>
       </div>
       <button (click)="sellAllCrops()">Sell</button>
     </div>
   `,
 })
-export class StoragePanelComponent {
+export class MarketPanelComponent {
   plotService = inject(PlotService);
   barnService = inject(BarnService);
   stashService = inject(StashService);
+  marketService = inject(MarketService);
 
   incomeService = inject(IncomeService);
+
+  autoSellPlot = computed(() => this.marketService.isPlotAutoSell());
+  setPlotAutoSell(enabled: boolean) {
+    this.marketService.setPlotAutoSell(enabled);
+  }
+
+  autoSellBarn = computed(() => this.marketService.isBarnAutoSell());
+  setBarnAutoSell(enabled: boolean) {
+    this.marketService.setBarnAutoSell(enabled);
+  }
 
   storedCropsInBarn = computed(() => {
     let crops = this.getStoredCropsInEntity(this.barnService.entities());

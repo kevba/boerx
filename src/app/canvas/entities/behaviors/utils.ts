@@ -7,9 +7,7 @@ export class BehaviorUtils {
 
     nodes.forEach((node) => {
       const nodePos = node.position();
-      const dx = nodePos.x - coords.x;
-      const dy = nodePos.y - coords.y;
-      const distance = Math.hypot(dx, dy);
+      const distance = BehaviorUtils.distance(coords, nodePos);
 
       if (distance < closestDistance) {
         closestDistance = distance;
@@ -18,5 +16,11 @@ export class BehaviorUtils {
     });
 
     return closestNode;
+  }
+
+  static distance(a: { x: number; y: number }, b: { x: number; y: number }) {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    return Math.hypot(dx, dy);
   }
 }

@@ -2,12 +2,12 @@ import { signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
-import { Direction, MoveBehavior } from "./behaviors/move";
+import { Direction, Mover } from "./behaviors/move";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
 
 export class CowEntity extends Entity<CowImage, CowUpgrade> {
-  private moveBehavior: MoveBehavior;
+  private moveBehavior: Mover;
   override initialDirection = Direction.left;
 
   type = EntityType.Cow;
@@ -34,7 +34,7 @@ export class CowEntity extends Entity<CowImage, CowUpgrade> {
     });
 
     this.upgrade.set(upgrade);
-    this.moveBehavior = new MoveBehavior(node, 12, (direction) =>
+    this.moveBehavior = new Mover(node, 12, (direction) =>
       this.setDirection(direction),
     );
 

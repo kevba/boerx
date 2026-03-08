@@ -1,6 +1,8 @@
 import { Component, computed, inject } from "@angular/core";
+import { EntityType } from "../models/entity";
 import { SelectionService } from "../services/selection.service";
 import { BarnPanelComponent } from "./entity-panel/barn-panel.component";
+import { MarketPanelComponent } from "./entity-panel/market-panel.component";
 import { PlotPanelComponent } from "./entity-panel/plot-panel.component";
 import { TractorPanelComponent } from "./entity-panel/tractor-panel.component";
 import { MainPanelComponent } from "./main-panel.component";
@@ -12,6 +14,7 @@ import { MainPanelComponent } from "./main-panel.component";
     MainPanelComponent,
     TractorPanelComponent,
     BarnPanelComponent,
+    MarketPanelComponent,
   ],
 
   template: `
@@ -29,15 +32,19 @@ import { MainPanelComponent } from "./main-panel.component";
                 <button class="text pl-2!" (click)="selectionService.clear()">
                   {{ "<" }}
                 </button>
-                <span class="text-xl md:text-2xl">Upgrades</span>
+                <span class="text-xl md:text-2xl">{{
+                  selectedEntityType()
+                }}</span>
               </div>
               <div class=" h-full w-full overflow-scroll">
-                @if (showPlotControl()) {
+                @if (selectedEntityType() === EntityType.Plot) {
                   <app-plot-panel />
-                } @else if (showTractorControl()) {
+                } @else if (selectedEntityType() === EntityType.Tractor) {
                   <app-tractor-panel />
-                } @else if (showBarnControl()) {
+                } @else if (selectedEntityType() === EntityType.Barn) {
                   <app-barn-panel />
+                } @else if (selectedEntityType() === EntityType.Market) {
+                  <app-market-panel />
                 }
               </div>
             </div>
@@ -75,20 +82,23 @@ import { MainPanelComponent } from "./main-panel.component";
 })
 export class ContextPanelComponent {
   selectionService = inject(SelectionService);
+  EntityType = EntityType;
+
+  private entityWithPanel = [
+    EntityType.Plot,
+    EntityType.Barn,
+    EntityType.Tractor,
+    EntityType.Market,
+  ];
 
   showSelectedControl = computed(
-    () => this.selectionService.selected().length > 0,
+    () =>
+      this.selectionService.selected().filter((s) => {
+        return this.entityWithPanel.includes(s.type);
+      }).length > 0,
   );
 
-  showPlotControl = computed(
-    () => this.selectionService.selectedPlots().length > 0,
-  );
-
-  showTractorControl = computed(
-    () => this.selectionService.selectedTractors().length > 0,
-  );
-
-  showBarnControl = computed(
-    () => this.selectionService.selectedBarns().length > 0,
+  selectedEntityType = computed(
+    () => this.selectionService.selected()[0]?.type,
   );
 }

@@ -1,32 +1,33 @@
-import { effect, inject, signal } from "@angular/core";
+import { effect, signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
-import { FarmerService } from "../../services/entities/farmer.service";
-import { PlotService } from "../../services/entities/plots.service";
 import { Crop } from "../../services/items/crop.service";
-import { Direction, MoveBehavior } from "./behaviors/move";
+import { CropTransporter, ICropTransporter } from "./behaviors/cropTransporter";
+import { Harvester, IHarvester } from "./behaviors/harvester";
+import { Direction, IMover, Mover } from "./behaviors/move";
+import { IPlanter, Planter } from "./behaviors/planter";
 import { IStorer, Storer } from "./behaviors/storer";
 import { Entity } from "./Entity";
-import { PlotEntity } from "./PlotEntity";
 import { Sprite } from "./Sprite";
 
 export class FarmerEntity
   extends Entity<FarmerRender, FarmerUpgrade>
-  implements IStorer
+  implements IStorer, IMover, ICropTransporter, IHarvester, IPlanter
 {
   override selectable = true;
   override type = EntityType.Farmer;
-  private moveBehavior: MoveBehavior;
-  private plotService = inject(PlotService);
-  private farmerService = inject(FarmerService);
 
   // This should be on the sprite
   override initialDirection: Direction = Direction.left;
 
   currentPlotTargetId: string | null = null;
 
+  move: Mover;
   storage: Storer;
+  cropTransporter: CropTransporter;
+  harvester: Harvester;
+  planter: Planter;
 
   upgrade = signal<FarmerUpgrade>(FarmerUpgrade.Farmer);
 
@@ -49,19 +50,39 @@ export class FarmerEntity
     });
     node.entity = this;
 
-    this.moveBehavior = new MoveBehavior(this.node, 20, (direction) =>
+    this.move = new Mover(this.node, 20, (direction) =>
       this.setDirection(direction),
     );
 
     this.upgrade.set(upgrade);
     this.storage = new Storer(1);
+    this.cropTransporter = new CropTransporter(
+      this,
+      EntityType.Plot,
+      EntityType.Barn,
+    );
+    this.harvester = new Harvester(this);
+    this.planter = new Planter(this, Crop.Wheat);
 
     this.init();
   }
 
   protected override update(): void {
     if (this.node.isDragging() || this.node.draggable()) return;
-    this.moveToTarget();
+
+    const actOrder = [this.planter, this.harvester, this.cropTransporter].sort(
+      (a, b) => {
+        if (a.targetId && !b.targetId) return -1;
+        if (!a.targetId && b.targetId) return 1;
+        return 0;
+      },
+    );
+
+    for (const behavior of actOrder) {
+      if (behavior.act()) {
+        break;
+      }
+    }
   }
 
   upgradeTo(upgrade: FarmerUpgrade) {
@@ -70,76 +91,6 @@ export class FarmerEntity
   private _upgradeChangeEffect = effect(() => {
     const upgrade = this.upgrade();
   });
-
-  private moveToTarget() {
-    this.plotMovingBehavoir();
-  }
-
-  private plotMovingBehavoir() {
-    let plot: PlotEntity | undefined;
-
-    if (this.currentPlotTargetId) {
-      plot = this.plotService.getById(this.currentPlotTargetId);
-    } else {
-      plot = this.getTargetPlot();
-    }
-
-    if (!plot) {
-      this.currentPlotTargetId = null;
-      return;
-    }
-
-    const plotNode = plot.node;
-    this.currentPlotTargetId = plot.id;
-
-    this.node.isMoving.set(true);
-    this.moveBehavior.moveToTarget(plotNode, () => {
-      this.node.isMoving.set(false);
-
-      if (plot.canHarvest()) {
-        plot.harvest();
-        this.currentPlotTargetId = null;
-      }
-
-      if (plot.canPlant() && !plot.storage.isFull()) {
-        this.plotService.plantOnPlot(plot.id, Crop.Potato);
-        this.currentPlotTargetId = null;
-      }
-    });
-  }
-
-  private getTargetPlot(): PlotEntity | undefined {
-    const otherFarmerTargets = this.farmerService
-      .entities()
-      .map((farmer) => farmer.currentPlotTargetId);
-
-    let plots = this.plotService
-      .entities()
-      .filter((plot) => {
-        if (otherFarmerTargets.includes(plot.id)) {
-          return false;
-        }
-
-        return true;
-      })
-      .sort((a, b) => {
-        if (a.crop() === Crop.Grass && b.crop() !== Crop.Grass) {
-          return -1;
-        }
-
-        if (b.crop() === Crop.Grass && a.crop() !== Crop.Grass) {
-          return 1;
-        }
-
-        if (a.cropGrowthStageFraction() === b.cropGrowthStageFraction()) {
-          return b.cropGrowthStage() - a.cropGrowthStage();
-        }
-
-        return b.cropGrowthStageFraction() - a.cropGrowthStageFraction();
-      });
-
-    return plots[0];
-  }
 }
 
 export enum FarmerUpgrade {
@@ -148,7 +99,6 @@ export enum FarmerUpgrade {
 
 class FarmerRender extends Sprite<FarmerEntity> {
   override hasCollision = false;
-  isMoving = signal(false);
 
   private upgradeColor: Record<
     FarmerUpgrade,

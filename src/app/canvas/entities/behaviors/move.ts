@@ -2,7 +2,11 @@ import { effect } from "@angular/core";
 import Konva from "konva";
 import { EntityRender } from "../Entity";
 
-export class MoveBehavior {
+export interface IMover {
+  move: Mover;
+}
+
+export class Mover {
   private moving = false;
   private moveTimeout: ReturnType<typeof setTimeout> | null = null;
   // interval of movement loop in ms, lower is smoother but more CPU intensive
@@ -51,6 +55,8 @@ export class MoveBehavior {
 
   stop() {
     this.moving = false;
+    this.entity.isMoving.set(false);
+
     if (this.moveTimeout) {
       clearTimeout(this.moveTimeout);
       this.moveTimeout = null;
@@ -67,8 +73,11 @@ export class MoveBehavior {
     onReach?: () => void,
   ) {
     if (!this.moving) {
+      this.entity.isMoving.set(false);
       return;
     }
+    this.entity.isMoving.set(true);
+
     const entityPosition = this.entity.position();
 
     let entityX = entityPosition.x;

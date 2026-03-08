@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, signal } from "@angular/core";
 import {
   MarketEntity,
   MarketUpgrade,
@@ -12,6 +12,19 @@ import { BaseService } from "./base.service";
 export class MarketService extends BaseService<MarketUpgrade, MarketEntity> {
   override baseCost = 1000000;
   override entityType = EntityType.Market;
+
+  private autoSellPlot = signal(false);
+  private autoSellBarn = signal(false);
+
+  isPlotAutoSell = this.autoSellPlot.asReadonly();
+  setPlotAutoSell(auto: boolean) {
+    this.autoSellPlot.set(auto);
+  }
+
+  isBarnAutoSell = this.autoSellBarn.asReadonly();
+  setBarnAutoSell(auto: boolean) {
+    this.autoSellBarn.set(auto);
+  }
 
   upgrades = {};
 

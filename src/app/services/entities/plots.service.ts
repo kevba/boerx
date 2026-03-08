@@ -58,11 +58,11 @@ export class PlotService extends BaseService<PlotUpgrade, PlotEntity> {
     }
     this.stashService.addStash(-cost);
 
-    this._entity.update((plots) => {
+    this.entitiesService.entities.update((plots) => {
       const plotIndex = plots.findIndex((plot) => plot.id === plotId);
       if (plotIndex === -1) return plots;
 
-      plots[plotIndex].crop.set(crop);
+      (plots[plotIndex] as PlotEntity).crop.set(crop);
 
       return plots;
     });

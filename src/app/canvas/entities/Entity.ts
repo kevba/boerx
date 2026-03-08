@@ -90,6 +90,7 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
   protected hasCollision = true;
   protected selected = signal(false);
   isSelected = this.selected.asReadonly();
+  isMoving = signal(false);
 
   constructor(args: { x: number; y: number; id: string; type: EntityType }) {
     const size = RenderUtils.entitySize[args.type][0];
