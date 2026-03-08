@@ -14,6 +14,10 @@ export class StashService {
     this._stash.update((stash) => stash + amount);
   }
 
+  setStash(amount: number) {
+    this._stash.set(amount);
+  }
+
   constructor() {
     effect(() => {
       const _ = this.tick();
