@@ -9,7 +9,7 @@ import { BaseService } from "./base.service";
 })
 export class BarnService extends BaseService<BarnUpgrade, BarnEntity> {
   override entityType = EntityType.Barn;
-  protected baseCost = 20000;
+  protected baseCost = 10000;
   buyService = inject(BuyService);
 
   upgrades = {

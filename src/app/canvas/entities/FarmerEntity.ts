@@ -90,7 +90,7 @@ export class FarmerEntity
     }
 
     const plotNode = plot.node;
-    this.currentPlotTargetId = plotNode.id();
+    this.currentPlotTargetId = plot.id;
 
     this.node.isMoving.set(true);
     this.moveBehavior.moveToTarget(plotNode, () => {
@@ -103,8 +103,6 @@ export class FarmerEntity
       if (plot.canPlant() && !plot.storage.isFull()) {
         this.plotService.plantOnPlot(plot.id, Crop.Potato);
       }
-
-      this.currentPlotTargetId = null;
     });
   }
 

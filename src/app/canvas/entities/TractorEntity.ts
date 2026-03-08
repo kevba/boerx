@@ -113,7 +113,7 @@ export class TractorEntity
     }
 
     const plotNode = plot.node;
-    this.currentPlotTargetId = plotNode.id();
+    this.currentPlotTargetId = plot.id;
 
     this.moveBehavior.moveToTarget(plotNode, () => {
       const inStorage = plotNode.entity.storage.retrieveAll();

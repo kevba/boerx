@@ -14,7 +14,7 @@ export class PlotsService extends BaseService<PlotUpgrade, PlotEntity> {
 
   private buyService = inject(BuyService);
 
-  protected baseCost = 4000;
+  protected baseCost = 2000;
 
   hasMoistureUpgrade = computed(() =>
     this.entities().some(
