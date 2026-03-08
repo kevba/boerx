@@ -10,7 +10,7 @@ import { BaseService } from "./base.service";
   providedIn: "root",
 })
 export class FarmerService extends BaseService<FarmerUpgrade, FarmerEntity> {
-  override baseCost = 5000;
+  override baseCost = 2500;
   override entityType = EntityType.Farmer;
 
   upgrades = {};

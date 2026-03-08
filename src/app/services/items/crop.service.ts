@@ -21,22 +21,22 @@ export class CropService {
   earnings = computed<Record<Crop, number>>(() => ({
     [Crop.Grass]: this.earningsCalculation(
       Crop.Grass,
-      100,
+      1,
       this.harvestCounter(),
     ),
     [Crop.Wheat]: this.earningsCalculation(
       Crop.Wheat,
-      200,
+      400,
       this.harvestCounter(),
     ),
     [Crop.Corn]: this.earningsCalculation(
       Crop.Corn,
-      250,
+      500,
       this.harvestCounter(),
     ),
     [Crop.Potato]: this.earningsCalculation(
       Crop.Potato,
-      300,
+      600,
       this.harvestCounter(),
     ),
   }));
