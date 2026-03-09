@@ -10,6 +10,12 @@ export interface IHarvester {
   harvester: Harvester;
 }
 
+export enum HarvesterState {
+  Idle = "Idle",
+  Harvesting = "Harvesting",
+  MovingToTarget = "MovingToTarget",
+}
+
 export class Harvester {
   targetId: string | null = null;
 
@@ -17,17 +23,17 @@ export class Harvester {
 
   constructor(private entity: Entity<any, any> & IMover & IStorer) {}
 
-  act(): boolean {
+  act(): HarvesterState {
     let target: (Entity<any, any> & Harvestable) | null = null;
     if (!this.targetId) {
       target = this.findTarget();
       this.targetId = target?.id || null;
-      return false;
+      return HarvesterState.Idle;
     } else {
       target = this.findTargetById(this.targetId);
       if (!target) {
         this.targetId = null;
-        return false;
+        return HarvesterState.Idle;
       }
     }
 
@@ -37,7 +43,7 @@ export class Harvester {
       this.targetId = null;
     });
 
-    return true;
+    return HarvesterState.MovingToTarget;
   }
 
   private findTargetById(id: string): (Entity<any, any> & Harvestable) | null {

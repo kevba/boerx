@@ -3,29 +3,47 @@ import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { Crop } from "../../services/items/crop.service";
-import { CropTransporter, ICropTransporter } from "./behaviors/cropTransporter";
-import { Harvester, IHarvester } from "./behaviors/harvester";
+import {
+  CropTransporter,
+  CropTransporterState,
+} from "./behaviors/cropTransporter";
+import { Harvester, HarvesterState, IHarvester } from "./behaviors/harvester";
 import { Direction, IMover, Mover } from "./behaviors/move";
-import { IPlanter, Planter } from "./behaviors/planter";
+import { IPlanter, Planter, PlanterState } from "./behaviors/planter";
 import { IStorer, Storer } from "./behaviors/storer";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
 
+export enum FarmerRoles {
+  Plant = "Plant",
+  Harvest = "Harvest",
+  Transport = "Transport",
+  Sell = "Sell",
+}
+
 export class FarmerEntity
   extends Entity<FarmerRender, FarmerUpgrade>
-  implements IStorer, IMover, ICropTransporter, IHarvester, IPlanter
+  implements IStorer, IMover, IHarvester, IPlanter
 {
   override selectable = true;
   override type = EntityType.Farmer;
 
+  roles = signal<FarmerRoles[]>([
+    FarmerRoles.Plant,
+    FarmerRoles.Harvest,
+    FarmerRoles.Transport,
+    FarmerRoles.Sell,
+  ]);
+
+  private currentRole = signal<FarmerRoles | null>(null);
+
   // This should be on the sprite
   override initialDirection: Direction = Direction.left;
-
-  currentPlotTargetId: string | null = null;
 
   move: Mover;
   storage: Storer;
   cropTransporter: CropTransporter;
+  cropMarketTransporter: CropTransporter;
   harvester: Harvester;
   planter: Planter;
 
@@ -61,6 +79,11 @@ export class FarmerEntity
       EntityType.Plot,
       EntityType.Barn,
     );
+    this.cropMarketTransporter = new CropTransporter(
+      this,
+      EntityType.Barn,
+      EntityType.Market,
+    );
     this.harvester = new Harvester(this);
     this.planter = new Planter(this, Crop.Wheat);
 
@@ -69,18 +92,50 @@ export class FarmerEntity
 
   protected override update(): void {
     if (this.node.isDragging() || this.node.draggable()) return;
+    // Current role is used to prevent switching between roles too quickly
+    let currentRole = this.currentRole();
 
-    const actOrder = [this.planter, this.harvester, this.cropTransporter].sort(
-      (a, b) => {
-        if (a.targetId && !b.targetId) return -1;
-        if (!a.targetId && b.targetId) return 1;
-        return 0;
-      },
-    );
+    if (currentRole && !this.roles().includes(currentRole)) {
+      this.currentRole.set(null);
+      currentRole = null;
+    }
 
-    for (const behavior of actOrder) {
-      if (behavior.act()) {
-        break;
+    if (
+      this.roles().includes(FarmerRoles.Plant) &&
+      (currentRole === null || currentRole === FarmerRoles.Plant)
+    ) {
+      const state = this.planter.act();
+      if (state !== PlanterState.Idle) {
+        this.currentRole.set(FarmerRoles.Plant);
+        return;
+      } else {
+        this.currentRole.set(null);
+      }
+    }
+
+    if (
+      this.roles().includes(FarmerRoles.Harvest) &&
+      (currentRole === null || currentRole === FarmerRoles.Harvest)
+    ) {
+      const state = this.harvester.act();
+      if (state !== HarvesterState.Idle) {
+        this.currentRole.set(FarmerRoles.Harvest);
+        return;
+      } else {
+        this.currentRole.set(null);
+      }
+    }
+
+    if (
+      this.roles().includes(FarmerRoles.Transport) &&
+      (currentRole === null || currentRole === FarmerRoles.Transport)
+    ) {
+      const state = this.cropTransporter.act();
+      if (state !== CropTransporterState.Idle) {
+        this.currentRole.set(FarmerRoles.Transport);
+        return;
+      } else {
+        this.currentRole.set(null);
       }
     }
   }

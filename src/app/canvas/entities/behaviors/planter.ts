@@ -10,6 +10,11 @@ export interface IPlanter {
   planter: Planter;
 }
 
+export enum PlanterState {
+  Idle = "Idle",
+  MovingToTarget = "MovingToTarget",
+}
+
 export class Planter {
   targetId: string | null = null;
 
@@ -20,7 +25,7 @@ export class Planter {
     private crop: Crop,
   ) {}
 
-  act(): boolean {
+  act(): PlanterState {
     let target: (Entity<any, any> & Plantable) | null = null;
     if (!this.targetId) {
       target = this.findTarget();
@@ -32,7 +37,7 @@ export class Planter {
       }
     }
 
-    if (!target) return false;
+    if (!target) return PlanterState.Idle;
 
     this.entity.move.moveToTarget(target?.node, () => {
       if (!target?.canPlant()) return;
@@ -40,7 +45,7 @@ export class Planter {
       this.targetId = null;
     });
 
-    return true;
+    return PlanterState.MovingToTarget;
   }
 
   private findTargetById(id: string): (Entity<any, any> & Plantable) | null {

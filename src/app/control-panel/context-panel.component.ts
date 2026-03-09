@@ -2,6 +2,7 @@ import { Component, computed, inject } from "@angular/core";
 import { EntityType } from "../models/entity";
 import { SelectionService } from "../services/selection.service";
 import { BarnPanelComponent } from "./entity-panel/barn-panel.component";
+import { FarmerPanelComponent } from "./entity-panel/farmer-panel.component";
 import { MarketPanelComponent } from "./entity-panel/market-panel.component";
 import { PlotPanelComponent } from "./entity-panel/plot-panel.component";
 import { TractorPanelComponent } from "./entity-panel/tractor-panel.component";
@@ -15,6 +16,7 @@ import { MainPanelComponent } from "./main-panel.component";
     TractorPanelComponent,
     BarnPanelComponent,
     MarketPanelComponent,
+    FarmerPanelComponent,
   ],
 
   template: `
@@ -45,6 +47,8 @@ import { MainPanelComponent } from "./main-panel.component";
                   <app-barn-panel />
                 } @else if (selectedEntityType() === EntityType.Market) {
                   <app-market-panel />
+                } @else if (selectedEntityType() === EntityType.Farmer) {
+                  <app-farmer-panel />
                 }
               </div>
             </div>
@@ -89,6 +93,7 @@ export class ContextPanelComponent {
     EntityType.Barn,
     EntityType.Tractor,
     EntityType.Market,
+    EntityType.Farmer,
   ];
 
   showSelectedControl = computed(

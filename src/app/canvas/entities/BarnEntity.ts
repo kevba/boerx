@@ -26,7 +26,7 @@ export class BarnEntity
   storage: Storer;
 
   maxStoragePerUpgrade: Record<BarnUpgrade, number> = {
-    [BarnUpgrade.Shed]: 10,
+    [BarnUpgrade.Shed]: 20,
     [BarnUpgrade.Storage]: 50,
     [BarnUpgrade.Warehouse]: 100,
   };

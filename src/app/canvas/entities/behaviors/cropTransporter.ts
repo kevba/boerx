@@ -10,6 +10,12 @@ export interface ICropTransporter {
   cropTransporter: CropTransporter;
 }
 
+export enum CropTransporterState {
+  Idle = "Idle",
+  MovingToSource = "MovingToSource",
+  MovingToTarget = "MovingToTarget",
+}
+
 export class CropTransporter {
   movingToType: EntityType | null = null;
   targetId: string | null = null;
@@ -22,7 +28,7 @@ export class CropTransporter {
     private destinationType: EntityType,
   ) {}
 
-  act(): boolean {
+  act(): CropTransporterState {
     if (this.entity.storage.storedItems().length === 0) {
       this.movingToType = this.sourceType;
     } else {
@@ -40,7 +46,7 @@ export class CropTransporter {
       }
     }
 
-    if (!target) return false;
+    if (!target) return CropTransporterState.Idle;
 
     this.entity.move.moveToTarget(target?.node, () => {
       if (!target?.storage) return;
@@ -61,8 +67,9 @@ export class CropTransporter {
 
       this.targetId = null;
     });
-
-    return true;
+    return this.movingToType === this.sourceType
+      ? CropTransporterState.MovingToSource
+      : CropTransporterState.MovingToTarget;
   }
 
   private findTargetById(id: string): (Entity<any, any> & IStorer) | null {
