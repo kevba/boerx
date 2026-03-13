@@ -240,7 +240,7 @@ export class PlotRenderImage extends Konva.Image {
       y: args.y,
     });
 
-    this.noiseData = NoisyImageService.NoisyPattern(
+    this.noiseData = NoisyImageService.PerlinNoisyPattern(
       size / 8,
       1,
       0.9,
