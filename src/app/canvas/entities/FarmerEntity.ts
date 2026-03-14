@@ -3,13 +3,10 @@ import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { Crop } from "../../services/items/crop.service";
-import {
-  CropTransporter,
-  CropTransporterState,
-} from "./behaviors/cropTransporter";
-import { Harvester, HarvesterState, IHarvester } from "./behaviors/harvester";
+import { CropTransporter } from "./behaviors/cropTransporter";
+import { Harvester, IHarvester } from "./behaviors/harvester";
 import { Direction, IMover, Mover } from "./behaviors/move";
-import { IPlanter, Planter, PlanterState } from "./behaviors/planter";
+import { IPlanter, Planter } from "./behaviors/planter";
 import { IStorer, Storer } from "./behaviors/storer";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
@@ -92,51 +89,18 @@ export class FarmerEntity
 
   protected override update(): void {
     if (this.node.isDragging() || this.node.draggable()) return;
-    // Current role is used to prevent switching between roles too quickly
-    let currentRole = this.currentRole();
 
-    if (currentRole && !this.roles().includes(currentRole)) {
-      this.currentRole.set(null);
-      currentRole = null;
-    }
+    const actions: {
+      act: () => void;
+      weight: number;
+    }[] = [];
 
-    if (
-      this.roles().includes(FarmerRoles.Plant) &&
-      (currentRole === null || currentRole === FarmerRoles.Plant)
-    ) {
-      const state = this.planter.act();
-      if (state !== PlanterState.Idle) {
-        this.currentRole.set(FarmerRoles.Plant);
-        return;
-      } else {
-        this.currentRole.set(null);
-      }
-    }
+    actions.push(this.harvester.weight());
 
-    if (
-      this.roles().includes(FarmerRoles.Harvest) &&
-      (currentRole === null || currentRole === FarmerRoles.Harvest)
-    ) {
-      const state = this.harvester.act();
-      if (state !== HarvesterState.Idle) {
-        this.currentRole.set(FarmerRoles.Harvest);
-        return;
-      } else {
-        this.currentRole.set(null);
-      }
-    }
+    actions.sort((a, b) => b.weight - a.weight);
 
-    if (
-      this.roles().includes(FarmerRoles.Transport) &&
-      (currentRole === null || currentRole === FarmerRoles.Transport)
-    ) {
-      const state = this.cropTransporter.act();
-      if (state !== CropTransporterState.Idle) {
-        this.currentRole.set(FarmerRoles.Transport);
-        return;
-      } else {
-        this.currentRole.set(null);
-      }
+    if (actions.length > 0 && actions[0].weight > 0) {
+      actions[0].act();
     }
   }
 

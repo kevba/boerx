@@ -1,6 +1,7 @@
 import { effect } from "@angular/core";
 import Konva from "konva";
 import { EntityRender } from "../Entity";
+import { BehaviorUtils } from "./utils";
 
 export interface IMover {
   move: Mover;
@@ -20,16 +21,11 @@ export class Mover {
   ) {}
 
   moveToTarget(target: Konva.Node, onReach?: () => void) {
-    const targetPos = target.position();
-
     // Center of the target
-    const centerX = targetPos.x + target.width() / 2;
-    const centerY = targetPos.y + target.height() / 2;
-
-    const shortestSide = Math.min(target.width(), target.height());
+    const center = BehaviorUtils.center(target);
 
     this.moving = true;
-    this.moveTo({ x: centerX, y: centerY }, onReach, shortestSide / 3);
+    this.moveTo(center, onReach);
   }
 
   private _selectedEffect = effect(() => {
@@ -79,16 +75,10 @@ export class Mover {
     this.entity.isMoving.set(true);
 
     const entityPosition = this.entity.position();
+    const entityCenter = BehaviorUtils.center(this.entity);
 
-    let entityX = entityPosition.x;
-    let entityY = entityPosition.y;
-
-    // Centering
-    entityX += this.entity.width() / 2;
-    entityY += this.entity.height() / 2;
-
-    const xDiff = entityX - destination.x;
-    const yDiff = entityY - destination.y;
+    const xDiff = entityCenter.x - destination.x;
+    const yDiff = entityCenter.y - destination.y;
     const distance = Math.hypot(xDiff, yDiff);
 
     if (distance <= radius) {

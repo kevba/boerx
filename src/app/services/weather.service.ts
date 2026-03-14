@@ -50,6 +50,12 @@ export class WeatherService {
       const seasons = Object.values(SeasonTypes);
       const nextIndex = (seasons.indexOf(currentSeason) + 1) % seasons.length;
       const nextSeason = seasons[nextIndex];
+      this.weatherForecast.update((forecast) => {
+        const newForecast = new Array(forecast.length).map(() =>
+          this.getRandomWeather(),
+        );
+        return newForecast;
+      });
 
       this.currentSeason.set(nextSeason);
     });

@@ -6,7 +6,7 @@ import { IMover } from "./move";
 import { IStorer } from "./storer";
 import { BehaviorUtils } from "./utils";
 
-export interface IHarvester {
+export interface IHarvester extends Entity<any, any>, IMover, IStorer {
   harvester: Harvester;
 }
 
@@ -18,71 +18,100 @@ export enum HarvesterState {
 
 export class Harvester {
   targetId: string | null = null;
+  private maxRange = 400;
 
   private entityService = inject(EntitiesService);
 
-  constructor(private entity: Entity<any, any> & IMover & IStorer) {}
+  constructor(private entity: IHarvester) {}
 
-  act(): HarvesterState {
-    let target: (Entity<any, any> & Harvestable) | null = null;
-    if (!this.targetId) {
-      target = this.findTarget();
-      this.targetId = target?.id || null;
-      return HarvesterState.Idle;
-    } else {
-      target = this.findTargetById(this.targetId);
-      if (!target) {
-        this.targetId = null;
-        return HarvesterState.Idle;
-      }
+  weight(): { act: () => void; weight: number } {
+    const targetInfo = this.getTarget();
+
+    if (!targetInfo) {
+      return {
+        act: () => undefined,
+        weight: 0,
+      };
     }
 
-    this.entity.move.moveToTarget(target?.node, () => {
-      if (!target?.canHarvest()) return;
-      target.harvest();
-      this.targetId = null;
-    });
+    // eh close enough to harvest, just do it
+    if (targetInfo.distance < 10) {
+      return {
+        act: () => {
+          this.entity.move.stop();
 
-    return HarvesterState.MovingToTarget;
+          targetInfo.target.harvest();
+          this.targetId = null;
+        },
+        weight: 1,
+      };
+    }
+
+    return {
+      act: () => {
+        this.targetId = targetInfo?.target.id || null;
+        this.entity.move.moveToTarget(targetInfo.target?.node, () => {
+          this.entity.move.stop();
+        });
+      },
+      weight: Math.max(1 - targetInfo.distance / this.maxRange, 0),
+    };
   }
 
-  private findTargetById(id: string): (Entity<any, any> & Harvestable) | null {
+  private getTarget(): { target: Harvestable; distance: number } | null {
+    if (!this.targetId) {
+      const foundTarget = this.findTarget();
+      return foundTarget;
+    } else {
+      const target = this.findTargetById(this.targetId);
+      return target;
+    }
+  }
+
+  private findTargetById(
+    id: string,
+  ): { target: Harvestable; distance: number } | null {
     const entity =
       this.entityService.entities().find((t) => t.id === id) || null;
     if (!entity || !("harvest" in entity)) return null;
 
-    return entity as Entity<any, any> & Harvestable;
+    return {
+      target: entity as Harvestable,
+      distance: BehaviorUtils.centerDistance(entity.node, this.entity.node),
+    };
   }
 
-  private findTarget(): (Entity<any, any> & Harvestable) | null {
+  private findTarget(): { target: Harvestable; distance: number } | null {
+    let targets = this.getTargets();
+    targets = this.filterAlreadyTargeted(targets);
+
+    const targetsWithDistance = targets.map((t) => {
+      return {
+        target: t,
+        distance: BehaviorUtils.centerDistance(t.node, this.entity.node),
+      };
+    });
+
+    targetsWithDistance.sort((a, b) => a.distance - b.distance);
+    return targetsWithDistance[0] || null;
+  }
+
+  private filterAlreadyTargeted(entities: Harvestable[]): Harvestable[] {
     // Prevent multiple  targeting the same entity
     const otherHarvesters = this.entityService
       .entities()
       .filter((e) => "harvester" in e)
       .map((e) => (e as IHarvester).harvester.targetId);
 
+    return entities.filter((e) => !otherHarvesters.includes(e.id));
+  }
+
+  private getTargets(): Harvestable[] {
     let targets = this.entityService
       .entities()
       .filter((e) => "harvest" in e)
-      .filter((e) => (e as Entity<any, any> & Harvestable).canHarvest())
-      .filter((e) => !otherHarvesters.includes(e.id))
-      // TODO: in range checks
-      .sort((a, b) => {
-        const aEntity = a as Entity<any, any>;
-        const bEntity = b as Entity<any, any>;
+      .filter((e) => (e as Entity<any, any> & Harvestable).canHarvest());
 
-        const aDist = BehaviorUtils.distance(
-          aEntity.node.position(),
-          this.entity.node.position(),
-        );
-        const bDist = BehaviorUtils.distance(
-          bEntity.node.position(),
-          this.entity.node.position(),
-        );
-
-        return aDist - bDist;
-      }) as (Entity<any, any> & Harvestable)[];
-
-    return targets[0] || null;
+    return targets as Harvestable[];
   }
 }

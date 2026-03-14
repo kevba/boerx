@@ -18,9 +18,25 @@ export class BehaviorUtils {
     return closestNode;
   }
 
+  // Did you mean to use centerDistance
   static distance(a: { x: number; y: number }, b: { x: number; y: number }) {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return Math.hypot(dx, dy);
+  }
+
+  static centerDistance(a: Konva.Node, b: Konva.Node) {
+    const aCenter = BehaviorUtils.center(a);
+    const bCenter = BehaviorUtils.center(b);
+    const dx = aCenter.x - bCenter.x;
+    const dy = aCenter.y - bCenter.y;
+    return Math.hypot(dx, dy);
+  }
+
+  static center(node: Konva.Node): { x: number; y: number } {
+    const centerX = node.x() + node.width() / 2;
+    const centerY = node.y() + node.height() / 2;
+
+    return { x: centerX, y: centerY };
   }
 }

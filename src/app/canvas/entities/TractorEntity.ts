@@ -75,17 +75,17 @@ export class TractorEntity
   protected override update(): void {
     if (this.node.isDragging() || this.node.draggable()) return;
 
-    const actOrder = [this.cropTransporter, this.harvester].sort((a, b) => {
-      if (a.targetId && !b.targetId) return -1;
-      if (!a.targetId && b.targetId) return 1;
-      return 0;
-    });
+    // const actOrder = [this.cropTransporter, this.harvester].sort((a, b) => {
+    //   if (a.targetId && !b.targetId) return -1;
+    //   if (!a.targetId && b.targetId) return 1;
+    //   return 0;
+    // });
 
-    for (const behavior of actOrder) {
-      if (behavior.act()) {
-        break;
-      }
-    }
+    // for (const behavior of actOrder) {
+    //   if (behavior.act()) {
+    //     break;
+    //   }
+    // }
   }
 
   upgradeTo(upgrade: TractorUpgrade) {
