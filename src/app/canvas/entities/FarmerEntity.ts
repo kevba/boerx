@@ -24,6 +24,7 @@ export class FarmerEntity
 {
   override selectable = true;
   override type = EntityType.Farmer;
+  cropToPlant = Crop.Wheat;
 
   roles = signal<FarmerRoles[]>([
     FarmerRoles.Plant,
@@ -82,7 +83,7 @@ export class FarmerEntity
       EntityType.Market,
     );
     this.harvester = new Harvester(this);
-    this.planter = new Planter(this, Crop.Wheat);
+    this.planter = new Planter(this);
 
     this.init();
   }
@@ -95,7 +96,7 @@ export class FarmerEntity
       weight: number;
     }[] = [];
 
-    actions.push(this.harvester.weight());
+    actions.push(this.harvester.weight(), this.planter.weight());
 
     actions.sort((a, b) => b.weight - a.weight);
 

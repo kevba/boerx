@@ -39,7 +39,6 @@ export class Harvester {
       return {
         act: () => {
           this.entity.move.stop();
-
           targetInfo.target.harvest();
           this.targetId = null;
         },
@@ -73,7 +72,7 @@ export class Harvester {
   ): { target: Harvestable; distance: number } | null {
     const entity =
       this.entityService.entities().find((t) => t.id === id) || null;
-    if (!entity || !("harvest" in entity)) return null;
+    if (!entity) return null;
 
     return {
       target: entity as Harvestable,
@@ -110,7 +109,7 @@ export class Harvester {
     let targets = this.entityService
       .entities()
       .filter((e) => "harvest" in e)
-      .filter((e) => (e as Entity<any, any> & Harvestable).canHarvest());
+      .filter((e) => (e as Harvestable).canHarvest());
 
     return targets as Harvestable[];
   }

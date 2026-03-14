@@ -4,87 +4,109 @@ import { Crop } from "../../../services/items/crop.service";
 import { Entity } from "../Entity";
 import { Plantable } from "../models";
 import { IMover } from "./move";
+import { IStorer } from "./storer";
 import { BehaviorUtils } from "./utils";
 
-export interface IPlanter {
+export interface IPlanter extends Entity<any, any>, IMover, IStorer {
   planter: Planter;
-}
-
-export enum PlanterState {
-  Idle = "Idle",
-  MovingToTarget = "MovingToTarget",
+  cropToPlant: Crop;
 }
 
 export class Planter {
   targetId: string | null = null;
+  private maxRange = 400;
 
   private entityService = inject(EntitiesService);
 
-  constructor(
-    private entity: Entity<any, any> & IMover,
-    private crop: Crop,
-  ) {}
+  constructor(private entity: IPlanter) {}
 
-  act(): PlanterState {
-    let target: (Entity<any, any> & Plantable) | null = null;
-    if (!this.targetId) {
-      target = this.findTarget();
-      this.targetId = target?.id || null;
-    } else {
-      target = this.findTargetById(this.targetId);
-      if (!target) {
-        this.targetId = null;
-      }
+  weight(): { act: () => void; weight: number } {
+    const targetInfo = this.getTarget();
+
+    if (!targetInfo) {
+      return {
+        act: () => undefined,
+        weight: 0,
+      };
     }
 
-    if (!target) return PlanterState.Idle;
+    // eh close enough to harvest, just do it
+    if (targetInfo.distance < 10) {
+      return {
+        act: () => {
+          this.entity.move.stop();
+          targetInfo.target.plant(this.entity.cropToPlant);
+          this.targetId = null;
+        },
+        weight: 1,
+      };
+    }
 
-    this.entity.move.moveToTarget(target?.node, () => {
-      if (!target?.canPlant()) return;
-      target.plant(this.crop);
-      this.targetId = null;
-    });
-
-    return PlanterState.MovingToTarget;
+    return {
+      act: () => {
+        this.targetId = targetInfo?.target.id || null;
+        this.entity.move.moveToTarget(targetInfo.target?.node, () => {
+          this.entity.move.stop();
+        });
+      },
+      weight: Math.max(1 - targetInfo.distance / this.maxRange, 0),
+    };
   }
 
-  private findTargetById(id: string): (Entity<any, any> & Plantable) | null {
+  private getTarget(): { target: Plantable; distance: number } | null {
+    if (!this.targetId) {
+      const foundTarget = this.findTarget();
+      return foundTarget;
+    } else {
+      const target = this.findTargetById(this.targetId);
+      return target;
+    }
+  }
+
+  private findTargetById(
+    id: string,
+  ): { target: Plantable; distance: number } | null {
     const entity =
       this.entityService.entities().find((t) => t.id === id) || null;
-    if (!entity || !("plant" in entity)) return null;
+    if (!entity) return null;
 
-    return entity as Entity<any, any> & Plantable;
+    return {
+      target: entity as Plantable,
+      distance: BehaviorUtils.centerDistance(entity.node, this.entity.node),
+    };
   }
 
-  private findTarget(): (Entity<any, any> & Plantable) | null {
+  private findTarget(): { target: Plantable; distance: number } | null {
+    let targets = this.getTargets();
+    targets = this.filterAlreadyTargeted(targets);
+
+    const targetsWithDistance = targets.map((t) => {
+      return {
+        target: t,
+        distance: BehaviorUtils.centerDistance(t.node, this.entity.node),
+      };
+    });
+
+    targetsWithDistance.sort((a, b) => a.distance - b.distance);
+    return targetsWithDistance[0] || null;
+  }
+
+  private filterAlreadyTargeted(entities: Plantable[]): Plantable[] {
     // Prevent multiple  targeting the same entity
     const otherPlanters = this.entityService
       .entities()
       .filter((e) => "planter" in e)
       .map((e) => (e as IPlanter).planter.targetId);
 
+    return entities.filter((e) => !otherPlanters.includes(e.id));
+  }
+
+  private getTargets(): Plantable[] {
     let targets = this.entityService
       .entities()
-      .filter((e) => "canPlant" in e)
-      .filter((e) => !otherPlanters.includes(e.id))
-      .filter((e) => (e as Entity<any, any> & Plantable).canPlant())
-      // TODO: in range checks
-      .sort((a, b) => {
-        const aEntity = a as Entity<any, any>;
-        const bEntity = b as Entity<any, any>;
+      .filter((e) => "plant" in e)
+      .filter((e) => (e as Plantable).canPlant());
 
-        const aDist = BehaviorUtils.distance(
-          aEntity.node.position(),
-          this.entity.node.position(),
-        );
-        const bDist = BehaviorUtils.distance(
-          bEntity.node.position(),
-          this.entity.node.position(),
-        );
-
-        return aDist - bDist;
-      }) as (Entity<any, any> & Plantable)[];
-
-    return targets[0] || null;
+    return targets as Plantable[];
   }
 }
