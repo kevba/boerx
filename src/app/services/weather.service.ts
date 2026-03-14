@@ -1,11 +1,18 @@
-import { computed, effect, inject, Injectable, signal } from "@angular/core";
+import {
+  computed,
+  effect,
+  inject,
+  Injectable,
+  signal,
+  untracked,
+} from "@angular/core";
 import { TickService } from "./tick.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class WeatherService {
-  private seasonDurationInTicks = 1000;
+  private seasonDurationInTicks = 120;
 
   private tickService = inject(TickService);
 
@@ -15,24 +22,36 @@ export class WeatherService {
   private currentWeather = computed<WeatherTypes>(() => {
     return this.weatherForecast()[0];
   });
+  private currentSeason = signal(SeasonTypes.Spring);
 
   weather = this.currentWeather;
-  season = computed(() => {
-    const ticks = this.tickService.tick();
-    const seasonIndex = Math.floor(ticks / this.seasonDurationInTicks) % 4;
-    return Object.values(SeasonTypes)[seasonIndex];
-  });
+  season = this.currentSeason.asReadonly();
 
   constructor() {
     effect(() => {
       const tick = this.tickService.tick();
-      if (tick % 50 === 0) {
+      if (tick % 20 === 0) {
         this.weatherForecast.update((forecast) => {
           const newForecast = [...forecast.splice(1)];
           newForecast.push(this.getRandomWeather());
           return newForecast;
         });
       }
+    });
+
+    effect(() => {
+      const ticks = this.tickService.tick();
+
+      const changeOver = (ticks + 1) % this.seasonDurationInTicks === 0;
+
+      if (!changeOver) return;
+
+      const currentSeason = untracked(() => this.currentSeason());
+      const seasons = Object.values(SeasonTypes);
+      const nextIndex = (seasons.indexOf(currentSeason) + 1) % seasons.length;
+      const nextSeason = seasons[nextIndex];
+
+      this.currentSeason.set(nextSeason);
     });
   }
 
@@ -69,6 +88,10 @@ export class WeatherService {
       newForecast[0] = weather;
       return newForecast;
     });
+  }
+
+  setSeason(season: SeasonTypes) {
+    this.currentSeason.set(season);
   }
 }
 

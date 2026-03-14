@@ -33,10 +33,10 @@ export class SurfaceService {
   };
 
   winterSurfaceColorMap: ColorMap = {
-    "-0.8": "#417043",
-    "-0.2": "#405041",
-    "0.2": "#556635",
-    "0.4": "#a3b387",
+    "-0.8": "#bbd1bb",
+    "-0.2": "rgb(107, 163, 149)",
+    "0.2": "#538d8a",
+    "0.4": "#82b398",
     "1": "#acaf9d",
   };
 
@@ -72,7 +72,7 @@ export class SurfaceService {
 
   private setBackgroundImage(colorMap: ColorMap = this.surfaceColorMap) {
     const imageUrl = NoisyImageService.getPerlinNoiseImage(
-      128,
+      128 * 4,
       8,
       0.9,
       colorMap,

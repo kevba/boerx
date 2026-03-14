@@ -32,10 +32,12 @@ export class WeatherRenderService {
   };
 
   snowColorMap: ColorMap = {
-    "-1": "#8d8d8d42",
-    "0.4": "#afafaf52",
-    "0.8": "#f3f3f362",
-    "1": "#ffffff52",
+    "-1": "#6b6b6b00",
+    "-0.7": "#ffffff7a",
+    "-0.8": "#6b6b6b00",
+    // "0.6": "#afafaf52",
+    // "0.8": "#f3f3f362",
+    "1": "#ffffff",
   };
 
   constructor() {
@@ -46,6 +48,10 @@ export class WeatherRenderService {
     }, 200);
   }
 
+  private sunnyImage = NoisyImageService.getNoiseImage(1, 1, {
+    1: "#ffffff00",
+  });
+
   private setWeatherOverlay() {
     let imageUrl = "";
     if (this.weatherService.weather() === WeatherTypes.Rainy) {
@@ -53,7 +59,7 @@ export class WeatherRenderService {
     } else if (this.weatherService.weather() === WeatherTypes.Snow) {
       imageUrl = NoisyImageService.getNoiseImage(128, 8, this.snowColorMap);
     } else {
-      imageUrl = "";
+      imageUrl = this.sunnyImage;
     }
 
     const imageObj = new Image();

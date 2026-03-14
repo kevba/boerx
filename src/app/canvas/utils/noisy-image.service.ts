@@ -67,10 +67,7 @@ export class NoisyImageService {
       throw new Error("Size must be a multiple of scale");
     }
 
-    const noise = new ValueNoise().randomizedNoiseMap(
-      size / scale,
-      size / scale,
-    );
+    const noise = new RandNoise().noiseMap(size / scale, size / scale);
     const mappingValues = Object.keys(colorMap)
       .map((k) => parseFloat(k))
       .sort((a, b) => a - b);
@@ -183,87 +180,14 @@ export class Perlin {
   }
 }
 
-class ValueNoise {
-  squirrel3(position: number, seed = 987654321): number {
-    const BIT_NOISE1 = 0x68e31da4;
-    const BIT_NOISE2 = 0xb5297a4d;
-    const BIT_NOISE3 = 0x1b56c4e9;
-
-    // Keep every step in 32-bit integer space to avoid JS floating-point bias.
-    let mangled = position | 0;
-    mangled = Math.imul(mangled, BIT_NOISE1);
-    mangled = (mangled + seed) | 0;
-    mangled ^= mangled >>> 8;
-    mangled = (mangled + BIT_NOISE2) | 0;
-    mangled ^= mangled << 8;
-    mangled = Math.imul(mangled, BIT_NOISE3);
-    mangled ^= mangled >>> 8;
-
-    return mangled >>> 0;
-  }
-
-  random(x: number, y: number): number {
-    const h = this.squirrel3(
-      Math.floor(x) * 374761393 + Math.floor(y) * 668265263 + 987654321,
-    );
-    return (h / 4294967295) * 2 - 1; // [-1,1] guaranteed
-  }
-
-  fade(t: number): number {
-    return t * t * t * (t * (t * 6 - 15) + 10);
-  }
-
-  lerp(a: number, b: number, t: number): number {
-    return a + t * (b - a);
-  }
-
-  valueNoise(x: number, y: number): number {
-    const xi = Math.floor(x);
-    const yi = Math.floor(y);
-
-    const xf = x - xi;
-    const yf = y - yi;
-
-    const v00 = this.random(xi, yi);
-    const v10 = this.random(xi + 1, yi);
-    const v01 = this.random(xi, yi + 1);
-    const v11 = this.random(xi + 1, yi + 1);
-
-    const u = this.fade(xf);
-    const v = this.fade(yf);
-
-    const x1 = this.lerp(v00, v10, u);
-    const x2 = this.lerp(v01, v11, u);
-
-    return this.lerp(x1, x2, v);
-  }
-
+class RandNoise {
   noiseMap(width: number, height: number): number[][] {
     let map: number[][] = [];
 
     for (let y = 0; y < height; y++) {
       let row = [];
       for (let x = 0; x < width; x++) {
-        let val = this.valueNoise(x * 0.05, y * 0.05);
-        row.push(val);
-      }
-      map.push(row);
-    }
-
-    return map;
-  }
-
-  randomizedNoiseMap(width: number, height: number): number[][] {
-    let map: number[][] = [];
-
-    const scale = 1;
-    const offsetX = Math.random() * 1000;
-    const offsetY = Math.random() * 1000;
-
-    for (let y = 0; y < height; y++) {
-      let row = [];
-      for (let x = 0; x < width; x++) {
-        let val = this.valueNoise(x * scale + offsetX, y * scale + offsetY);
+        let val = Math.random() * 2 - 1;
         row.push(val);
       }
       map.push(row);
