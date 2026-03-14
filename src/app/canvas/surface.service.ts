@@ -27,16 +27,16 @@ export class SurfaceService {
   surfaceColorMap: ColorMap = {
     "-0.8": "#09770e",
     "-0.2": "#04800a",
-    "0.2": "#558004",
+    "0.2": "#318004",
     "0.4": "#556B2F",
     "1": "#7A8450",
   };
 
   winterSurfaceColorMap: ColorMap = {
     "-0.8": "#bbd1bb",
-    "-0.2": "rgb(107, 163, 149)",
-    "0.2": "#538d8a",
-    "0.4": "#82b398",
+    "-0.2": "rgb(126, 156, 149)",
+    "0.2": "#659290",
+    "0.4": "#96b382",
     "1": "#acaf9d",
   };
 
@@ -54,6 +54,20 @@ export class SurfaceService {
     "1": "#7A8450",
   };
 
+  fallSurfaceColorMap: ColorMap = {
+    "-0.8": "#768112",
+    "-0.2": "#597c07",
+    "0.2": "#558004",
+    "0.21": "#995200",
+    "0.22": "#578108",
+    "0.24": "#9e8100",
+    "0.248": "#817f08",
+    "0.4": "#426b2f",
+    "0.45": "#7a2d00",
+    "0.455": "#426b2f",
+    "1": "#7A8450",
+  };
+
   constructor() {
     this.setBackgroundImage();
     this.backgroundLayer.add(this.backgroudRect);
@@ -65,6 +79,8 @@ export class SurfaceService {
         colorMap = this.winterSurfaceColorMap;
       } else if (season === SeasonTypes.Spring) {
         colorMap = this.springSurfaceColorMap;
+      } else if (season === SeasonTypes.Fall) {
+        colorMap = this.fallSurfaceColorMap;
       }
       this.setBackgroundImage(colorMap);
     });

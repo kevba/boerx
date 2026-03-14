@@ -110,8 +110,9 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
       width: size,
       height: size,
       stroke: RenderUtils.selectedColor,
-      strokeWidth: 2,
+      strokeWidth: size > 64 ? 4 : 2,
       visible: false,
+      listening: false,
     });
     this.add(this.selectedRect);
 
@@ -126,6 +127,7 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
     const selected = this.selected();
     this.setAttr("draggable", selected);
     if (this.selectedRect) {
+      this.selectedRect.moveToTop();
       this.selectedRect.visible(selected);
     }
   });
