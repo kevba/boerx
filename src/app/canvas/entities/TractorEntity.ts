@@ -71,26 +71,6 @@ export class TractorEntity
     this.init();
   }
 
-  protected override update(): void {
-    if (this.node.isDragging() || this.node.draggable()) return;
-
-    const actions: {
-      act: () => void;
-      weight: number;
-    }[] = [];
-
-    actions.push(
-      this.harvester.weight(),
-      this.planter.weight(),
-      this.hauler.weight(),
-    );
-
-    actions.sort((a, b) => b.weight - a.weight);
-
-    if (actions.length > 0 && actions[0].weight > 0) {
-      actions[0].act();
-    }
-  }
   upgradeTo(upgrade: TractorUpgrade) {
     this.upgrade.set(upgrade);
   }

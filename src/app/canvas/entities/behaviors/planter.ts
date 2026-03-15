@@ -6,22 +6,23 @@ import { Plantable } from "../models";
 
 import { IMovement } from "../abilities/move";
 import { IStorage } from "../abilities/store";
-import { Act, BehaviorUtils } from "./utils";
+import { Act, BehaviorUtils, Behavoir } from "./utils";
 
 export interface IPlanter extends Entity<any, any>, IMovement, IStorage {
   planter: Planter;
   cropToPlant: Crop;
 }
 
-export class Planter {
+export class Planter extends Behavoir {
   targetId: string | null = null;
-  private maxRange = 400;
 
   private entityService = inject(EntitiesService);
 
-  constructor(private entity: IPlanter) {}
+  constructor(private entity: IPlanter) {
+    super();
+  }
 
-  weight(): Act {
+  override getWeight(): Act {
     const targetInfo = this.getTarget();
 
     if (!targetInfo) {

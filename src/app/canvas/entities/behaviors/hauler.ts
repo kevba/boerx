@@ -8,23 +8,25 @@ import { IMovement } from "../abilities/move";
 import { IStorage } from "../abilities/store";
 import { BarnEntity } from "../BarnEntity";
 import { PlotEntity } from "../PlotEntity";
-import { Act, BehaviorUtils } from "./utils";
+import { Act, BehaviorUtils, Behavoir } from "./utils";
 
 export interface IHauler extends Entity<any, any>, IMovement, IStorage {
   hauler: Hauler;
 }
 
-export class Hauler {
+export class Hauler extends Behavoir {
   fetchTargetId: string | null = null;
   deliveryTargetId: string | null = null;
 
-  private maxRange = 800;
+  override maxRange = 800;
 
   private entityService = inject(EntitiesService);
 
-  constructor(private entity: IHauler) {}
+  constructor(private entity: IHauler) {
+    super();
+  }
 
-  weight(): Act {
+  override getWeight(): Act {
     const isFull = this.entity.storage.isFull();
     const fetchTarget = this.getFetchTarget(this.fetchTargetId);
     const deliveryTarget = this.getDeliveryTarget(this.deliveryTargetId);

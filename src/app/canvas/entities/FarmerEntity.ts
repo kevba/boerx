@@ -8,7 +8,6 @@ import { IStorage, Storage } from "./abilities/store";
 import { Harvester, IHarvester } from "./behaviors/harvester";
 import { Hauler, IHauler } from "./behaviors/hauler";
 import { IPlanter, Planter } from "./behaviors/planter";
-import { Act } from "./behaviors/utils";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
 
@@ -40,8 +39,6 @@ export class FarmerEntity
   hauler: Hauler;
   harvester: Harvester;
   planter: Planter;
-
-  private lastAction: string = "";
 
   upgrade = signal<FarmerUpgrade>(FarmerUpgrade.Farmer);
 
@@ -78,43 +75,18 @@ export class FarmerEntity
     this.init();
   }
 
-  protected override update(): void {
-    if (this.node.isDragging() || this.node.draggable()) return;
-
-    let actions: Act[] = [];
-
-    this.roles().forEach((role) => {
-      if (role === FarmerRoles.Harvest) {
-        actions.push(this.harvester.weight());
-      }
-      if (role === FarmerRoles.Plant) {
-        actions.push(this.planter.weight());
-      }
-      if (role === FarmerRoles.Transport) {
-        actions.push(this.hauler.weight());
-      }
-    });
-
-    actions = actions.map((a) => {
-      if (a.description === this.lastAction && a.weight !== 0) {
-        a.weight += 0.3;
-      }
-      return a;
-    });
-
-    actions.sort((a, b) => b.weight - a.weight);
-
-    if (actions.length > 0 && actions[0].weight > 0) {
-      actions[0].act();
-      this.lastAction = actions[0].description;
-    }
-  }
-
   upgradeTo(upgrade: FarmerUpgrade) {
     this.upgrade.set(upgrade);
   }
   private _upgradeChangeEffect = effect(() => {
     const upgrade = this.upgrade();
+  });
+
+  private _rolesChangeEffect = effect(() => {
+    const roles = this.roles();
+    this.harvester.disabled.set(!roles.includes(FarmerRoles.Harvest));
+    this.planter.disabled.set(!roles.includes(FarmerRoles.Plant));
+    this.hauler.disabled.set(!roles.includes(FarmerRoles.Transport));
   });
 }
 

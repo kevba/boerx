@@ -7,6 +7,7 @@ import { SelectionService } from "../../services/selection.service";
 import { TickService } from "../../services/tick.service";
 import { RenderUtils } from "../utils/renderUtils";
 import { Direction } from "./abilities/move";
+import { Act, Behavoir } from "./behaviors/utils";
 
 export type EntityOptions<T extends Konva.Node> = {
   node: T;
@@ -26,6 +27,8 @@ export abstract class Entity<
   abstract type: EntityType;
   protected initialDirection: Direction = Direction.right;
   abstract upgrade: Signal<UpgradeType>;
+
+  protected lastAction: string = "";
 
   protected get selectionService(): SelectionService {
     return AppInjectorHolder.injector.get(SelectionService);
@@ -52,7 +55,33 @@ export abstract class Entity<
     });
   }
 
-  protected update() {}
+  protected update(): void {
+    if (this.node.isDragging() || this.node.draggable()) return;
+
+    let actions: Act[] = [];
+
+    Object.values(this)
+      .filter((attr) => {
+        return attr instanceof Behavoir;
+      })
+      .forEach((behavior: Behavoir) => {
+        actions.push(behavior.weight());
+      });
+
+    actions = actions.map((a) => {
+      if (a.description === this.lastAction && a.weight !== 0) {
+        a.weight += 0.3;
+      }
+      return a;
+    });
+
+    actions.sort((a, b) => b.weight - a.weight);
+
+    if (actions.length > 0 && actions[0].weight > 0) {
+      actions[0].act();
+      this.lastAction = actions[0].description;
+    }
+  }
 
   protected setSelected(selected: boolean) {
     if (!this.selectable) return;

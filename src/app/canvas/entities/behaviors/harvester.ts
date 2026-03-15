@@ -5,7 +5,7 @@ import { Harvestable } from "../models";
 
 import { IMovement } from "../abilities/move";
 import { IStorage } from "../abilities/store";
-import { Act, BehaviorUtils } from "./utils";
+import { Act, BehaviorUtils, Behavoir } from "./utils";
 
 export interface IHarvester extends Entity<any, any>, IMovement, IStorage {
   harvester: Harvester;
@@ -17,15 +17,16 @@ export enum HarvesterState {
   MovingToTarget = "MovingToTarget",
 }
 
-export class Harvester {
+export class Harvester extends Behavoir {
   targetId: string | null = null;
-  private maxRange = 400;
 
   private entityService = inject(EntitiesService);
 
-  constructor(private entity: IHarvester) {}
+  constructor(private entity: IHarvester) {
+    super();
+  }
 
-  weight(): Act {
+  override getWeight(): Act {
     const targetInfo = this.getTarget();
 
     if (!targetInfo) {
