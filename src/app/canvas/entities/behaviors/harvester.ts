@@ -2,11 +2,12 @@ import { inject } from "@angular/core";
 import { EntitiesService } from "../../../services/entities/entities.service";
 import { Entity } from "../Entity";
 import { Harvestable } from "../models";
-import { IMover } from "./move";
-import { IStorer } from "./storer";
-import { BehaviorUtils } from "./utils";
 
-export interface IHarvester extends Entity<any, any>, IMover, IStorer {
+import { IMovement } from "../abilities/move";
+import { IStorage } from "../abilities/store";
+import { Act, BehaviorUtils } from "./utils";
+
+export interface IHarvester extends Entity<any, any>, IMovement, IStorage {
   harvester: Harvester;
 }
 
@@ -24,11 +25,12 @@ export class Harvester {
 
   constructor(private entity: IHarvester) {}
 
-  weight(): { act: () => void; weight: number } {
+  weight(): Act {
     const targetInfo = this.getTarget();
 
     if (!targetInfo) {
       return {
+        description: `Harvester: No target`,
         act: () => undefined,
         weight: 0,
       };
@@ -37,6 +39,7 @@ export class Harvester {
     // eh close enough to harvest, just do it
     if (targetInfo.distance < 10) {
       return {
+        description: `Harvester: Harvesting`,
         act: () => {
           this.entity.move.stop();
           targetInfo.target.harvest();
@@ -47,6 +50,7 @@ export class Harvester {
     }
 
     return {
+      description: `Harvester: moving to harvestable`,
       act: () => {
         this.targetId = targetInfo?.target.id || null;
         this.entity.move.moveToTarget(targetInfo.target?.node, () => {

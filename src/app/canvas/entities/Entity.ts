@@ -6,7 +6,7 @@ import { EntityType } from "../../models/entity";
 import { SelectionService } from "../../services/selection.service";
 import { TickService } from "../../services/tick.service";
 import { RenderUtils } from "../utils/renderUtils";
-import { Direction } from "./behaviors/move";
+import { Direction } from "./abilities/move";
 
 export type EntityOptions<T extends Konva.Node> = {
   node: T;

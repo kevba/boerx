@@ -8,14 +8,14 @@ import { Crop } from "../../services/items/crop.service";
 import { CropItem } from "../../services/wares.service";
 import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
 import { RenderUtils } from "../utils/renderUtils";
-import { Direction } from "./behaviors/move";
-import { IStorer, Storer } from "./behaviors/storer";
+import { Direction } from "./abilities/move";
+import { IStorage, Storage } from "./abilities/store";
 import { Entity, EntityRender } from "./Entity";
 import { Harvestable, Plantable } from "./models";
 
 export class PlotEntity
   extends Entity<PlotRender, PlotUpgrade>
-  implements IStorer, Plantable, Harvestable
+  implements IStorage, Plantable, Harvestable
 {
   private incomeService = inject(IncomeService);
   private marketService = inject(MarketService);
@@ -28,7 +28,7 @@ export class PlotEntity
 
   upgrade = signal<PlotUpgrade>(PlotUpgrade.Basic);
   crop = signal<Crop>(Crop.Grass);
-  storage: Storer;
+  storage: Storage;
 
   canHarvest = computed(() => {
     const crop = this.crop();
@@ -76,7 +76,7 @@ export class PlotEntity
     });
     node.entity = this;
 
-    this.storage = new Storer(5);
+    this.storage = new Storage(5);
 
     this.upgrade.set(upgrade);
     this.crop.set(crop);
@@ -91,12 +91,12 @@ export class PlotEntity
   }
 
   plant(crop: Crop) {
-    this.cropGrowthStage.set(0);
     this.crop.set(crop);
   }
 
   _cropChangeEffect = effect(() => {
     const crop = this.crop();
+    this.cropGrowthStage.set(0);
     this.node.setCrop(crop);
   });
 

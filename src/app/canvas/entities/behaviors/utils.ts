@@ -40,3 +40,5 @@ export class BehaviorUtils {
     return { x: centerX, y: centerY };
   }
 }
+
+export type Act = { act: () => void; weight: number; description: string };

@@ -3,11 +3,12 @@ import { EntitiesService } from "../../../services/entities/entities.service";
 import { Crop } from "../../../services/items/crop.service";
 import { Entity } from "../Entity";
 import { Plantable } from "../models";
-import { IMover } from "./move";
-import { IStorer } from "./storer";
-import { BehaviorUtils } from "./utils";
 
-export interface IPlanter extends Entity<any, any>, IMover, IStorer {
+import { IMovement } from "../abilities/move";
+import { IStorage } from "../abilities/store";
+import { Act, BehaviorUtils } from "./utils";
+
+export interface IPlanter extends Entity<any, any>, IMovement, IStorage {
   planter: Planter;
   cropToPlant: Crop;
 }
@@ -20,19 +21,20 @@ export class Planter {
 
   constructor(private entity: IPlanter) {}
 
-  weight(): { act: () => void; weight: number } {
+  weight(): Act {
     const targetInfo = this.getTarget();
 
     if (!targetInfo) {
       return {
+        description: `Planter: No target`,
         act: () => undefined,
         weight: 0,
       };
     }
 
-    // eh close enough to harvest, just do it
     if (targetInfo.distance < 10) {
       return {
+        description: `Planter: planting`,
         act: () => {
           this.entity.move.stop();
           targetInfo.target.plant(this.entity.cropToPlant);
@@ -43,6 +45,7 @@ export class Planter {
     }
 
     return {
+      description: `Planter: moving to plantable`,
       act: () => {
         this.targetId = targetInfo?.target.id || null;
         this.entity.move.moveToTarget(targetInfo.target?.node, () => {

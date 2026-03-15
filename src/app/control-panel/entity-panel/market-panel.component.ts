@@ -1,6 +1,6 @@
 import { Component, computed, inject } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { IStorer } from "../../canvas/entities/behaviors/storer";
+import { IStorage } from "../../canvas/entities/abilities/store";
 import { BarnService } from "../../services/entities/barn.service";
 import { MarketService } from "../../services/entities/market.service";
 import { PlotService } from "../../services/entities/plots.service";
@@ -107,7 +107,7 @@ export class MarketPanelComponent {
     this.incomeService.sellCrops(cropxToSell);
   }
 
-  private getStoredCropsInEntity(entity: IStorer[]) {
+  private getStoredCropsInEntity(entity: IStorage[]) {
     const cropTypes = Object.values(Crop);
     const cropRecord: Record<Crop, number> = cropTypes.reduce(
       (acc, crop) => {

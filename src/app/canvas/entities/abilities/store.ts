@@ -1,11 +1,11 @@
 import { computed, signal } from "@angular/core";
 import { Item } from "../../../services/wares.service";
 
-export interface IStorer {
-  storage: Storer;
+export interface IStorage {
+  storage: Storage;
 }
 
-export class Storer {
+export class Storage {
   private storage = signal<Item[]>([]);
 
   private maxStorage = signal(10);
@@ -24,6 +24,7 @@ export class Storer {
     );
     return this.maxStorage() - totalAmount;
   });
+  totalSpace = computed(() => this.maxStorage());
 
   isFull = computed(() => {
     return this.spaceLeft() <= 0;

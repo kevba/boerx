@@ -8,11 +8,11 @@ import { Crop } from "../../services/items/crop.service";
 import { CropItem } from "../../services/wares.service";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
-import { IStorer, Storer } from "./behaviors/storer";
+import { IStorage, Storage } from "./abilities/store";
 
 export class BarnEntity
   extends Entity<BarnImage, BarnUpgrade>
-  implements IStorer
+  implements IStorage
 {
   type = EntityType.Barn;
   selectable = true;
@@ -23,7 +23,7 @@ export class BarnEntity
 
   upgrade = signal<BarnUpgrade>(BarnUpgrade.Shed);
 
-  storage: Storer;
+  storage: Storage;
 
   maxStoragePerUpgrade: Record<BarnUpgrade, number> = {
     [BarnUpgrade.Shed]: 20,
@@ -49,7 +49,7 @@ export class BarnEntity
       node,
     });
     this.node.entity = this;
-    this.storage = new Storer();
+    this.storage = new Storage();
     this.upgrade.set(upgrade);
   }
 

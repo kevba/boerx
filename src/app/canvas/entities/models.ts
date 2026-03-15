@@ -1,6 +1,7 @@
 import { Signal } from "@angular/core";
 import { Crop } from "../../services/items/crop.service";
 import { Entity } from "./Entity";
+import { IStorage } from "./abilities/store";
 
 export interface CropGrower extends Entity<any, any> {
   cropGrowthStageFraction: Signal<number>; // Value between 0 and 1 representing growth progress
@@ -17,3 +18,5 @@ export interface Plantable extends CropGrower {
   plant(crop: Crop): void;
   crop: Signal<Crop>;
 }
+
+export interface Storable extends Entity<any, any>, IStorage {}

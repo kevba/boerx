@@ -3,17 +3,17 @@ import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { Crop } from "../../services/items/crop.service";
-import { CropTransporter, ICropTransporter } from "./behaviors/cropTransporter";
+import { Direction, IMovement, Movement } from "./abilities/move";
+import { IStorage, Storage } from "./abilities/store";
 import { Harvester, IHarvester } from "./behaviors/harvester";
-import { Direction, IMover, Mover } from "./behaviors/move";
+import { Hauler, IHauler } from "./behaviors/hauler";
 import { IPlanter, Planter } from "./behaviors/planter";
-import { IStorer, Storer } from "./behaviors/storer";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
 
 export class TractorEntity
   extends Entity<TractorRender, TractorUpgrade>
-  implements IStorer, IMover, ICropTransporter, IHarvester, IPlanter
+  implements IStorage, IMovement, IHarvester, IPlanter, IHauler
 {
   override selectable = true;
   override type = EntityType.Tractor;
@@ -23,9 +23,9 @@ export class TractorEntity
 
   currentPlotTargetId: string | null = null;
 
-  storage: Storer;
-  move: Mover;
-  cropTransporter: CropTransporter;
+  storage: Storage;
+  move: Movement;
+  hauler: Hauler;
   harvester: Harvester;
   planter: Planter;
 
@@ -57,29 +57,44 @@ export class TractorEntity
     });
     node.entity = this;
 
-    this.move = new Mover(this.node, 0, (direction) =>
+    this.move = new Movement(this.node, 0, (direction) =>
       this.setDirection(direction),
     );
 
     this.upgrade.set(upgrade);
-    this.storage = new Storer();
-    this.cropTransporter = new CropTransporter(
-      this,
-      EntityType.Plot,
-      EntityType.Barn,
-    );
+    this.storage = new Storage();
+
+    this.hauler = new Hauler(this);
     this.harvester = new Harvester(this);
     this.planter = new Planter(this);
+
     this.init();
   }
 
   protected override update(): void {
     if (this.node.isDragging() || this.node.draggable()) return;
-  }
 
+    const actions: {
+      act: () => void;
+      weight: number;
+    }[] = [];
+
+    actions.push(
+      this.harvester.weight(),
+      this.planter.weight(),
+      this.hauler.weight(),
+    );
+
+    actions.sort((a, b) => b.weight - a.weight);
+
+    if (actions.length > 0 && actions[0].weight > 0) {
+      actions[0].act();
+    }
+  }
   upgradeTo(upgrade: TractorUpgrade) {
     this.upgrade.set(upgrade);
   }
+
   private _upgradeChangeEffect = effect(() => {
     const upgrade = this.upgrade();
     this.move.setSpeed(this.brandSpeed[upgrade]);

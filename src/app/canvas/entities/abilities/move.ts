@@ -1,13 +1,13 @@
 import { effect } from "@angular/core";
 import Konva from "konva";
 import { EntityRender } from "../Entity";
-import { BehaviorUtils } from "./utils";
+import { BehaviorUtils } from "../behaviors/utils";
 
-export interface IMover {
-  move: Mover;
+export interface IMovement {
+  move: Movement;
 }
 
-export class Mover {
+export class Movement {
   private moving = false;
   private moveTimeout: ReturnType<typeof setTimeout> | null = null;
   // interval of movement loop in ms, lower is smoother but more CPU intensive
