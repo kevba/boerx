@@ -16,7 +16,6 @@ export enum FarmerRoles {
   Plant = "Plant",
   Harvest = "Harvest",
   Transport = "Transport",
-  Sell = "Sell",
 }
 
 export class FarmerEntity
@@ -31,10 +30,7 @@ export class FarmerEntity
     FarmerRoles.Plant,
     FarmerRoles.Harvest,
     FarmerRoles.Transport,
-    FarmerRoles.Sell,
   ]);
-
-  private currentRole = signal<FarmerRoles | null>(null);
 
   // This should be on the sprite
   override initialDirection: Direction = Direction.left;
@@ -87,11 +83,17 @@ export class FarmerEntity
 
     let actions: Act[] = [];
 
-    actions.push(
-      this.harvester.weight(),
-      this.planter.weight(),
-      this.hauler.weight(),
-    );
+    this.roles().forEach((role) => {
+      if (role === FarmerRoles.Harvest) {
+        actions.push(this.harvester.weight());
+      }
+      if (role === FarmerRoles.Plant) {
+        actions.push(this.planter.weight());
+      }
+      if (role === FarmerRoles.Transport) {
+        actions.push(this.hauler.weight());
+      }
+    });
 
     actions = actions.map((a) => {
       if (a.description === this.lastAction && a.weight !== 0) {

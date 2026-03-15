@@ -3,9 +3,7 @@ import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { MarketService } from "../../services/entities/market.service";
-import { IncomeService } from "../../services/income.service";
 import { Crop } from "../../services/items/crop.service";
-import { CropItem } from "../../services/wares.service";
 import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
 import { RenderUtils } from "../utils/renderUtils";
 import { Direction } from "./abilities/move";
@@ -17,14 +15,12 @@ export class PlotEntity
   extends Entity<PlotRender, PlotUpgrade>
   implements IStorage, Plantable, Harvestable
 {
-  private incomeService = inject(IncomeService);
   private marketService = inject(MarketService);
 
   override selectable = true;
   override type = EntityType.Plot;
 
   override initialDirection: Direction = Direction.right;
-  private autoSell = computed(() => this.marketService.isPlotAutoSell());
 
   upgrade = signal<PlotUpgrade>(PlotUpgrade.Basic);
   crop = signal<Crop>(Crop.Grass);
@@ -123,19 +119,6 @@ export class PlotEntity
     this.storage.clear();
     this.storage.store({ type: harvestedCrop, amount: 1 });
   }
-
-  _sellEffect = effect(() => {
-    const autoSell = this.autoSell();
-    if (!autoSell) return;
-
-    const crops = Object.values(Crop);
-    for (const crop of crops) {
-      const cropItems = this.storage.retrieveMax(crop);
-      if (!cropItems) continue;
-
-      this.incomeService.sellCrop(cropItems as CropItem);
-    }
-  });
 }
 
 export enum PlotUpgrade {

@@ -1,11 +1,7 @@
-import { computed, effect, inject, signal } from "@angular/core";
+import { effect, signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
-import { MarketService } from "../../services/entities/market.service";
-import { IncomeService } from "../../services/income.service";
-import { Crop } from "../../services/items/crop.service";
-import { CropItem } from "../../services/wares.service";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
 import { IStorage, Storage } from "./abilities/store";
@@ -16,10 +12,6 @@ export class BarnEntity
 {
   type = EntityType.Barn;
   selectable = true;
-  private incomeService = inject(IncomeService);
-  private marketService = inject(MarketService);
-
-  private autoSell = computed(() => this.marketService.isBarnAutoSell());
 
   upgrade = signal<BarnUpgrade>(BarnUpgrade.Shed);
 
@@ -51,28 +43,22 @@ export class BarnEntity
     this.node.entity = this;
     this.storage = new Storage();
     this.upgrade.set(upgrade);
+
+    this.init();
+  }
+
+  protected override update(): void {
+    if (this.node.isDragging() || this.node.draggable()) return;
   }
 
   upgradeTo(upgrade: BarnUpgrade) {
     this.upgrade.set(upgrade);
   }
 
-  _upgradeEffect() {
+  private _upgradeEffect = effect(() => {
     const upgrade = this.upgrade();
     const storageSpace = this.maxStoragePerUpgrade[upgrade];
     this.storage.setMaxStorage(storageSpace);
-  }
-  _sellEffect = effect(() => {
-    const autoSell = this.autoSell();
-    if (!autoSell) return;
-
-    const crops = Object.values(Crop);
-    for (const crop of crops) {
-      const cropItems = this.storage.retrieveMax(crop);
-      if (!cropItems) continue;
-
-      this.incomeService.sellCrop(cropItems as CropItem);
-    }
   });
 }
 

@@ -39,7 +39,7 @@ export class Hauler {
             this.deliveryTargetId = null;
             this.fetchTargetId = null;
 
-            const storedItems = this.entity.storage.storedItems();
+            const storedItems = this.entity.storage.retrieveAll() || [];
             storedItems.forEach((item) => {
               const remainder = deliveryTarget.target.storage.store(item);
               if (remainder) {
