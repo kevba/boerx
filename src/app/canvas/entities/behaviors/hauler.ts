@@ -18,7 +18,7 @@ export class Hauler extends Behavoir {
   fetchTargetId: string | null = null;
   deliveryTargetId: string | null = null;
 
-  override maxRange = 800;
+  override maxRange = 300;
 
   private entityService = inject(EntitiesService);
 

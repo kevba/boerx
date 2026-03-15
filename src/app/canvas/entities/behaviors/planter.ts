@@ -17,7 +17,7 @@ export class Planter extends Behavoir {
   targetId: string | null = null;
 
   private entityService = inject(EntitiesService);
-  override maxRange = 200;
+  override maxRange = 300;
 
   constructor(private entity: IPlanter) {
     super();
