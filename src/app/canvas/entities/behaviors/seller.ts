@@ -168,10 +168,17 @@ export class Seller extends Behavoir {
     distance: number;
     fill: number;
   } | null {
+    // Prevent multiple  targeting the same entity
+    const otherSellers = this.entityService
+      .entities()
+      .filter((e) => "seller" in e)
+      .map((e) => (e as ISeller).seller.fetchTargetId);
+
     let targets = this.entityService
       .entities()
       .filter((e) => "storage" in e)
       .filter((e) => e instanceof BarnEntity)
+      .filter((e) => !otherSellers.includes(e.id))
       .filter((e) => {
         return (e as Storable).storage.storedItems().length > 0;
       }) as Storable[];

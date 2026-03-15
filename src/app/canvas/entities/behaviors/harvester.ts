@@ -19,6 +19,7 @@ export enum HarvesterState {
 
 export class Harvester extends Behavoir {
   targetId: string | null = null;
+  override maxRange = 200;
 
   private entityService = inject(EntitiesService);
 
