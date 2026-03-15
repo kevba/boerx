@@ -69,6 +69,8 @@ export enum BarnUpgrade {
 }
 
 export class BarnImage extends Sprite<BarnEntity> {
+  override color = { r: 220, g: 20, b: 20 };
+
   constructor(args: { x: number; y: number; id: string }) {
     super({
       id: `barn_${args.id}`,

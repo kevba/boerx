@@ -128,7 +128,6 @@ export class Storage {
   }
 
   setMaxStorage(amount: number) {
-    console.log("Setting max storage to", amount);
     this.maxStorage.set(amount);
   }
 }

@@ -10,7 +10,7 @@ export class Sprite<T extends Entity<any, any>> extends EntityRender<T> {
   frameHeight: number;
   frameSpeed: number = 1000;
 
-  protected color = { r: 255, g: 0, b: 0 };
+  protected color = { r: 255, g: 255, b: 255 };
 
   protected isAnimating = true;
   protected sourceImage: HTMLImageElement | null = null;

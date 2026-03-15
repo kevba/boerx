@@ -15,6 +15,7 @@ export class RenderUtils {
     [EntityType.Farmer]: [32, 32],
     [EntityType.Barn]: [192, 192],
     [EntityType.Tractor]: [48, 48],
+    [EntityType.Van]: [48, 48],
     [EntityType.Market]: [254, 254],
     [EntityType.Cow]: [32, 32],
   };

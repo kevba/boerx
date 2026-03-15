@@ -6,6 +6,7 @@ import { CowService } from "../services/entities/cow.service";
 import { FarmerService } from "../services/entities/farmer.service";
 import { PlotService } from "../services/entities/plots.service";
 import { TractorService } from "../services/entities/tractor.service";
+import { VanService } from "../services/entities/van.service";
 import { StashService } from "../services/stash.service";
 import { BuyTileComponent } from "./buy-tile.component";
 
@@ -26,6 +27,12 @@ import { BuyTileComponent } from "./buy-tile.component";
         [active]="activeBuyingEntity() === EntityType.Farmer"
         [cost]="farmerService.cost()"
         (buyClick)="onBuy(EntityType.Farmer)"></app-buy-tile>
+      <app-buy-tile
+        image="/imgs/van.png"
+        text="Van"
+        [active]="activeBuyingEntity() === EntityType.Van"
+        [cost]="vanService.cost()"
+        (buyClick)="onBuy(EntityType.Van)"></app-buy-tile>
       <app-buy-tile
         image="/imgs/barn.png"
         text="Barn"
@@ -53,42 +60,13 @@ export class ShopPanelComponent {
   tractorService = inject(TractorService);
   barnService = inject(BarnService);
   cowService = inject(CowService);
+  vanService = inject(VanService);
 
   stashService = inject(StashService);
   buyService = inject(BuyService);
   EntityType = EntityType;
 
   activeBuyingEntity = computed(() => this.buyService.buyingEntityType());
-
-  canBuyPlot = computed(() => {
-    const cost = this.plotService.cost();
-    const stash = this.stashService.stash();
-    return stash >= cost;
-  });
-
-  canBuyFarmer = computed(() => {
-    const cost = this.farmerService.cost();
-    const stash = this.stashService.stash();
-    return stash >= cost;
-  });
-
-  canBuyTractor = computed(() => {
-    const cost = this.tractorService.cost();
-    const stash = this.stashService.stash();
-    return stash >= cost;
-  });
-
-  canBuyBarn = computed(() => {
-    const cost = this.barnService.cost();
-    const stash = this.stashService.stash();
-    return stash >= cost;
-  });
-
-  canBuyCow = computed(() => {
-    const cost = this.cowService.cost();
-    const stash = this.stashService.stash();
-    return stash >= cost;
-  });
 
   onBuy(entity: EntityType) {
     this.buyService.setBuying(entity, () => {
@@ -100,6 +78,8 @@ export class ShopPanelComponent {
         this.tractorService.buy();
       } else if (entity === EntityType.Barn) {
         this.barnService.buy();
+      } else if (entity === EntityType.Van) {
+        this.vanService.buy();
       } else if (entity === EntityType.Cow) {
         this.cowService.buy();
       }

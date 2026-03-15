@@ -87,7 +87,7 @@ export class MarketPanelComponent {
   });
 
   sellAllCrops() {
-    const cropxToSell: CropItem[] = [];
+    const cropsToSell: CropItem[] = [];
 
     const entities = [
       ...this.plotService.entities(),
@@ -99,12 +99,12 @@ export class MarketPanelComponent {
       for (const cropType of cropTypes) {
         const crop = e.storage.retrieveMax(cropType);
         if (crop) {
-          cropxToSell.push(crop as CropItem);
+          cropsToSell.push(crop as CropItem);
         }
       }
     });
 
-    this.incomeService.sellCrops(cropxToSell);
+    this.incomeService.sellCrops(cropsToSell);
   }
 
   private getStoredCropsInEntity(entity: IStorage[]) {

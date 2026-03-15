@@ -2,6 +2,9 @@ import { signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
+import { IncomeService } from "../../services/income.service";
+import { Crop } from "../../services/items/crop.service";
+import { CropItem, Item } from "../../services/wares.service";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
 
@@ -10,6 +13,8 @@ export class MarketEntity extends Entity<MarketImage, MarketUpgrade> {
   selectable = true;
 
   upgrade = signal<MarketUpgrade>(MarketUpgrade.Shed);
+
+  private incomeService = new IncomeService();
 
   constructor(
     initialCoords: { x: number; y: number },
@@ -34,6 +39,15 @@ export class MarketEntity extends Entity<MarketImage, MarketUpgrade> {
 
   upgradeTo(upgrade: MarketUpgrade) {
     this.upgrade.set(upgrade);
+  }
+
+  sellItems(items: Item[]) {
+    const crops = Object.values(Crop);
+    items.forEach((i) => {
+      if (crops.includes(i.type as Crop)) {
+        this.incomeService.sellCrops([i as CropItem]);
+      }
+    });
   }
 }
 
