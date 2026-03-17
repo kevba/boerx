@@ -27,27 +27,6 @@ import { BuyTileComponent } from "./buy-tile.component";
         [cost]="0"
         (buyClick)="resetSave()"></app-buy-tile>
     </div>
-    <h2 class="pt-2">Weather</h2>
-
-    <div class="buy-tile-group">
-      @for (weather of weatherTypes; track weather) {
-        <app-buy-tile
-          image=""
-          [text]="weather"
-          [cost]="0"
-          (buyClick)="setWeather(weather)"></app-buy-tile>
-      }
-    </div>
-    <h2 class="pt-2">Season</h2>
-    <div class="buy-tile-group">
-      @for (season of seasonTypes; track season) {
-        <app-buy-tile
-          image=""
-          [text]="season"
-          [cost]="0"
-          (buyClick)="setSeason(season)"></app-buy-tile>
-      }
-    </div>
   `,
 })
 export class CheatsPanelComponent {

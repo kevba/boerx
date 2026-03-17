@@ -16,8 +16,9 @@ export class RenderUtils {
     [EntityType.Barn]: [144, 144],
     [EntityType.Tractor]: [48, 48],
     [EntityType.Van]: [48, 48],
-    [EntityType.Market]: [254, 254],
+    [EntityType.Market]: [192, 192],
     [EntityType.Cow]: [32, 32],
+    [EntityType.WeatherControl]: [320, 320],
   };
 
   static preprocessImage(

@@ -1,12 +1,14 @@
 import { Component, computed, inject } from "@angular/core";
 import { EntityType } from "../models/entity";
 import { BuyService } from "../services/buy.service";
+import { CheatsService } from "../services/cheats.service";
 import { BarnService } from "../services/entities/barn.service";
 import { CowService } from "../services/entities/cow.service";
 import { FarmerService } from "../services/entities/farmer.service";
 import { PlotService } from "../services/entities/plots.service";
 import { TractorService } from "../services/entities/tractor.service";
 import { VanService } from "../services/entities/van.service";
+import { WeatherControlService } from "../services/entities/weather-control.service";
 import { StashService } from "../services/stash.service";
 import { BuyTileComponent } from "./buy-tile.component";
 
@@ -51,16 +53,27 @@ import { BuyTileComponent } from "./buy-tile.component";
         [active]="activeBuyingEntity() === EntityType.Tractor"
         [cost]="tractorService.cost()"
         (buyClick)="onBuy(EntityType.Tractor)"></app-buy-tile>
+      @if (cheatsService.unlocked()) {
+        <app-buy-tile
+          image="/imgs/weather-control.png"
+          text="Weather Control"
+          [active]="activeBuyingEntity() === EntityType.WeatherControl"
+          [cost]="weatherControlService.cost()"
+          (buyClick)="onBuy(EntityType.WeatherControl)"></app-buy-tile>
+      }
     </div>
   `,
 })
 export class ShopPanelComponent {
+  cheatsService = inject(CheatsService);
+
   plotService = inject(PlotService);
   farmerService = inject(FarmerService);
   tractorService = inject(TractorService);
   barnService = inject(BarnService);
   cowService = inject(CowService);
   vanService = inject(VanService);
+  weatherControlService = inject(WeatherControlService);
 
   stashService = inject(StashService);
   buyService = inject(BuyService);
@@ -82,6 +95,8 @@ export class ShopPanelComponent {
         this.vanService.buy();
       } else if (entity === EntityType.Cow) {
         this.cowService.buy();
+      } else if (entity === EntityType.WeatherControl) {
+        this.weatherControlService.buy();
       }
     });
   }

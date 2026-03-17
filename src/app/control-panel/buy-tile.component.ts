@@ -11,8 +11,8 @@ import { StashService } from "../services/stash.service";
       [ngClass]="classes()"
       (click)="onClick()">
       <img [src]="image()" class="flex-1 pixelated p-1" />
-      <span class="">{{ text() }}</span>
-      <span class="">{{ costText() }}</span>
+      <span class="text-center">{{ text() }}</span>
+      <span class="text-center">{{ costText() }}</span>
     </div>
   `,
   styles: `

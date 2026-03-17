@@ -8,6 +8,7 @@ import { MarketService } from "./entities/market.service";
 import { PlotService } from "./entities/plots.service";
 import { TractorService } from "./entities/tractor.service";
 import { VanService } from "./entities/van.service";
+import { WeatherControlService } from "./entities/weather-control.service";
 import { EntityLayerService } from "./entity-layer.service";
 import { StashService } from "./stash.service";
 import { TickService } from "./tick.service";
@@ -26,6 +27,7 @@ export class InitService {
   private layerService = inject(EntityLayerService);
   private tickService = inject(TickService);
   private stashService = inject(StashService);
+  private weatherControlService = inject(WeatherControlService);
 
   private setupComplete = false;
 
@@ -129,6 +131,9 @@ export class InitService {
             break;
           case EntityType.Van:
             this.vanService.add({ x: e.x, y: e.y });
+            break;
+          case EntityType.WeatherControl:
+            this.weatherControlService.add({ x: e.x, y: e.y });
             break;
         }
       },
