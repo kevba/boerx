@@ -13,7 +13,7 @@ export class RenderUtils {
   static entitySize: Record<EntityType, [number, number]> = {
     [EntityType.Plot]: [128, 128],
     [EntityType.Farmer]: [32, 32],
-    [EntityType.Barn]: [192, 192],
+    [EntityType.Barn]: [144, 144],
     [EntityType.Tractor]: [48, 48],
     [EntityType.Van]: [48, 48],
     [EntityType.Market]: [254, 254],

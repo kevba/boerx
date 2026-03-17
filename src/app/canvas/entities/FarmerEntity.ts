@@ -61,7 +61,7 @@ export class FarmerEntity
     });
     node.entity = this;
 
-    this.move = new Movement(this.node, 20, (direction) =>
+    this.move = new Movement(this.node, 24, (direction) =>
       this.setDirection(direction),
     );
 

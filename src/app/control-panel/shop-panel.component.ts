@@ -34,7 +34,7 @@ import { BuyTileComponent } from "./buy-tile.component";
         [cost]="vanService.cost()"
         (buyClick)="onBuy(EntityType.Van)"></app-buy-tile>
       <app-buy-tile
-        image="/imgs/barn.png"
+        image="/imgs/shed.png"
         text="Barn"
         [active]="activeBuyingEntity() === EntityType.Barn"
         [cost]="barnService.cost()"

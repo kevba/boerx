@@ -77,11 +77,11 @@ export class BarnImage extends Sprite<BarnEntity> {
       name: EntityType.Barn,
       x: args.x,
       y: args.y,
-      imageSrc: "/imgs/barn.png",
+      imageSrc: "/imgs/shed.png",
       EntityType: EntityType.Barn,
       totalFrames: 1,
-      frameWidth: 32,
-      frameHeight: 32,
+      frameWidth: 24,
+      frameHeight: 24,
     });
   }
 }
