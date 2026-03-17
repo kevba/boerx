@@ -23,11 +23,15 @@ export class TractorEntity
 
   currentPlotTargetId: string | null = null;
 
-  storage: Storage;
-  move: Movement;
-  hauler: Hauler;
-  harvester: Harvester;
-  planter: Planter;
+  storage: Storage = new Storage();
+
+  move: Movement = new Movement(this.node, 0, (direction) =>
+    this.setDirection(direction),
+  );
+
+  hauler: Hauler = new Hauler(this);
+  harvester: Harvester = new Harvester(this);
+  planter: Planter = new Planter(this);
 
   upgrade = signal<TractorUpgrade>(TractorUpgrade.DearJuan);
 
@@ -57,16 +61,7 @@ export class TractorEntity
     });
     node.entity = this;
 
-    this.move = new Movement(this.node, 0, (direction) =>
-      this.setDirection(direction),
-    );
-
     this.upgrade.set(upgrade);
-    this.storage = new Storage();
-
-    this.hauler = new Hauler(this);
-    this.harvester = new Harvester(this);
-    this.planter = new Planter(this);
 
     this.init();
   }

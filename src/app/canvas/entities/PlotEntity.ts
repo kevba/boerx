@@ -2,8 +2,12 @@ import { computed, effect, inject, signal, untracked } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
-import { MarketService } from "../../services/entities/market.service";
 import { Crop } from "../../services/items/crop.service";
+import {
+  SeasonTypes,
+  WeatherService,
+  WeatherTypes,
+} from "../../services/weather.service";
 import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
 import { RenderUtils } from "../utils/renderUtils";
 import { Direction } from "./abilities/move";
@@ -15,7 +19,7 @@ export class PlotEntity
   extends Entity<PlotRender, PlotUpgrade>
   implements IStorage, Plantable, Harvestable
 {
-  private marketService = inject(MarketService);
+  private weatherService = inject(WeatherService);
 
   override selectable = true;
   override type = EntityType.Plot;
@@ -29,7 +33,7 @@ export class PlotEntity
   canHarvest = computed(() => {
     const crop = this.crop();
     const growthStage = this.cropGrowthStage();
-    const maxGrowthStage = this.cropStageCount[crop];
+    const maxGrowthStage = this.cropToHarvestTicks[crop];
     return growthStage >= maxGrowthStage;
   });
 
@@ -37,18 +41,18 @@ export class PlotEntity
     return this.crop() === Crop.Grass && !this.canHarvest();
   });
 
-  cropStageCount: Record<Crop, number> = {
-    [Crop.Wheat]: 10 * 1,
-    [Crop.Corn]: 18 * 1,
-    [Crop.Potato]: 24 * 1,
-    [Crop.Grass]: 5 * 100,
+  cropToHarvestTicks: Record<Crop, number> = {
+    [Crop.Wheat]: 20,
+    [Crop.Corn]: 30,
+    [Crop.Potato]: 30,
+    [Crop.Grass]: 100000000,
   };
 
   cropGrowthStage = signal(0);
   cropGrowthStageFraction = computed(() => {
     const crop = this.crop();
     const growthStage = this.cropGrowthStage();
-    const maxGrowthStage = this.cropStageCount[crop];
+    const maxGrowthStage = this.cropToHarvestTicks[crop];
     return maxGrowthStage ? growthStage / maxGrowthStage : 0;
   });
 
@@ -83,7 +87,7 @@ export class PlotEntity
   protected override update(): void {
     if (this.node.isDragging() || this.node.draggable()) return;
     // Untracked to prevent infinite loop of growth -> update -> growth
-    untracked(() => this.grow());
+    untracked(() => this.growTick());
   }
 
   plant(crop: Crop) {
@@ -102,14 +106,28 @@ export class PlotEntity
 
   _upgradeChangeEffect = effect(() => {});
 
-  private grow() {
+  private growTick() {
     const crop = this.crop();
     const growthStage = this.cropGrowthStage();
-    const maxGrowthStage = this.cropStageCount[crop];
-    if (growthStage < maxGrowthStage) {
-      this.cropGrowthStage.set(growthStage + 1);
+    const maxGrowthStage = this.cropToHarvestTicks[crop];
+
+    if (growthStage >= maxGrowthStage) return;
+
+    const weather = this.weatherService.weather();
+    let growthModifier = 1;
+    if (weather === WeatherTypes.Rainy) {
+      growthModifier += 0.5;
     }
+
+    this.cropGrowthStage.set(growthStage + growthModifier);
   }
+
+  private _seasonChangeEffect = effect(() => {
+    const season = this.weatherService.season();
+    if (season === SeasonTypes.Winter) {
+      this.crop.set(Crop.Grass);
+    }
+  });
 
   harvest() {
     const harvestedCrop = this.crop();
@@ -129,7 +147,6 @@ export enum PlotUpgrade {
 
 export class PlotRender extends EntityRender<PlotEntity> {
   private image: PlotRenderImage;
-  private harvestButton: Konva.Text;
 
   private cropColor: Record<Crop, string> = {
     [Crop.Wheat]: "#ebc23e",
@@ -148,9 +165,7 @@ export class PlotRender extends EntityRender<PlotEntity> {
       y: 0,
       id: `${this.id}-image`,
     });
-    this.harvestButton = this.setupHarvestButton();
     this.add(this.image);
-    this.add(this.harvestButton);
   }
 
   renderOverlay(overlayIntensity: number) {
@@ -161,44 +176,8 @@ export class PlotRender extends EntityRender<PlotEntity> {
     this.image.setAttr("fill", this.cropColor[crop]);
   }
 
-  setHarvestVisible(visible: boolean) {
-    this.harvestButton.setAttr("visible", visible);
-  }
-
-  private setupHarvestButton() {
-    const textColor = "oklch(76.9% 0.188 70.08)";
-    const testHoverColor = "oklch(76.9% 0.188 50.08)";
-
-    const clickable = new Konva.Text({
-      text: "Harvest",
-      fontSize: 20,
-      fontFamily: "pixel",
-      fill: textColor,
-      visible: false,
-
-      height: this.height(),
-      width: this.width(),
-      align: "center",
-      verticalAlign: "middle",
-    });
-    clickable.on("click tap", (e) => {
-      e.cancelBubble = true;
-      // Ugly two way bindings
-      this.entity.harvest();
-    });
-    clickable.on("mouseenter", (e) => {
-      clickable.setAttr("fill", testHoverColor);
-    });
-    clickable.on("mouseleave", (e) => {
-      clickable.setAttr("fill", textColor);
-    });
-    return clickable;
-  }
-
   private _growthEffect = effect(() => {
     const growthFraction = this.entity.cropGrowthStageFraction();
-
-    this.setHarvestVisible(this.entity.canHarvest());
 
     const overlayIntensity = 0.5 - growthFraction * 0.3;
     this.renderOverlay(overlayIntensity);

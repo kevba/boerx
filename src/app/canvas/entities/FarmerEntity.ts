@@ -34,11 +34,13 @@ export class FarmerEntity
   // This should be on the sprite
   override initialDirection: Direction = Direction.left;
 
-  move: Movement;
-  storage: Storage;
-  hauler: Hauler;
-  harvester: Harvester;
-  planter: Planter;
+  move: Movement = new Movement(this.node, 24, (direction) =>
+    this.setDirection(direction),
+  );
+  storage: Storage = new Storage(1);
+  hauler: Hauler = new Hauler(this);
+  harvester: Harvester = new Harvester(this);
+  planter: Planter = new Planter(this);
 
   upgrade = signal<FarmerUpgrade>(FarmerUpgrade.Farmer);
 
@@ -61,23 +63,13 @@ export class FarmerEntity
     });
     node.entity = this;
 
-    this.move = new Movement(this.node, 24, (direction) =>
-      this.setDirection(direction),
-    );
-
-    this.upgrade.set(upgrade);
-    this.storage = new Storage(1);
-    this.hauler = new Hauler(this);
-
-    this.harvester = new Harvester(this);
-    this.planter = new Planter(this);
-
     this.init();
   }
 
   upgradeTo(upgrade: FarmerUpgrade) {
     this.upgrade.set(upgrade);
   }
+
   private _upgradeChangeEffect = effect(() => {
     const upgrade = this.upgrade();
   });
