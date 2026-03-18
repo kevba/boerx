@@ -4,7 +4,7 @@ import { computed, effect, Injectable, signal } from "@angular/core";
   providedIn: "root",
 })
 export class StashService {
-  private _stash = signal<number>(20000);
+  private _stash = signal<number>(0);
   private tick = signal(0);
 
   stashUnit = "ƒ";

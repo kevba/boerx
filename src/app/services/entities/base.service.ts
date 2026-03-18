@@ -35,9 +35,11 @@ export abstract class BaseService<
         .filter((e) => e.type === this.entityType) as E[],
   );
 
-  cost = computed(
-    () => this.baseCost + (this.entities().length * (this.baseCost / 100)) ** 2,
-  );
+  cost = computed(() => {
+    const entityCountMod = Math.floor(this.entities().length ** 1.5);
+    return this.baseCost + Math.floor(entityCountMod * this.baseCost * 0.2);
+  });
+
   abstract entityType: EntityType;
 
   abstract upgrades: UpgradeTable<UpgradeType>;

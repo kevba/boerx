@@ -7,7 +7,7 @@ import { BaseService } from "./base.service";
   providedIn: "root",
 })
 export class VanService extends BaseService<VanUpgrade, VanEntity> {
-  override baseCost = 5000;
+  override baseCost = 1000;
   override entityType = EntityType.Van;
 
   upgrades = {};

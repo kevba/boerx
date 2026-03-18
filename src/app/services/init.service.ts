@@ -78,6 +78,8 @@ export class InitService {
         y: center.y - (RenderUtils.entitySize[EntityType.Plot][1] + 48),
       });
     }
+
+    this.stashService.setStash(500);
   }
 
   _tickEffect = effect(() => {

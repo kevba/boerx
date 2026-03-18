@@ -38,6 +38,10 @@ export class PlotEntity
   });
 
   canPlant = computed(() => {
+    const season = this.weatherService.season();
+    if (season === SeasonTypes.Winter) {
+      return false;
+    }
     return this.crop() === Crop.Grass && !this.canHarvest();
   });
 

@@ -38,6 +38,7 @@ export class Planter extends Behavoir {
       return {
         description: `Planter: planting`,
         act: () => {
+          if (!targetInfo.target.canPlant()) return;
           this.entity.move.stop();
           targetInfo.target.plant(this.entity.cropToPlant);
           this.targetId = null;

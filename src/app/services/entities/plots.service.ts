@@ -11,7 +11,12 @@ export class PlotService extends BaseService<PlotUpgrade, PlotEntity> {
   override entityType = EntityType.Plot;
   private cropService = inject(CropService);
 
-  protected baseCost = 2000;
+  protected baseCost = 200;
+
+  override cost = computed(() => {
+    const entityCountMod = Math.floor(this.entities().length ** 1.25);
+    return this.baseCost + Math.floor(entityCountMod * this.baseCost * 0.1);
+  });
 
   hasMoistureUpgrade = computed(() =>
     this.entities().some(
