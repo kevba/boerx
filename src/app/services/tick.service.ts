@@ -1,4 +1,4 @@
-import { effect, Injectable, signal } from "@angular/core";
+import { computed, effect, Injectable, signal } from "@angular/core";
 
 @Injectable({
   providedIn: "root",
@@ -9,6 +9,11 @@ export class TickService {
 
   private _calculateTick = signal(0);
   calculate = this._calculateTick.asReadonly();
+
+  dayDurationInTicks = 20;
+  currentDay = computed(() => {
+    return Math.floor(this.tick() / this.dayDurationInTicks);
+  });
 
   constructor() {
     setInterval(() => {

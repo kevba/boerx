@@ -12,12 +12,12 @@ import { TickService } from "./tick.service";
   providedIn: "root",
 })
 export class WeatherService {
-  private seasonDurationInTicks = 120;
-
   private tickService = inject(TickService);
 
+  private seasonDurationInTicks = this.tickService.dayDurationInTicks * 24;
+
   private weatherForecast = signal<Array<WeatherTypes>>([
-    ...new Array(10).fill(WeatherTypes.Sunny),
+    ...new Array(5).fill(WeatherTypes.Sunny),
   ]);
   private currentWeather = computed<WeatherTypes>(() => {
     return this.weatherForecast()[0];
@@ -29,14 +29,12 @@ export class WeatherService {
 
   constructor() {
     effect(() => {
-      const tick = this.tickService.tick();
-      if (tick % 20 === 0) {
-        this.weatherForecast.update((forecast) => {
-          const newForecast = [...forecast.splice(1)];
-          newForecast.push(this.getRandomWeather());
-          return newForecast;
-        });
-      }
+      const _day = this.tickService.currentDay();
+      this.weatherForecast.update((forecast) => {
+        const newForecast = [...forecast.splice(1)];
+        newForecast.push(this.getRandomWeather());
+        return newForecast;
+      });
     });
 
     effect(() => {
@@ -71,17 +69,17 @@ export class WeatherService {
     }
 
     if (this.season() === SeasonTypes.Spring) {
-      if (rand > 0.5) return WeatherTypes.Rainy;
-      else return WeatherTypes.Sunny;
-    }
-
-    if (this.season() === SeasonTypes.Summer) {
       if (rand > 0.6) return WeatherTypes.Rainy;
       else return WeatherTypes.Sunny;
     }
 
+    if (this.season() === SeasonTypes.Summer) {
+      if (rand > 0.7) return WeatherTypes.Rainy;
+      else return WeatherTypes.Sunny;
+    }
+
     if (this.season() === SeasonTypes.Fall) {
-      if (rand > 0.8) return WeatherTypes.Rainy;
+      if (rand > 0.2) return WeatherTypes.Rainy;
       else return WeatherTypes.Sunny;
     }
 
