@@ -5,6 +5,7 @@ import { CheatsService } from "../services/cheats.service";
 import { BarnService } from "../services/entities/barn.service";
 import { CowService } from "../services/entities/cow.service";
 import { FarmerService } from "../services/entities/farmer.service";
+import { GreenhouseService } from "../services/entities/greenhouse.service";
 import { PlotService } from "../services/entities/plots.service";
 import { TractorService } from "../services/entities/tractor.service";
 import { VanService } from "../services/entities/van.service";
@@ -53,6 +54,12 @@ import { BuyTileComponent } from "./buy-tile.component";
         [active]="activeBuyingEntity() === EntityType.Tractor"
         [cost]="tractorService.cost()"
         (buyClick)="onBuy(EntityType.Tractor)"></app-buy-tile>
+      <app-buy-tile
+        image="/imgs/greenhouse.png"
+        text="Greenhouse"
+        [active]="activeBuyingEntity() === EntityType.Greenhouse"
+        [cost]="greenHouseService.cost()"
+        (buyClick)="onBuy(EntityType.Greenhouse)"></app-buy-tile>
       @if (cheatsService.unlocked()) {
         <app-buy-tile
           image="/imgs/weather-control.png"
@@ -74,6 +81,7 @@ export class ShopPanelComponent {
   cowService = inject(CowService);
   vanService = inject(VanService);
   weatherControlService = inject(WeatherControlService);
+  greenHouseService = inject(GreenhouseService);
 
   stashService = inject(StashService);
   buyService = inject(BuyService);
@@ -97,6 +105,8 @@ export class ShopPanelComponent {
         this.cowService.buy();
       } else if (entity === EntityType.WeatherControl) {
         this.weatherControlService.buy();
+      } else if (entity === EntityType.Greenhouse) {
+        this.greenHouseService.buy();
       }
     });
   }

@@ -18,6 +18,7 @@ export class RenderUtils {
     [EntityType.Van]: [48, 48],
     [EntityType.Market]: [192, 192],
     [EntityType.Cow]: [32, 32],
+    [EntityType.Greenhouse]: [144, 144],
     [EntityType.WeatherControl]: [320, 320],
   };
 
