@@ -77,51 +77,66 @@ export class CanvasComponent {
         }
       });
 
-      this.handleZoom(stage);
+      stage.scale({ x: 1, y: 1 });
+
+      this.handleScrollZoom(stage);
+      this.handlePinchZoom(stage);
     });
   }
 
-  private handleZoom(stage: Konva.Stage) {
+  private handleScrollZoom(stage: Konva.Stage) {
+    stage.on("wheel", (e) => {
+      e.evt.preventDefault();
+      const pointer = stage.getPointerPosition()!;
+
+      let direction = e.evt.deltaY < 0 ? 1 : -1;
+      this.zoom(direction, pointer);
+    });
+  }
+
+  private handlePinchZoom(stage: Konva.Stage) {
+    // stage.on("touchmove", (e) => {
+    //   e.evt.preventDefault();
+    //   const touch1 = e.evt.touches[0];
+    //   const touch2 = e.evt.touches[1];
+    //   // this.zoom(direction, pointer);
+    // });
+  }
+
+  private zoom(direction: number, centerPoint: { x: number; y: number }) {
     const scaleBy = 1.05;
     const maxScale = 2;
 
-    stage.scale({ x: 1, y: 1 });
+    const stage = this.stage();
+    if (!stage) return;
+    const oldScale = stage.scaleX();
 
-    stage.on("wheel", (e) => {
-      e.evt.preventDefault();
+    const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
 
-      const oldScale = stage.scaleX();
-      const pointer = stage.getPointerPosition()!;
+    // Calculate dynamic minimum scale to prevent whitespace
+    const viewportWidth = this.canvasRef().nativeElement.clientWidth;
+    const viewportHeight = this.canvasRef().nativeElement.clientHeight;
+    const minScale = Math.max(
+      viewportWidth / this.size,
+      viewportHeight / this.size,
+    );
 
-      const mousePointTo = {
-        x: (pointer.x - stage.x()) / oldScale,
-        y: (pointer.y - stage.y()) / oldScale,
-      };
+    if (newScale < minScale || newScale > maxScale) return;
 
-      let direction = e.evt.deltaY < 0 ? 1 : -1;
+    stage.scale({ x: newScale, y: newScale });
 
-      const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+    const mousePointTo = {
+      x: (centerPoint.x - stage.x()) / oldScale,
+      y: (centerPoint.y - stage.y()) / oldScale,
+    };
 
-      // Calculate dynamic minimum scale to prevent whitespace
-      const viewportWidth = this.canvasRef().nativeElement.clientWidth;
-      const viewportHeight = this.canvasRef().nativeElement.clientHeight;
-      const minScale = Math.max(
-        viewportWidth / this.size,
-        viewportHeight / this.size,
-      );
+    const newPos = {
+      x: centerPoint.x - mousePointTo.x * newScale,
+      y: centerPoint.y - mousePointTo.y * newScale,
+    };
 
-      if (newScale < minScale || newScale > maxScale) return;
-
-      stage.scale({ x: newScale, y: newScale });
-
-      const newPos = {
-        x: pointer.x - mousePointTo.x * newScale,
-        y: pointer.y - mousePointTo.y * newScale,
-      };
-
-      const boundedPos = this.boundsHelper(newPos, stage);
-      stage.position(boundedPos);
-    });
+    const boundedPos = this.boundsHelper(newPos, stage);
+    stage.position(boundedPos);
   }
 
   private boundsHelper = (
