@@ -17,7 +17,7 @@ export class Cultivate extends Passive {
     this.growTick();
   }
 
-  private _crop = signal<Crop>(Crop.Grass);
+  protected _crop = signal<Crop>(Crop.Grass);
   crop = this._crop.asReadonly();
 
   canHarvest = computed(() => {
@@ -30,6 +30,8 @@ export class Cultivate extends Passive {
   canPlant = computed(() => {
     return this._crop() === Crop.Grass && !this.canHarvest();
   });
+
+  lastPlantedCrop = signal<Crop | null>(null);
 
   private cropToHarvestTicks: Record<Crop, number> = {
     [Crop.Wheat]: 20,
@@ -48,6 +50,7 @@ export class Cultivate extends Passive {
 
   plant(crop: Crop) {
     this._crop.set(crop);
+    this.lastPlantedCrop.set(crop);
   }
 
   private _cropChangeEffect = effect(() => {

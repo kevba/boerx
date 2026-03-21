@@ -1,9 +1,13 @@
-import { effect, inject, signal } from "@angular/core";
+import { computed, effect, inject, signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { Crop } from "../../services/items/crop.service";
-import { SeasonTypes, WeatherService } from "../../services/weather.service";
+import {
+  SeasonTypes,
+  WeatherService,
+  WeatherTypes,
+} from "../../services/weather.service";
 import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
 import { RenderUtils } from "../utils/renderUtils";
 import { Cultivate, ICultivate } from "./abilities/cultivate";
@@ -23,7 +27,7 @@ export class PlotEntity
 
   upgrade = signal<PlotUpgrade>(PlotUpgrade.Basic);
   storage = new Storage(1);
-  cultivate = new Cultivate(this);
+  cultivate = new PlotCultivate(this);
 
   constructor(
     initialCoords: { x: number; y: number },
@@ -57,22 +61,6 @@ export class PlotEntity
 
   _upgradeChangeEffect = effect(() => {});
 
-  // private growTick() {
-  //   const crop = this.crop();
-  //   const growthStage = this.cropGrowthStage();
-  //   const maxGrowthStage = this.cropToHarvestTicks[crop];
-
-  //   if (growthStage >= maxGrowthStage) return;
-
-  //   const weather = this.weatherService.weather();
-  //   let growthModifier = 1;
-  //   if (weather === WeatherTypes.Rainy) {
-  //     growthModifier += 0.5;
-  //   }
-
-  //   this.cropGrowthStage.set(growthStage + growthModifier);
-  // }
-
   private _cropChangeEffect = effect(() => {
     const crop = this.cultivate.crop();
     this.node.setCrop(crop);
@@ -84,6 +72,28 @@ export class PlotEntity
       this.cultivate.plant(Crop.Grass);
     }
   });
+}
+
+class PlotCultivate extends Cultivate {
+  private weatherService = inject(WeatherService);
+
+  override canPlant = computed(() => {
+    return (
+      this._crop() === Crop.Grass &&
+      !this.canHarvest() &&
+      this.weatherService.season() !== SeasonTypes.Winter
+    );
+  });
+
+  override growth(): number {
+    const weather = this.weatherService.weather();
+    let growthModifier = 1;
+    if (weather === WeatherTypes.Rainy) {
+      growthModifier += 0.5;
+    }
+
+    return growthModifier;
+  }
 }
 
 export enum PlotUpgrade {

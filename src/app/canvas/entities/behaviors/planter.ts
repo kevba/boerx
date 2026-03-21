@@ -10,7 +10,6 @@ import { Act, Behavior, BehaviorUtils } from "./utils";
 
 export interface IPlanter extends Entity<any, any>, IMovement, IStorage {
   planter: Planter;
-  cropToPlant: Crop;
 }
 
 export class Planter extends Behavior {
@@ -25,7 +24,6 @@ export class Planter extends Behavior {
 
   override getWeight(): Act {
     const targetInfo = this.getTarget();
-
     if (!targetInfo) {
       return {
         description: `Planter: No target`,
@@ -40,7 +38,10 @@ export class Planter extends Behavior {
         act: () => {
           if (!targetInfo.target.cultivate.canPlant()) return;
           this.entity.move.stop();
-          targetInfo.target.cultivate.plant(this.entity.cropToPlant);
+          const cropToPlant =
+            targetInfo.target.cultivate.lastPlantedCrop() || Crop.Wheat;
+
+          targetInfo.target.cultivate.plant(cropToPlant);
           this.targetId = null;
         },
         weight: 1,

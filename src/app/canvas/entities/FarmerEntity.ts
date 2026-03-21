@@ -2,7 +2,6 @@ import { effect, signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
-import { Crop } from "../../services/items/crop.service";
 import { Direction, IMovement, Movement } from "./abilities/move";
 import { IStorage, Storage } from "./abilities/store";
 import { Harvester, IHarvester } from "./behaviors/harvester";
@@ -22,7 +21,6 @@ export class FarmerEntity
   implements IStorage, IMovement, IHarvester, IPlanter, IHauler
 {
   override type = EntityType.Farmer;
-  cropToPlant = Crop.Wheat;
 
   roles = signal<FarmerRoles[]>([
     FarmerRoles.Plant,

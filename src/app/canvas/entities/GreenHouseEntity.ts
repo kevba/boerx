@@ -16,7 +16,7 @@ export class GreenhouseEntity
   upgrade = signal<GreenhouseUpgrade>(GreenhouseUpgrade.Shed);
 
   storage = new Storage(5);
-  cultivate = new Cultivate(this);
+  cultivate = new GreenhouseCultivate(this);
 
   constructor(
     initialCoords: { x: number; y: number },
@@ -40,10 +40,6 @@ export class GreenhouseEntity
     this.init();
   }
 
-  protected override update(): void {
-    if (this.node.isDragging() || this.node.draggable()) return;
-  }
-
   upgradeTo(upgrade: GreenhouseUpgrade) {
     this.upgrade.set(upgrade);
   }
@@ -51,6 +47,12 @@ export class GreenhouseEntity
   private _upgradeEffect = effect(() => {
     const upgrade = this.upgrade();
   });
+}
+
+class GreenhouseCultivate extends Cultivate {
+  override growth(): number {
+    return 2;
+  }
 }
 
 export enum GreenhouseUpgrade {
