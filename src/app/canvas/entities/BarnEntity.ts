@@ -11,7 +11,6 @@ export class BarnEntity
   implements IStorage
 {
   type = EntityType.Barn;
-  selectable = true;
 
   upgrade = signal<BarnUpgrade>(BarnUpgrade.Shed);
 

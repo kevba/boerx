@@ -55,7 +55,9 @@ export class PlotPanelComponent {
     const plots = this.plots();
 
     return this.crops.map((crop) => {
-      const plotsWithoutCrop = plots.filter((p) => p?.crop() !== crop).length;
+      const plotsWithoutCrop = plots.filter(
+        (p) => p?.cultivate?.crop() !== crop,
+      ).length;
       return {
         crop: crop,
         disabled: plotsWithoutCrop === 0,
@@ -68,7 +70,7 @@ export class PlotPanelComponent {
     const plots = this.plots();
 
     for (const plot of plots) {
-      if (plot?.crop() === crop) {
+      if (plot?.cultivate?.crop() === crop) {
         return;
       } else {
         this.plotService.plantOnPlot(plot.id, crop);

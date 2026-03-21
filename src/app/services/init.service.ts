@@ -4,6 +4,7 @@ import { EntityType } from "../models/entity";
 import { BarnService } from "./entities/barn.service";
 import { EntitiesService } from "./entities/entities.service";
 import { FarmerService } from "./entities/farmer.service";
+import { GreenhouseService } from "./entities/greenhouse.service";
 import { MarketService } from "./entities/market.service";
 import { PlotService } from "./entities/plots.service";
 import { TractorService } from "./entities/tractor.service";
@@ -28,6 +29,7 @@ export class InitService {
   private tickService = inject(TickService);
   private stashService = inject(StashService);
   private weatherControlService = inject(WeatherControlService);
+  private greenhouseService = inject(GreenhouseService);
 
   private setupComplete = false;
 
@@ -136,6 +138,9 @@ export class InitService {
             break;
           case EntityType.WeatherControl:
             this.weatherControlService.add({ x: e.x, y: e.y });
+            break;
+          case EntityType.Greenhouse:
+            this.greenhouseService.add({ x: e.x, y: e.y });
             break;
         }
       },

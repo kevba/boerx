@@ -1,4 +1,11 @@
-import { effect, inject, Injector, signal, Signal } from "@angular/core";
+import {
+  effect,
+  inject,
+  Injector,
+  signal,
+  Signal,
+  untracked,
+} from "@angular/core";
 import Konva from "konva";
 import { map } from "rxjs";
 import { AppInjectorHolder } from "../../../main";
@@ -7,7 +14,8 @@ import { SelectionService } from "../../services/selection.service";
 import { TickService } from "../../services/tick.service";
 import { RenderUtils } from "../utils/renderUtils";
 import { Direction } from "./abilities/move";
-import { Act, Behavoir } from "./behaviors/utils";
+import { Passive } from "./abilities/utils";
+import { Act, Behavior } from "./behaviors/utils";
 
 export type EntityOptions<T extends Konva.Node> = {
   node: T;
@@ -23,7 +31,7 @@ export abstract class Entity<
   protected tick = inject(TickService);
 
   public node: T;
-  abstract selectable: boolean;
+  selectable: boolean = true;
   abstract type: EntityType;
   protected initialDirection: Direction = Direction.right;
   abstract upgrade: Signal<UpgradeType>;
@@ -57,14 +65,18 @@ export abstract class Entity<
 
   protected update(): void {
     if (this.node.isDragging() || this.node.draggable()) return;
+    this.executeBehaviors();
+    this.executePassives();
+  }
 
+  private executeBehaviors() {
     let actions: Act[] = [];
 
     Object.values(this)
       .filter((attr) => {
-        return attr instanceof Behavoir;
+        return attr instanceof Behavior;
       })
-      .forEach((behavior: Behavoir) => {
+      .forEach((behavior: Behavior) => {
         actions.push(behavior.weight());
       });
 
@@ -81,6 +93,16 @@ export abstract class Entity<
       actions[0].act();
       this.lastAction = actions[0].description;
     }
+  }
+
+  private executePassives() {
+    const passives = Object.values(this).filter((attr) => {
+      return attr instanceof Passive;
+    });
+
+    passives.forEach((passive: Passive) => {
+      untracked(() => passive.run());
+    });
   }
 
   protected setSelected(selected: boolean) {

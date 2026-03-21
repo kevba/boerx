@@ -1,20 +1,19 @@
 import { inject } from "@angular/core";
 import { EntitiesService } from "../../../services/entities/entities.service";
 import { Entity } from "../Entity";
-import { Storable } from "../models";
 
 import { Crop } from "../../../services/items/crop.service";
 import { IMovement } from "../abilities/move";
 import { IStorage } from "../abilities/store";
 import { BarnEntity } from "../BarnEntity";
 import { MarketEntity } from "../MarketEntity";
-import { Act, BehaviorUtils, Behavoir } from "./utils";
+import { Act, Behavior, BehaviorUtils } from "./utils";
 
 export interface ISeller extends Entity<any, any>, IMovement, IStorage {
   seller: Seller;
 }
 
-export class Seller extends Behavoir {
+export class Seller extends Behavior {
   fetchTargetId: string | null = null;
   deliveryTargetId: string | null = null;
 
@@ -115,12 +114,12 @@ export class Seller extends Behavoir {
 
   private getFetchTarget(
     id: string | null,
-  ): { target: Storable; distance: number; fill: number } | null {
+  ): { target: IStorage; distance: number; fill: number } | null {
     if (id) {
       let entity =
         this.entityService.entities().find((t) => t.id === id) || null;
       if (entity) {
-        const storableEntity = entity as Storable;
+        const storableEntity = entity as IStorage;
 
         return {
           target: storableEntity,
@@ -164,7 +163,7 @@ export class Seller extends Behavoir {
   }
 
   private findFetchTarget(): {
-    target: Storable;
+    target: IStorage;
     distance: number;
     fill: number;
   } | null {
@@ -180,8 +179,8 @@ export class Seller extends Behavoir {
       .filter((e) => e instanceof BarnEntity)
       .filter((e) => !otherSellers.includes(e.id))
       .filter((e) => {
-        return (e as Storable).storage.storedItems().length > 0;
-      }) as Storable[];
+        return (e as IStorage).storage.storedItems().length > 0;
+      }) as IStorage[];
 
     const targetsWithDistance = targets.map((t) => {
       return {

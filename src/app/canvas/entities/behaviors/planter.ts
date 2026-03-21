@@ -2,18 +2,18 @@ import { inject } from "@angular/core";
 import { EntitiesService } from "../../../services/entities/entities.service";
 import { Crop } from "../../../services/items/crop.service";
 import { Entity } from "../Entity";
-import { Plantable } from "../models";
 
+import { Cultivate, ICultivate } from "../abilities/cultivate";
 import { IMovement } from "../abilities/move";
 import { IStorage } from "../abilities/store";
-import { Act, BehaviorUtils, Behavoir } from "./utils";
+import { Act, Behavior, BehaviorUtils } from "./utils";
 
 export interface IPlanter extends Entity<any, any>, IMovement, IStorage {
   planter: Planter;
   cropToPlant: Crop;
 }
 
-export class Planter extends Behavoir {
+export class Planter extends Behavior {
   targetId: string | null = null;
 
   private entityService = inject(EntitiesService);
@@ -38,9 +38,9 @@ export class Planter extends Behavoir {
       return {
         description: `Planter: planting`,
         act: () => {
-          if (!targetInfo.target.canPlant()) return;
+          if (!targetInfo.target.cultivate.canPlant()) return;
           this.entity.move.stop();
-          targetInfo.target.plant(this.entity.cropToPlant);
+          targetInfo.target.cultivate.plant(this.entity.cropToPlant);
           this.targetId = null;
         },
         weight: 1,
@@ -48,7 +48,7 @@ export class Planter extends Behavoir {
     }
 
     return {
-      description: `Planter: moving to plantable`,
+      description: `Planter: moving to icultivate`,
       act: () => {
         this.targetId = targetInfo?.target.id || null;
         this.entity.move.moveToTarget(targetInfo.target?.node, () => {
@@ -59,7 +59,7 @@ export class Planter extends Behavoir {
     };
   }
 
-  private getTarget(): { target: Plantable; distance: number } | null {
+  private getTarget(): { target: ICultivate; distance: number } | null {
     if (!this.targetId) {
       const foundTarget = this.findTarget();
       return foundTarget;
@@ -71,18 +71,18 @@ export class Planter extends Behavoir {
 
   private findTargetById(
     id: string,
-  ): { target: Plantable; distance: number } | null {
+  ): { target: ICultivate; distance: number } | null {
     const entity =
       this.entityService.entities().find((t) => t.id === id) || null;
     if (!entity) return null;
 
     return {
-      target: entity as Plantable,
+      target: entity as ICultivate,
       distance: BehaviorUtils.centerDistance(entity.node, this.entity.node),
     };
   }
 
-  private findTarget(): { target: Plantable; distance: number } | null {
+  private findTarget(): { target: ICultivate; distance: number } | null {
     let targets = this.getTargets();
     targets = this.filterAlreadyTargeted(targets);
 
@@ -97,7 +97,7 @@ export class Planter extends Behavoir {
     return targetsWithDistance[0] || null;
   }
 
-  private filterAlreadyTargeted(entities: Plantable[]): Plantable[] {
+  private filterAlreadyTargeted(entities: ICultivate[]): ICultivate[] {
     // Prevent multiple  targeting the same entity
     const otherPlanters = this.entityService
       .entities()
@@ -107,12 +107,12 @@ export class Planter extends Behavoir {
     return entities.filter((e) => !otherPlanters.includes(e.id));
   }
 
-  private getTargets(): Plantable[] {
+  private getTargets(): ICultivate[] {
     let targets = this.entityService
       .entities()
-      .filter((e) => "plant" in e)
-      .filter((e) => (e as Plantable).canPlant());
+      .filter((e) => "cultivate" in e && e.cultivate instanceof Cultivate)
+      .filter((e) => (e as ICultivate).cultivate.canPlant());
 
-    return targets as Plantable[];
+    return targets as ICultivate[];
   }
 }

@@ -1,70 +1,34 @@
-import { computed, effect, inject, signal, untracked } from "@angular/core";
+import { effect, inject, signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { Crop } from "../../services/items/crop.service";
-import {
-  SeasonTypes,
-  WeatherService,
-  WeatherTypes,
-} from "../../services/weather.service";
+import { SeasonTypes, WeatherService } from "../../services/weather.service";
 import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
 import { RenderUtils } from "../utils/renderUtils";
+import { Cultivate, ICultivate } from "./abilities/cultivate";
 import { Direction } from "./abilities/move";
 import { IStorage, Storage } from "./abilities/store";
 import { Entity, EntityRender } from "./Entity";
-import { Harvestable, Plantable } from "./models";
 
 export class PlotEntity
   extends Entity<PlotRender, PlotUpgrade>
-  implements IStorage, Plantable, Harvestable
+  implements IStorage, ICultivate
 {
   private weatherService = inject(WeatherService);
 
-  override selectable = true;
   override type = EntityType.Plot;
 
   override initialDirection: Direction = Direction.right;
 
   upgrade = signal<PlotUpgrade>(PlotUpgrade.Basic);
-  crop = signal<Crop>(Crop.Grass);
-  storage: Storage;
-
-  canHarvest = computed(() => {
-    const crop = this.crop();
-    const growthStage = this.cropGrowthStage();
-    const maxGrowthStage = this.cropToHarvestTicks[crop];
-    return growthStage >= maxGrowthStage;
-  });
-
-  canPlant = computed(() => {
-    const season = this.weatherService.season();
-    if (season === SeasonTypes.Winter) {
-      return false;
-    }
-    return this.crop() === Crop.Grass && !this.canHarvest();
-  });
-
-  cropToHarvestTicks: Record<Crop, number> = {
-    [Crop.Wheat]: 20,
-    [Crop.Corn]: 30,
-    [Crop.Potato]: 30,
-    [Crop.Grass]: 100000000,
-  };
-
-  cropGrowthStage = signal(0);
-  cropGrowthStageFraction = computed(() => {
-    const crop = this.crop();
-    const growthStage = this.cropGrowthStage();
-    const maxGrowthStage = this.cropToHarvestTicks[crop];
-    return maxGrowthStage ? growthStage / maxGrowthStage : 0;
-  });
+  storage = new Storage(1);
+  cultivate = new Cultivate(this);
 
   constructor(
     initialCoords: { x: number; y: number },
     layer: Konva.Layer,
     upgrade: PlotUpgrade = PlotUpgrade.Basic,
-    crop: Crop = Crop.Grass,
   ) {
     const id = uuidv4();
     const node = new PlotRender({
@@ -83,26 +47,9 @@ export class PlotEntity
     this.storage = new Storage(5);
 
     this.upgrade.set(upgrade);
-    this.crop.set(crop);
 
     this.init();
   }
-
-  protected override update(): void {
-    if (this.node.isDragging() || this.node.draggable()) return;
-    // Untracked to prevent infinite loop of growth -> update -> growth
-    untracked(() => this.growTick());
-  }
-
-  plant(crop: Crop) {
-    this.crop.set(crop);
-  }
-
-  _cropChangeEffect = effect(() => {
-    const crop = this.crop();
-    this.cropGrowthStage.set(0);
-    this.node.setCrop(crop);
-  });
 
   upgradeTo(upgrade: PlotUpgrade) {
     this.upgrade.set(upgrade);
@@ -110,37 +57,33 @@ export class PlotEntity
 
   _upgradeChangeEffect = effect(() => {});
 
-  private growTick() {
-    const crop = this.crop();
-    const growthStage = this.cropGrowthStage();
-    const maxGrowthStage = this.cropToHarvestTicks[crop];
+  // private growTick() {
+  //   const crop = this.crop();
+  //   const growthStage = this.cropGrowthStage();
+  //   const maxGrowthStage = this.cropToHarvestTicks[crop];
 
-    if (growthStage >= maxGrowthStage) return;
+  //   if (growthStage >= maxGrowthStage) return;
 
-    const weather = this.weatherService.weather();
-    let growthModifier = 1;
-    if (weather === WeatherTypes.Rainy) {
-      growthModifier += 0.5;
-    }
+  //   const weather = this.weatherService.weather();
+  //   let growthModifier = 1;
+  //   if (weather === WeatherTypes.Rainy) {
+  //     growthModifier += 0.5;
+  //   }
 
-    this.cropGrowthStage.set(growthStage + growthModifier);
-  }
+  //   this.cropGrowthStage.set(growthStage + growthModifier);
+  // }
+
+  private _cropChangeEffect = effect(() => {
+    const crop = this.cultivate.crop();
+    this.node.setCrop(crop);
+  });
 
   private _seasonChangeEffect = effect(() => {
     const season = this.weatherService.season();
     if (season === SeasonTypes.Winter) {
-      this.crop.set(Crop.Grass);
+      this.cultivate.plant(Crop.Grass);
     }
   });
-
-  harvest() {
-    const harvestedCrop = this.crop();
-    this.crop.set(Crop.Grass);
-    this.cropGrowthStage.set(0);
-
-    this.storage.clear();
-    this.storage.store({ type: harvestedCrop, amount: 1 });
-  }
 }
 
 export enum PlotUpgrade {
@@ -181,7 +124,7 @@ export class PlotRender extends EntityRender<PlotEntity> {
   }
 
   private _growthEffect = effect(() => {
-    const growthFraction = this.entity.cropGrowthStageFraction();
+    const growthFraction = this.entity.cultivate.cropGrowthStageFraction();
 
     const overlayIntensity = 0.5 - growthFraction * 0.3;
     this.renderOverlay(overlayIntensity);

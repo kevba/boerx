@@ -1,7 +1,8 @@
 import { computed, signal } from "@angular/core";
 import { Item } from "../../../services/wares.service";
+import { Entity } from "../Entity";
 
-export interface IStorage {
+export interface IStorage extends Entity<any, any> {
   storage: Storage;
 }
 

@@ -1,9 +1,9 @@
 import { effect } from "@angular/core";
 import Konva from "konva";
-import { EntityRender } from "../Entity";
+import { Entity, EntityRender } from "../Entity";
 import { BehaviorUtils } from "../behaviors/utils";
 
-export interface IMovement {
+export interface IMovement extends Entity<any, any> {
   move: Movement;
 }
 

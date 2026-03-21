@@ -10,7 +10,6 @@ import { Sprite } from "./Sprite";
 
 export class MarketEntity extends Entity<MarketImage, MarketUpgrade> {
   type = EntityType.Market;
-  selectable = true;
 
   upgrade = signal<MarketUpgrade>(MarketUpgrade.Shed);
 

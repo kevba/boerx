@@ -15,7 +15,6 @@ export class TractorEntity
   extends Entity<TractorRender, TractorUpgrade>
   implements IStorage, IMovement, IHarvester, IPlanter, IHauler
 {
-  override selectable = true;
   override type = EntityType.Tractor;
   cropToPlant = Crop.Wheat;
 

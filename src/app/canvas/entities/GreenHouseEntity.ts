@@ -4,18 +4,19 @@ import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
+import { Cultivate, ICultivate } from "./abilities/cultivate";
 import { IStorage, Storage } from "./abilities/store";
 
 export class GreenhouseEntity
   extends Entity<GreenhouseImage, GreenhouseUpgrade>
-  implements IStorage
+  implements IStorage, ICultivate
 {
   type = EntityType.Greenhouse;
-  selectable = true;
 
   upgrade = signal<GreenhouseUpgrade>(GreenhouseUpgrade.Shed);
 
   storage = new Storage(5);
+  cultivate = new Cultivate(this);
 
   constructor(
     initialCoords: { x: number; y: number },
@@ -34,8 +35,6 @@ export class GreenhouseEntity
       id,
       node,
     });
-    this.node.entity = this;
-    this.storage = new Storage();
     this.upgrade.set(upgrade);
 
     this.init();

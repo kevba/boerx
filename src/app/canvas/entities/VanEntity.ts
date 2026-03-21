@@ -12,7 +12,6 @@ export class VanEntity
   extends Entity<VanRender, VanUpgrade>
   implements IStorage, IMovement, ISeller
 {
-  override selectable = true;
   override type = EntityType.Van;
   override initialDirection = Direction.right;
 

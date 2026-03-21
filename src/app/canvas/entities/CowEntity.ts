@@ -11,7 +11,6 @@ export class CowEntity extends Entity<CowImage, CowUpgrade> {
   override initialDirection = Direction.left;
 
   type = EntityType.Cow;
-  selectable = true;
 
   upgrade = signal<CowUpgrade>(CowUpgrade.Cow);
 

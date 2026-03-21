@@ -44,7 +44,7 @@ export class BehaviorUtils {
 
 export type Act = { act: () => void; weight: number; description: string };
 
-export abstract class Behavoir {
+export abstract class Behavior {
   protected maxRange = 400;
   disabled = signal(false);
 

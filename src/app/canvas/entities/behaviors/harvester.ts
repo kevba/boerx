@@ -1,11 +1,11 @@
 import { inject } from "@angular/core";
 import { EntitiesService } from "../../../services/entities/entities.service";
 import { Entity } from "../Entity";
-import { Harvestable } from "../models";
 
+import { Cultivate, ICultivate } from "../abilities/cultivate";
 import { IMovement } from "../abilities/move";
 import { IStorage } from "../abilities/store";
-import { Act, BehaviorUtils, Behavoir } from "./utils";
+import { Act, Behavior, BehaviorUtils } from "./utils";
 
 export interface IHarvester extends Entity<any, any>, IMovement, IStorage {
   harvester: Harvester;
@@ -17,7 +17,7 @@ export enum HarvesterState {
   MovingToTarget = "MovingToTarget",
 }
 
-export class Harvester extends Behavoir {
+export class Harvester extends Behavior {
   targetId: string | null = null;
   override maxRange = 300;
 
@@ -44,7 +44,7 @@ export class Harvester extends Behavoir {
         description: `Harvester: Harvesting`,
         act: () => {
           this.entity.move.stop();
-          targetInfo.target.harvest();
+          targetInfo.target.cultivate.harvest();
           this.targetId = null;
         },
         weight: 1,
@@ -52,7 +52,7 @@ export class Harvester extends Behavoir {
     }
 
     return {
-      description: `Harvester: moving to harvestable`,
+      description: `Harvester: moving to cultivate`,
       act: () => {
         this.targetId = targetInfo?.target.id || null;
         this.entity.move.moveToTarget(targetInfo.target?.node, () => {
@@ -63,7 +63,7 @@ export class Harvester extends Behavoir {
     };
   }
 
-  private getTarget(): { target: Harvestable; distance: number } | null {
+  private getTarget(): { target: ICultivate; distance: number } | null {
     if (!this.targetId) {
       const foundTarget = this.findTarget();
       return foundTarget;
@@ -75,18 +75,18 @@ export class Harvester extends Behavoir {
 
   private findTargetById(
     id: string,
-  ): { target: Harvestable; distance: number } | null {
+  ): { target: ICultivate; distance: number } | null {
     const entity =
       this.entityService.entities().find((t) => t.id === id) || null;
     if (!entity) return null;
 
     return {
-      target: entity as Harvestable,
+      target: entity as ICultivate,
       distance: BehaviorUtils.centerDistance(entity.node, this.entity.node),
     };
   }
 
-  private findTarget(): { target: Harvestable; distance: number } | null {
+  private findTarget(): { target: ICultivate; distance: number } | null {
     let targets = this.getTargets();
     targets = this.filterAlreadyTargeted(targets);
 
@@ -101,7 +101,7 @@ export class Harvester extends Behavoir {
     return targetsWithDistance[0] || null;
   }
 
-  private filterAlreadyTargeted(entities: Harvestable[]): Harvestable[] {
+  private filterAlreadyTargeted(entities: ICultivate[]): ICultivate[] {
     // Prevent multiple  targeting the same entity
     const otherHarvesters = this.entityService
       .entities()
@@ -111,12 +111,12 @@ export class Harvester extends Behavoir {
     return entities.filter((e) => !otherHarvesters.includes(e.id));
   }
 
-  private getTargets(): Harvestable[] {
+  private getTargets(): ICultivate[] {
     let targets = this.entityService
       .entities()
-      .filter((e) => "harvest" in e)
-      .filter((e) => (e as Harvestable).canHarvest());
+      .filter((e) => "cultivate" in e && e.cultivate instanceof Cultivate)
+      .filter((e) => (e as ICultivate).cultivate.canHarvest());
 
-    return targets as Harvestable[];
+    return targets as ICultivate[];
   }
 }

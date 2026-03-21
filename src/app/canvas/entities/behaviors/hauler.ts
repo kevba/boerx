@@ -1,20 +1,19 @@
 import { inject } from "@angular/core";
 import { EntitiesService } from "../../../services/entities/entities.service";
 import { Entity } from "../Entity";
-import { Storable } from "../models";
 
 import { Crop } from "../../../services/items/crop.service";
+import { ICultivate } from "../abilities/cultivate";
 import { IMovement } from "../abilities/move";
 import { IStorage } from "../abilities/store";
 import { BarnEntity } from "../BarnEntity";
-import { PlotEntity } from "../PlotEntity";
-import { Act, BehaviorUtils, Behavoir } from "./utils";
+import { Act, Behavior, BehaviorUtils } from "./utils";
 
 export interface IHauler extends Entity<any, any>, IMovement, IStorage {
   hauler: Hauler;
 }
 
-export class Hauler extends Behavoir {
+export class Hauler extends Behavior {
   fetchTargetId: string | null = null;
   deliveryTargetId: string | null = null;
 
@@ -120,7 +119,7 @@ export class Hauler extends Behavoir {
 
   private getFetchTarget(
     id: string | null,
-  ): { target: Storable; distance: number; fill: number } | null {
+  ): { target: IStorage; distance: number; fill: number } | null {
     if (id) {
       const target = this.findTargetById(id);
       if (target) {
@@ -133,7 +132,7 @@ export class Hauler extends Behavoir {
 
   private getDeliveryTarget(
     id: string | null,
-  ): { target: Storable; distance: number; fill: number } | null {
+  ): { target: IStorage; distance: number; fill: number } | null {
     if (id) {
       const target = this.findTargetById(id);
       if (target) {
@@ -146,11 +145,11 @@ export class Hauler extends Behavoir {
 
   private findTargetById(
     id: string,
-  ): { target: Storable; distance: number; fill: number } | null {
+  ): { target: IStorage; distance: number; fill: number } | null {
     const entity =
       this.entityService.entities().find((t) => t.id === id) || null;
     if (!entity) return null;
-    const e = entity as Storable;
+    const e = entity as IStorage;
 
     return {
       target: e,
@@ -160,17 +159,16 @@ export class Hauler extends Behavoir {
   }
 
   private findFetchTarget(): {
-    target: Storable;
+    target: ICultivate;
     distance: number;
     fill: number;
   } | null {
     let targets = this.entityService
       .entities()
-      .filter((e) => "storage" in e)
-      .filter((e) => e instanceof PlotEntity)
+      .filter((e) => "storage" in e && "cultivate" in e)
       .filter((e) => {
-        return (e as Storable).storage.storedItems().length > 0;
-      }) as Storable[];
+        return (e as ICultivate).storage.storedItems().length > 0;
+      }) as ICultivate[];
 
     const targetsWithDistance = targets.map((t) => {
       return {
@@ -185,7 +183,7 @@ export class Hauler extends Behavoir {
   }
 
   private findDeliveryTarget(): {
-    target: Storable;
+    target: IStorage;
     distance: number;
     fill: number;
   } | null {

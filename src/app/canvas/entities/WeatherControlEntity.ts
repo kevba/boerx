@@ -10,7 +10,6 @@ export class WeatherControlEntity extends Entity<
   WeatherControlUpgrade
 > {
   type = EntityType.WeatherControl;
-  selectable = true;
 
   upgrade = signal<WeatherControlUpgrade>(WeatherControlUpgrade.Pillar);
 
