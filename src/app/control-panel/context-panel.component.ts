@@ -3,6 +3,7 @@ import { EntityType } from "../models/entity";
 import { SelectionService } from "../services/selection.service";
 import { BarnPanelComponent } from "./entity-panel/barn-panel.component";
 import { FarmerPanelComponent } from "./entity-panel/farmer-panel.component";
+import { GreenhousePanelComponent } from "./entity-panel/greenhouse-panel.component";
 import { PlotPanelComponent } from "./entity-panel/plot-panel.component";
 import { TractorPanelComponent } from "./entity-panel/tractor-panel.component";
 import { WeatherControlPanelComponent } from "./entity-panel/weather-control-panel.component";
@@ -17,6 +18,7 @@ import { MainPanelComponent } from "./main-panel.component";
     BarnPanelComponent,
     WeatherControlPanelComponent,
     FarmerPanelComponent,
+    GreenhousePanelComponent,
   ],
 
   template: `
@@ -51,6 +53,9 @@ import { MainPanelComponent } from "./main-panel.component";
                   <app-weather-control-panel />
                 } @else if (selectedEntityType() === EntityType.Farmer) {
                   <app-farmer-panel />
+                }
+                @if (selectedEntityType() === EntityType.Greenhouse) {
+                  <app-greenhouse-panel />
                 }
               </div>
             </div>
@@ -97,6 +102,7 @@ export class ContextPanelComponent {
     EntityType.Market,
     EntityType.Farmer,
     EntityType.WeatherControl,
+    EntityType.Greenhouse,
   ];
 
   showSelectedControl = computed(

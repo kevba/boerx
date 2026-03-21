@@ -36,6 +36,15 @@ export class NutrientsService {
       water: 10,
       nutrients: 5,
     },
+
+    [Crop.Strawberry]: {
+      water: 8,
+      nutrients: 6,
+    },
+    [Crop.Tomato]: {
+      water: 12,
+      nutrients: 7,
+    },
   }));
 
   cropValueMult = computed<Record<Crop, { water: number; nutrients: number }>>(
@@ -57,6 +66,14 @@ export class NutrientsService {
           nutrients: fertilizer ? 1.2 : 0,
         },
         [Crop.Potato]: {
+          water: water ? 1.5 : 0,
+          nutrients: fertilizer ? 1.5 : 0,
+        },
+        [Crop.Strawberry]: {
+          water: water ? 1.5 : 0,
+          nutrients: fertilizer ? 1.5 : 0,
+        },
+        [Crop.Tomato]: {
           water: water ? 1.5 : 0,
           nutrients: fertilizer ? 1.5 : 0,
         },

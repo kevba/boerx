@@ -2,6 +2,7 @@ import { effect, signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
+import { Crop } from "../../services/items/crop.service";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
 import { Cultivate, ICultivate } from "./abilities/cultivate";
@@ -50,6 +51,8 @@ export class GreenhouseEntity
 }
 
 class GreenhouseCultivate extends Cultivate {
+  override lastPlantedCrop = signal(Crop.Strawberry);
+
   override growth(): number {
     return 2;
   }

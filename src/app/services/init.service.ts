@@ -55,13 +55,13 @@ export class InitService {
     };
 
     this.marketService.add({
-      x: center.x,
+      x: center.x + 160,
       y: center.y + 50,
     });
 
     this.barnService.add({
-      x: center.x - 320,
-      y: center.y + 50,
+      x: center.x - 240,
+      y: center.y + 0,
     });
 
     this.farmerService.add({
@@ -74,9 +74,12 @@ export class InitService {
       y: center.y + 100,
     });
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 2; i++) {
       this.plotService.add({
-        x: center.x - (RenderUtils.entitySize[EntityType.Plot][0] * i + 12 * i),
+        x:
+          center.x -
+          (RenderUtils.entitySize[EntityType.Plot][0] * i + 12 * i + 1) -
+          200,
         y: center.y - (RenderUtils.entitySize[EntityType.Plot][1] + 48),
       });
     }

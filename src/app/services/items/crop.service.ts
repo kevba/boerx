@@ -9,6 +9,8 @@ export class CropService {
     [Crop.Wheat]: 30,
     [Crop.Corn]: 50,
     [Crop.Potato]: 60,
+    [Crop.Strawberry]: 50,
+    [Crop.Tomato]: 70,
   });
 
   private harvestCounter = signal<Record<Crop, number>>({
@@ -16,6 +18,8 @@ export class CropService {
     [Crop.Wheat]: 0,
     [Crop.Corn]: 0,
     [Crop.Potato]: 0,
+    [Crop.Tomato]: 0,
+    [Crop.Strawberry]: 0,
   });
 
   earnings = computed<Record<Crop, number>>(() => ({
@@ -37,6 +41,16 @@ export class CropService {
     [Crop.Potato]: this.earningsCalculation(
       Crop.Potato,
       600,
+      this.harvestCounter(),
+    ),
+    [Crop.Tomato]: this.earningsCalculation(
+      Crop.Tomato,
+      800,
+      this.harvestCounter(),
+    ),
+    [Crop.Strawberry]: this.earningsCalculation(
+      Crop.Strawberry,
+      700,
       this.harvestCounter(),
     ),
   }));
@@ -69,4 +83,6 @@ export enum Crop {
   Wheat = "wheat",
   Corn = "corn",
   Potato = "potato",
+  Strawberry = "strawberry",
+  Tomato = "tomato",
 }

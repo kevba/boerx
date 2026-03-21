@@ -1,5 +1,6 @@
-import { computed, effect, signal } from "@angular/core";
-import { Crop } from "../../../services/items/crop.service";
+import { computed, effect, inject, signal } from "@angular/core";
+import { Crop, CropService } from "../../../services/items/crop.service";
+import { StashService } from "../../../services/stash.service";
 import { Entity } from "../Entity";
 import { IStorage } from "./store";
 import { Passive } from "./utils";
@@ -9,6 +10,9 @@ export interface ICultivate extends IStorage {
 }
 
 export class Cultivate extends Passive {
+  private cropService = inject(CropService);
+  private stashService = inject(StashService);
+
   constructor(private entity: Entity<any, any> & IStorage) {
     super();
   }
@@ -37,6 +41,8 @@ export class Cultivate extends Passive {
     [Crop.Wheat]: 20,
     [Crop.Corn]: 30,
     [Crop.Potato]: 30,
+    [Crop.Strawberry]: 60,
+    [Crop.Tomato]: 60,
     [Crop.Grass]: 100000000,
   };
 
@@ -49,6 +55,13 @@ export class Cultivate extends Passive {
   });
 
   plant(crop: Crop) {
+    const cost = this.cropService.plantCost()[crop];
+    const stash = this.stashService.stash();
+    if (stash < cost) {
+      return;
+    }
+    this.stashService.addStash(-cost);
+
     this._crop.set(crop);
     this.lastPlantedCrop.set(crop);
   }

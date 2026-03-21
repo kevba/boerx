@@ -1,13 +1,13 @@
 import { Component, computed, inject } from "@angular/core";
 import { EntityType } from "../../models/entity";
 import { BaseService } from "../../services/entities/base.service";
-import { PlotService } from "../../services/entities/plots.service";
+import { GreenhouseService } from "../../services/entities/greenhouse.service";
 import { Crop, CropService } from "../../services/items/crop.service";
 import { SelectionService } from "../../services/selection.service";
 import { BuyTileComponent } from "../buy-tile.component";
 
 @Component({
-  selector: "app-plot-panel",
+  selector: "app-greenhouse-panel",
   template: `
     <div class="flex flex-col gap-0 md:pb-4">
       <div class="w-full pl-2 md:pl-0">
@@ -27,44 +27,44 @@ import { BuyTileComponent } from "../buy-tile.component";
       </div>
     </div>
   `,
-  providers: [{ provide: BaseService, useExisting: PlotService }],
+  providers: [{ provide: BaseService, useExisting: GreenhouseService }],
   imports: [BuyTileComponent],
 })
-export class PlotPanelComponent {
-  plotService = inject(PlotService);
+export class GreenhousePanelComponent {
+  greenhouseService = inject(GreenhouseService);
   selectionService = inject(SelectionService);
   cropService = inject(CropService);
 
-  crops = this.plotService.supportedCrops;
+  crops = this.greenhouseService.supportedCrops;
 
-  plots = computed(() => {
-    const selectedPlotIds =
-      this.selectionService.selectedPerType()[EntityType.Plot];
-    return this.plotService
+  greenhouses = computed(() => {
+    const selectedGreenhouseIds =
+      this.selectionService.selectedPerType()[EntityType.Greenhouse];
+    return this.greenhouseService
       .entities()
-      .filter((p) => selectedPlotIds.includes(p.id));
+      .filter((p) => selectedGreenhouseIds.includes(p.id));
   });
 
   cropOptions = computed(() => {
     const plantConst = this.cropService.plantCost();
-    const plots = this.plots();
+    const greenhouses = this.greenhouses();
 
     return this.crops.map((crop) => {
-      const plotsWithoutCrop = plots.filter(
+      const greenhousesWithoutCrop = greenhouses.filter(
         (p) => p?.cultivate?.crop() !== crop,
       ).length;
       return {
         crop: crop,
-        disabled: plotsWithoutCrop === 0,
-        plantConst: plantConst[crop] * (plotsWithoutCrop || 1),
+        disabled: greenhousesWithoutCrop === 0,
+        plantConst: plantConst[crop] * (greenhousesWithoutCrop || 1),
       };
     });
   });
 
   plantCrop(crop: Crop) {
-    const plots = this.plots();
-    this.plotService.plantOn(
-      plots.map((p) => p.id),
+    const greenhouses = this.greenhouses();
+    this.greenhouseService.plantOn(
+      greenhouses.map((g) => g.id),
       crop,
     );
   }

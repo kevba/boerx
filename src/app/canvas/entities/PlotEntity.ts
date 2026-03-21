@@ -76,6 +76,7 @@ export class PlotEntity
 
 class PlotCultivate extends Cultivate {
   private weatherService = inject(WeatherService);
+  override lastPlantedCrop = signal(Crop.Wheat);
 
   override canPlant = computed(() => {
     return (
@@ -109,6 +110,8 @@ export class PlotRender extends EntityRender<PlotEntity> {
     [Crop.Wheat]: "#ebc23e",
     [Crop.Corn]: "#d6c800",
     [Crop.Potato]: "#a76829",
+    [Crop.Strawberry]: "#ff4d6d",
+    [Crop.Tomato]: "#ff6347",
     [Crop.Grass]: "#2d771a",
   };
 
