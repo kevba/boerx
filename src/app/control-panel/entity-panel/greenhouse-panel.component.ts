@@ -5,33 +5,37 @@ import { GreenhouseService } from "../../services/entities/greenhouse.service";
 import { Crop, CropService } from "../../services/items/crop.service";
 import { SelectionService } from "../../services/selection.service";
 import { BuyTileComponent } from "../buy-tile.component";
+import { PanelMenuNavComponent } from "../menu-nav.component";
 
 @Component({
   selector: "app-greenhouse-panel",
   template: `
-    <div class="flex flex-col gap-0 md:pb-4">
-      <div>
-        <div class="buy-tile-group">
-          @for (option of cropOptions(); track option.crop) {
-            <app-buy-tile
-              image=""
-              [text]="option.crop"
-              [cost]="option.plantConst"
-              [disabled]="option.disabled"
-              (buyClick)="plantCrop(option.crop)"></app-buy-tile>
-          }
-        </div>
-      </div>
-    </div>
+    <app-panel-menu-nav [menuOptions]="menuOptions()">
+      <ng-template #panelContent let-menu>
+        @if (menu.type === "Plant") {
+          <div class="buy-tile-group">
+            @for (option of cropOptions(); track option.crop) {
+              <app-buy-tile
+                [image]="cropService.images[option.crop]"
+                [text]="option.crop"
+                [cost]="option.plantConst"
+                [disabled]="option.disabled"
+                (buyClick)="plantCrop(option.crop)"></app-buy-tile>
+            }
+          </div>
+        }
+      </ng-template>
+    </app-panel-menu-nav>
   `,
   providers: [{ provide: BaseService, useExisting: GreenhouseService }],
-  imports: [BuyTileComponent],
+  imports: [BuyTileComponent, PanelMenuNavComponent],
 })
 export class GreenhousePanelComponent {
   greenhouseService = inject(GreenhouseService);
   selectionService = inject(SelectionService);
   cropService = inject(CropService);
 
+  menuOptions = computed(() => ["Plant", "Status"]);
   crops = this.greenhouseService.supportedCrops;
 
   greenhouses = computed(() => {

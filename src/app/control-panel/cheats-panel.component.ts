@@ -14,7 +14,6 @@ import { BuyTileComponent } from "./buy-tile.component";
   selector: "app-cheats-panel",
   imports: [BuyTileComponent],
   template: `
-    <h2 class="pt-2">Cheats</h2>
     <div class="buy-tile-group">
       <app-buy-tile
         image=""

@@ -23,18 +23,31 @@ import { MainPanelComponent } from "./main-panel.component";
 
   template: `
     <div
-      class="md:w-[20rem] w-full md:h-full h-[11rem] md:h-full flex flex-col ">
-      <div class="relative w-full h-full flex-1">
-        <app-main-panel class="context-panel" />
+      class="md:w-[20rem] w-full md:h-full h-[14rem] md:h-full flex flex-col ">
+      <div class="relative w-full flex-1">
+        <div class="context-panel">
+          <div class="flex flex-col h-full flex-1 ">
+            <div
+              class="w-full flex flex-row items-center gap-2 bg-stone-600 px-6 py-2">
+              <span class="text-xl md:text-2xl">{{ "Control" }}</span>
+            </div>
+            <div class=" h-full w-full overflow-scroll">
+              <app-main-panel />
+            </div>
+          </div>
+        </div>
         @if (showSelectedControl()) {
           <div
             class="context-panel"
             animate.enter="slide-in-enter"
             animate.leave="slide-in-leave">
-            <div class="p-2 md:p-4 flex flex-col h-full">
-              <div class="w-full flex flex-row items-center gap-2 md:gap-4">
-                <button class="text pl-2!" (click)="selectionService.clear()">
-                  {{ "<" }}
+            <div class="flex flex-col h-full flex-1 ">
+              <div
+                class="w-full flex flex-row items-center gap-2 bg-stone-600 px-6 ">
+                <button
+                  class="text pl-0! pr-2!"
+                  (click)="selectionService.clear()">
+                  {{ "X" }}
                 </button>
                 <span class="text-xl md:text-2xl">{{
                   selectedEntityType()
