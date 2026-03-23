@@ -11,6 +11,7 @@ import { EntityLayerService } from "../services/entity-layer.service";
 import { SelectionService } from "../services/selection.service";
 import { BuyRenderService } from "./buy-render.service";
 import { SurfaceService } from "./surface.service";
+import { RenderUtils } from "./utils/renderUtils";
 import { WeatherRenderService } from "./weather-render.service";
 
 @Component({
@@ -89,29 +90,72 @@ export class CanvasComponent {
       e.evt.preventDefault();
       const pointer = stage.getPointerPosition()!;
 
-      let direction = e.evt.deltaY < 0 ? 1 : -1;
-      this.zoom(direction, pointer);
+      let scaleBy = e.evt.deltaY < 0 ? 1.05 : 0.95;
+      this.zoom(scaleBy, pointer);
     });
   }
 
   private handlePinchZoom(stage: Konva.Stage) {
-    // stage.on("touchmove", (e) => {
-    //   e.evt.preventDefault();
-    //   const touch1 = e.evt.touches[0];
-    //   const touch2 = e.evt.touches[1];
-    //   // this.zoom(direction, pointer);
-    // });
+    let lastDist: number | null = null;
+    let dragStopped = false;
+
+    stage.on("touchmove", (e) => {
+      e.evt.preventDefault();
+      const touch1 = e.evt.touches[0];
+      const touch2 = e.evt.touches[1];
+
+      if (touch1 && !touch2 && !stage.isDragging() && dragStopped) {
+        stage.startDrag();
+        dragStopped = false;
+      }
+
+      if (!touch2) return;
+
+      stage.stopDrag();
+      dragStopped = true;
+
+      const rect = stage.container().getBoundingClientRect();
+
+      const p1 = {
+        x: touch1.clientX - rect.left,
+        y: touch1.clientY - rect.top,
+      };
+      const p2 = {
+        x: touch2.clientX - rect.left,
+        y: touch2.clientY - rect.top,
+      };
+
+      const newCenter = RenderUtils.center(p1, p2);
+      const dist = RenderUtils.distance(p1, p2);
+      if (!lastDist) {
+        lastDist = dist;
+        return;
+      }
+
+      const pointTo = {
+        x: newCenter.x - stage.x(),
+        y: newCenter.y - stage.y(),
+      };
+
+      if (dist === lastDist) return;
+
+      this.zoom(dist / lastDist, newCenter);
+      lastDist = dist;
+    });
+
+    stage.on("touchend", function () {
+      lastDist = 0;
+    });
   }
 
-  private zoom(direction: number, centerPoint: { x: number; y: number }) {
-    const scaleBy = 1.05;
+  private zoom(scaleBy: number, centerPoint: { x: number; y: number }) {
     const maxScale = 2;
 
     const stage = this.stage();
     if (!stage) return;
     const oldScale = stage.scaleX();
 
-    const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+    const newScale = oldScale * scaleBy;
 
     // Calculate dynamic minimum scale to prevent whitespace
     const viewportWidth = this.canvasRef().nativeElement.clientWidth;

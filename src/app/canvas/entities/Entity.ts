@@ -12,10 +12,11 @@ import { AppInjectorHolder } from "../../../main";
 import { EntityType } from "../../models/entity";
 import { SelectionService } from "../../services/selection.service";
 import { TickService } from "../../services/tick.service";
+import { ImageUtils } from "../utils/imageUtils";
 import { RenderUtils } from "../utils/renderUtils";
 import { Direction } from "./abilities/move";
 import { Passive } from "./abilities/utils";
-import { Act, Behavior } from "./behaviors/utils";
+import { Act, Behavior } from "./behaviors/models";
 
 export type EntityOptions<T extends Konva.Node> = {
   node: T;
@@ -144,7 +145,7 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
   isMoving = signal(false);
 
   constructor(args: { x: number; y: number; id: string; type: EntityType }) {
-    const size = RenderUtils.entitySize[args.type][0];
+    const size = ImageUtils.entitySize[args.type][0];
 
     super({
       id: `${args.type}_${args.id}`,
@@ -160,7 +161,7 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
       y: 0,
       width: size,
       height: size,
-      stroke: RenderUtils.selectedColor,
+      stroke: ImageUtils.selectedColor,
       strokeWidth: size > 64 ? 4 : 2,
       visible: false,
       listening: false,

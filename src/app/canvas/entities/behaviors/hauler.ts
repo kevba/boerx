@@ -3,11 +3,12 @@ import { EntitiesService } from "../../../services/entities/entities.service";
 import { Entity } from "../Entity";
 
 import { Crop } from "../../../services/items/crop.service";
+import { RenderUtils } from "../../utils/renderUtils";
 import { ICultivate } from "../abilities/cultivate";
 import { IMovement } from "../abilities/move";
 import { IStorage } from "../abilities/store";
 import { BarnEntity } from "../BarnEntity";
-import { Act, Behavior, BehaviorUtils } from "./utils";
+import { Act, Behavior } from "./models";
 
 export interface IHauler extends Entity<any, any>, IMovement, IStorage {
   hauler: Hauler;
@@ -153,7 +154,7 @@ export class Hauler extends Behavior {
 
     return {
       target: e,
-      distance: BehaviorUtils.centerDistance(e.node, this.entity.node),
+      distance: RenderUtils.nodeDistance(e.node, this.entity.node),
       fill: e.storage.spaceLeft() / e.storage.totalSpace(),
     };
   }
@@ -173,7 +174,7 @@ export class Hauler extends Behavior {
     const targetsWithDistance = targets.map((t) => {
       return {
         target: t,
-        distance: BehaviorUtils.centerDistance(t.node, this.entity.node),
+        distance: RenderUtils.nodeDistance(t.node, this.entity.node),
         fill: t.storage.spaceLeft() / t.storage.totalSpace(),
       };
     });
@@ -200,7 +201,7 @@ export class Hauler extends Behavior {
     const targetsWithDistance = targets.map((t) => {
       return {
         target: t,
-        distance: BehaviorUtils.centerDistance(t.node, this.entity.node),
+        distance: RenderUtils.nodeDistance(t.node, this.entity.node),
         fill: t.storage.spaceLeft() / t.storage.totalSpace(),
       };
     });

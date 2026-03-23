@@ -2,6 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import Konva from "konva";
 import { EntityType } from "../models/entity";
 import { BuyService } from "../services/buy.service";
+import { ImageUtils } from "./utils/imageUtils";
 import { RenderUtils } from "./utils/renderUtils";
 
 @Injectable({
@@ -51,8 +52,8 @@ export class BuyRenderService {
 
       if (entity) {
         const pos = stage.getRelativePointerPosition()!;
-        const width = RenderUtils.entitySize[entity][0];
-        const height = RenderUtils.entitySize[entity][1];
+        const width = ImageUtils.entitySize[entity][0];
+        const height = ImageUtils.entitySize[entity][1];
 
         const centerX = pos.x - width / 2;
         const centerY = pos.y - height / 2;
@@ -75,8 +76,8 @@ export class BuyRenderService {
         if (!this.validLocation) return;
 
         const pos = stage.getRelativePointerPosition()!;
-        const width = RenderUtils.entitySize[entity][0];
-        const height = RenderUtils.entitySize[entity][1];
+        const width = ImageUtils.entitySize[entity][0];
+        const height = ImageUtils.entitySize[entity][1];
 
         const centerX = pos.x - width / 2;
         const centerY = pos.y - height / 2;
@@ -87,8 +88,8 @@ export class BuyRenderService {
   }
 
   drawGhost(entity: EntityType, x: number, y: number) {
-    const width = RenderUtils.entitySize[entity][0];
-    const height = RenderUtils.entitySize[entity][1];
+    const width = ImageUtils.entitySize[entity][0];
+    const height = ImageUtils.entitySize[entity][1];
 
     const centerX = x - width / 2;
     const centerY = y - height / 2;
@@ -100,7 +101,7 @@ export class BuyRenderService {
         width: width,
         height: height,
         fill: "#a5743ba2",
-        stroke: RenderUtils.selectedColor,
+        stroke: ImageUtils.selectedColor,
         strokeWidth: 4,
         id: "buy-ghost",
         dash: [4, 4], // [dot size, gap size]
@@ -115,7 +116,7 @@ export class BuyRenderService {
       this.ghost.stroke("red");
       this.validLocation = false;
     } else {
-      this.ghost.stroke(RenderUtils.selectedColor);
+      this.ghost.stroke(ImageUtils.selectedColor);
       this.validLocation = true;
     }
     return;

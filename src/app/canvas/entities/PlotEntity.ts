@@ -8,8 +8,8 @@ import {
   WeatherService,
   WeatherTypes,
 } from "../../services/weather.service";
+import { ImageUtils } from "../utils/imageUtils";
 import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
-import { RenderUtils } from "../utils/renderUtils";
 import { Cultivate, ICultivate } from "./abilities/cultivate";
 import { Direction } from "./abilities/move";
 import { IStorage, Storage } from "./abilities/store";
@@ -149,7 +149,7 @@ export class PlotRenderImage extends Konva.Image {
   private noiseData: string[][];
 
   constructor(args: { x: number; y: number; id: string }) {
-    const size = RenderUtils.entitySize[EntityType.Plot][0];
+    const size = ImageUtils.entitySize[EntityType.Plot][0];
     const canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;
@@ -195,7 +195,7 @@ export class PlotRenderImage extends Konva.Image {
         const noiseX = Math.floor(x / (size / (size / 8)));
 
         const color = this.noiseData[noiseY][noiseX];
-        const [r, g, b, a] = RenderUtils.hexToRgba(color);
+        const [r, g, b, a] = ImageUtils.hexToRgba(color);
         const index = (y * size + x) * 4;
         img.data[index] = r;
         img.data[index + 1] = g;

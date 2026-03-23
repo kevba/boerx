@@ -3,10 +3,11 @@ import { EntitiesService } from "../../../services/entities/entities.service";
 import { Crop } from "../../../services/items/crop.service";
 import { Entity } from "../Entity";
 
+import { RenderUtils } from "../../utils/renderUtils";
 import { Cultivate, ICultivate } from "../abilities/cultivate";
 import { IMovement } from "../abilities/move";
 import { IStorage } from "../abilities/store";
-import { Act, Behavior, BehaviorUtils } from "./utils";
+import { Act, Behavior } from "./models";
 
 export interface IPlanter extends Entity<any, any>, IMovement, IStorage {
   planter: Planter;
@@ -79,7 +80,7 @@ export class Planter extends Behavior {
 
     return {
       target: entity as ICultivate,
-      distance: BehaviorUtils.centerDistance(entity.node, this.entity.node),
+      distance: RenderUtils.nodeDistance(entity.node, this.entity.node),
     };
   }
 
@@ -90,7 +91,7 @@ export class Planter extends Behavior {
     const targetsWithDistance = targets.map((t) => {
       return {
         target: t,
-        distance: BehaviorUtils.centerDistance(t.node, this.entity.node),
+        distance: RenderUtils.nodeDistance(t.node, this.entity.node),
       };
     });
 

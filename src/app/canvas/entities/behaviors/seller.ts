@@ -3,11 +3,12 @@ import { EntitiesService } from "../../../services/entities/entities.service";
 import { Entity } from "../Entity";
 
 import { Crop } from "../../../services/items/crop.service";
+import { RenderUtils } from "../../utils/renderUtils";
 import { IMovement } from "../abilities/move";
 import { IStorage } from "../abilities/store";
 import { BarnEntity } from "../BarnEntity";
 import { MarketEntity } from "../MarketEntity";
-import { Act, Behavior, BehaviorUtils } from "./utils";
+import { Act, Behavior } from "./models";
 
 export interface ISeller extends Entity<any, any>, IMovement, IStorage {
   seller: Seller;
@@ -123,7 +124,7 @@ export class Seller extends Behavior {
 
         return {
           target: storableEntity,
-          distance: BehaviorUtils.centerDistance(
+          distance: RenderUtils.nodeDistance(
             storableEntity.node,
             this.entity.node,
           ),
@@ -149,7 +150,7 @@ export class Seller extends Behavior {
 
         return {
           target: storableEntity,
-          distance: BehaviorUtils.centerDistance(
+          distance: RenderUtils.nodeDistance(
             storableEntity.node,
             this.entity.node,
           ),
@@ -185,7 +186,7 @@ export class Seller extends Behavior {
     const targetsWithDistance = targets.map((t) => {
       return {
         target: t,
-        distance: BehaviorUtils.centerDistance(t.node, this.entity.node),
+        distance: RenderUtils.nodeDistance(t.node, this.entity.node),
         fill: t.storage.spaceLeft() / t.storage.totalSpace(),
       };
     });
@@ -206,7 +207,7 @@ export class Seller extends Behavior {
     const targetsWithDistance = targets.map((t) => {
       return {
         target: t,
-        distance: BehaviorUtils.centerDistance(t.node, this.entity.node),
+        distance: RenderUtils.nodeDistance(t.node, this.entity.node),
         fill: 0,
       };
     });

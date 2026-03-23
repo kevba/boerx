@@ -2,10 +2,11 @@ import { inject } from "@angular/core";
 import { EntitiesService } from "../../../services/entities/entities.service";
 import { Entity } from "../Entity";
 
+import { RenderUtils } from "../../utils/renderUtils";
 import { Cultivate, ICultivate } from "../abilities/cultivate";
 import { IMovement } from "../abilities/move";
 import { IStorage } from "../abilities/store";
-import { Act, Behavior, BehaviorUtils } from "./utils";
+import { Act, Behavior } from "./models";
 
 export interface IHarvester extends Entity<any, any>, IMovement, IStorage {
   harvester: Harvester;
@@ -82,7 +83,7 @@ export class Harvester extends Behavior {
 
     return {
       target: entity as ICultivate,
-      distance: BehaviorUtils.centerDistance(entity.node, this.entity.node),
+      distance: RenderUtils.nodeDistance(entity.node, this.entity.node),
     };
   }
 
@@ -93,7 +94,7 @@ export class Harvester extends Behavior {
     const targetsWithDistance = targets.map((t) => {
       return {
         target: t,
-        distance: BehaviorUtils.centerDistance(t.node, this.entity.node),
+        distance: RenderUtils.nodeDistance(t.node, this.entity.node),
       };
     });
 

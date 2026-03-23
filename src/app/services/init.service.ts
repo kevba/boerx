@@ -1,5 +1,5 @@
 import { effect, inject, Injectable } from "@angular/core";
-import { RenderUtils } from "../canvas/utils/renderUtils";
+import { ImageUtils } from "../canvas/utils/imageUtils";
 import { EntityType } from "../models/entity";
 import { BarnService } from "./entities/barn.service";
 import { EntitiesService } from "./entities/entities.service";
@@ -79,9 +79,9 @@ export class InitService {
       this.plotService.add({
         x:
           center.x -
-          (RenderUtils.entitySize[EntityType.Plot][0] * i + 12 * i + 1) -
+          (ImageUtils.entitySize[EntityType.Plot][0] * i + 12 * i + 1) -
           200,
-        y: center.y - (RenderUtils.entitySize[EntityType.Plot][1] + 48),
+        y: center.y - (ImageUtils.entitySize[EntityType.Plot][1] + 48),
       });
     }
 

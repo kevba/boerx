@@ -1,6 +1,6 @@
 import Konva from "konva";
 import { EntityType } from "../../models/entity";
-import { RenderUtils } from "../utils/renderUtils";
+import { ImageUtils } from "../utils/imageUtils";
 import { Entity, EntityRender } from "./Entity";
 
 export class Sprite<T extends Entity<any, any>> extends EntityRender<T> {
@@ -57,7 +57,7 @@ export class Sprite<T extends Entity<any, any>> extends EntityRender<T> {
     this.sourceImage = new Image();
     this.sourceImage.src = options.imageSrc;
     this.sourceImage.onload = () => {
-      const processedImage = RenderUtils.preprocessImage(
+      const processedImage = ImageUtils.preprocessImage(
         this.sourceImage!,
         this.color,
       );
@@ -82,7 +82,7 @@ export class Sprite<T extends Entity<any, any>> extends EntityRender<T> {
   setColor(color: { r: number; g: number; b: number }) {
     this.color = color;
     if (this.sourceImage?.complete) {
-      const processedImage = RenderUtils.preprocessImage(
+      const processedImage = ImageUtils.preprocessImage(
         this.sourceImage,
         color,
       );

@@ -1,7 +1,7 @@
 import { effect } from "@angular/core";
 import Konva from "konva";
+import { RenderUtils } from "../../utils/renderUtils";
 import { Entity, EntityRender } from "../Entity";
-import { BehaviorUtils } from "../behaviors/utils";
 
 export interface IMovement extends Entity<any, any> {
   move: Movement;
@@ -22,7 +22,7 @@ export class Movement {
 
   moveToTarget(target: Konva.Node, onReach?: () => void) {
     // Center of the target
-    const center = BehaviorUtils.center(target);
+    const center = RenderUtils.nodeCenter(target);
 
     this.moving = true;
     this.moveTo(center, onReach);
@@ -75,7 +75,7 @@ export class Movement {
     this.entity.isMoving.set(true);
 
     const entityPosition = this.entity.position();
-    const entityCenter = BehaviorUtils.center(this.entity);
+    const entityCenter = RenderUtils.nodeCenter(this.entity);
 
     const xDiff = entityCenter.x - destination.x;
     const yDiff = entityCenter.y - destination.y;
