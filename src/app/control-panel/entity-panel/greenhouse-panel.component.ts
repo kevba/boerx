@@ -10,9 +10,6 @@ import { BuyTileComponent } from "../buy-tile.component";
   selector: "app-greenhouse-panel",
   template: `
     <div class="flex flex-col gap-0 md:pb-4">
-      <div class="w-full pl-2 md:pl-0">
-        <h2 class="text-md md:text-lg font-bold ">Plant</h2>
-      </div>
       <div>
         <div class="buy-tile-group">
           @for (option of cropOptions(); track option.crop) {
