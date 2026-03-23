@@ -17,7 +17,7 @@ import { BuyTileComponent } from "../buy-tile.component";
         <div class="buy-tile-group">
           @for (option of cropOptions(); track option.crop) {
             <app-buy-tile
-              image=""
+              [image]="cropService.images[option.crop]"
               [text]="option.crop"
               [cost]="option.plantConst"
               [disabled]="option.disabled"

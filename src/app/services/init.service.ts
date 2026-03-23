@@ -37,6 +37,7 @@ export class InitService {
     // Delay to ensure the injection context hack is setup
     setTimeout(() => {
       const loaded = this.load();
+      console.log("Loaded state:", loaded);
       if (!loaded) {
         this.setupDefaults();
       }
@@ -90,7 +91,7 @@ export class InitService {
   _tickEffect = effect(() => {
     const t = this.tickService.tick();
     if (!this.setupComplete) return;
-    if (t % 1 === 0) {
+    if (t % 10 === 0) {
       this.save();
     }
   });
@@ -106,6 +107,8 @@ export class InitService {
       entities: savedEntities,
       stash: this.stashService.stash(),
     };
+
+    console.log("save state:", state);
 
     localStorage.setItem("gameState", JSON.stringify(state));
   }

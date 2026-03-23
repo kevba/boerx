@@ -5,7 +5,7 @@ import { computed, Injectable, signal } from "@angular/core";
 })
 export class CropService {
   plantCost = signal<Record<Crop, number>>({
-    [Crop.Grass]: 1,
+    [Crop.Grass]: 0,
     [Crop.Wheat]: 30,
     [Crop.Corn]: 50,
     [Crop.Potato]: 60,
@@ -54,6 +54,15 @@ export class CropService {
       this.harvestCounter(),
     ),
   }));
+
+  images: Record<Crop, string> = {
+    [Crop.Grass]: "imgs/plot.png",
+    [Crop.Wheat]: "imgs/wheat.png",
+    [Crop.Corn]: "imgs/corn.png",
+    [Crop.Potato]: "imgs/potato.png",
+    [Crop.Strawberry]: "imgs/strawberry.png",
+    [Crop.Tomato]: "imgs/tomato.png",
+  };
 
   updateHarvestCounter(crop: Crop) {
     this.harvestCounter.update((counter) => {
