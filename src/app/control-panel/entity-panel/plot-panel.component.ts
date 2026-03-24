@@ -24,7 +24,7 @@ import { PanelMenuNavComponent } from "../menu-nav.component";
               }
             </div>
           }
-
+          @case ("Storage") {}
           @default {
             <div>Select an option</div>
           }
@@ -44,7 +44,7 @@ export class PlotPanelComponent {
   crops = this.plotService.supportedCrops;
 
   menuOptions = computed(() => {
-    return ["Plant", "Status"];
+    return ["Plant", "Status", "Storage"];
   });
 
   plots = computed(() => {

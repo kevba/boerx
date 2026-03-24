@@ -1,5 +1,7 @@
-import { Component, computed, inject } from "@angular/core";
+import { Component, computed, inject, input } from "@angular/core";
+import { Entity } from "../../canvas/entities/Entity";
 import { BaseService } from "../../services/entities/base.service";
+import { UpgradeTable } from "../../services/entities/upgradeUtils";
 import { SelectionService } from "../../services/selection.service";
 import { BuyTileComponent } from "../buy-tile.component";
 
@@ -21,26 +23,45 @@ import { BuyTileComponent } from "../buy-tile.component";
 })
 export class EntityUpgradesComponent {
   selectionService = inject(SelectionService);
-  // BE sure to provide the correct service when using this component
-  entityService = inject(BaseService<any, any>);
+  service = input.required<BaseService<any, any>>();
 
-  selectedEntities = computed(() => {
+  private upgradeService = computed<{
+    upgrades: UpgradeTable<any>;
+    upgradeCost: (id: string, upgrade: string) => number;
+    upgrade: (id: string, upgrade: string) => void;
+  }>(() => {
+    const service = this.service();
+    if (
+      "upgrades" in service &&
+      "upgradeCost" in service &&
+      "upgrade" in service
+    ) {
+      return service as any;
+    }
+    return null;
+  });
+
+  selectedEntities = computed<Entity<any, any>[]>(() => {
     const selectedIds =
-      this.selectionService.selectedPerType()[this.entityService.entityType];
-    return this.entityService
+      this.selectionService.selectedPerType()[this.service().entityType];
+
+    return this.service()
       .entities()
       .filter((p) => selectedIds.includes(p.id));
   });
 
   options = computed(() => {
+    let service = this.upgradeService();
+    if (!service) return [];
+
     const entities = this.selectedEntities();
-    const upgrades = Object.keys(this.entityService.upgrades);
+    const upgrades = Object.keys(service.upgrades);
 
     return upgrades.map((upgrade) => {
-      const upgradable = entities.filter((p) => p.upgrade !== upgrade).length;
+      const upgradable = entities.filter((p) => p.upgrade() !== upgrade).length;
       let upgradeCost = 0;
       for (const entity of entities) {
-        const cost = this.entityService.upgradeCost(entity.id, upgrade);
+        const cost = service.upgradeCost(entity.id, upgrade);
         upgradeCost += cost;
       }
       return {
@@ -53,9 +74,12 @@ export class EntityUpgradesComponent {
 
   upgrade(upgrade: string) {
     const entities = this.selectedEntities();
+    let service = this.upgradeService();
+
+    if (!service) return;
 
     for (const entity of entities) {
-      this.entityService.upgrade(entity.id, upgrade);
+      service.upgrade(entity.id, upgrade);
     }
   }
 }

@@ -12,7 +12,7 @@ import {
   selector: "app-panel-menu-nav",
   imports: [NgTemplateOutlet],
   template: `
-    <div class="p-2 md:p-4 flex flex-col h-full !pb-0">
+    <div class="p-2 md:p-4 flex flex-col h-full pb-0!">
       <div
         class="w-full md:text-2xl text-xl flex flex-row items-center justify-between gap-4">
         <button class="text pl-2!" (click)="previousMenu()">{{ "<" }}</button>
