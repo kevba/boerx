@@ -1,5 +1,8 @@
 import { Component, computed, inject, input } from "@angular/core";
-import { ICultivate } from "../../canvas/entities/abilities/cultivate";
+import {
+  Cultivate,
+  ICultivate,
+} from "../../canvas/entities/abilities/cultivate";
 import { BaseService } from "../../services/entities/base.service";
 import { Crop, CropService } from "../../services/items/crop.service";
 import { SelectionService } from "../../services/selection.service";
@@ -22,7 +25,7 @@ import { BuyTileComponent } from "../buy-tile.component";
   imports: [BuyTileComponent],
 })
 export class EntityPlantComponent {
-  selectionService = inject(SelectionService);
+  private selectionService = inject(SelectionService);
   cropService = inject(CropService);
   service = input.required<BaseService<any, any>>();
 
@@ -35,10 +38,16 @@ export class EntityPlantComponent {
   });
 
   plantableEntities = computed<ICultivate[]>(() => {
+    const selectedIds =
+      this.selectionService.selectedPerType()[this.service().entityType];
+
     const service = this.service();
-    return service.entities().filter((e): e is ICultivate => {
-      return "cultivate" in e && e.cultivate !== undefined;
-    });
+    return service
+      .entities()
+      .filter((p) => selectedIds.includes(p.id))
+      .filter((e): e is ICultivate => {
+        return "cultivate" in e && e.cultivate instanceof Cultivate;
+      });
   });
 
   cropOptions = computed(() => {

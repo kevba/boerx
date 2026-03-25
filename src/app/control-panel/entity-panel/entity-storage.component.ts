@@ -1,5 +1,5 @@
 import { Component, computed, inject, input } from "@angular/core";
-import { IStorage } from "../../canvas/entities/abilities/store";
+import { IStorage, Storage } from "../../canvas/entities/abilities/store";
 import { EntityType } from "../../models/entity";
 import { SelectionService } from "../../services/selection.service";
 
@@ -28,7 +28,7 @@ import { SelectionService } from "../../services/selection.service";
   imports: [],
 })
 export class EntityStorageComponent {
-  selectionService = inject(SelectionService);
+  private selectionService = inject(SelectionService);
   service = input.required<{
     entityType: EntityType;
     entities: () => IStorage[];
@@ -40,7 +40,10 @@ export class EntityStorageComponent {
 
     return this.service()
       .entities()
-      .filter((p) => selectedIds.includes(p.id));
+      .filter((p) => selectedIds.includes(p.id))
+      .filter((e): e is IStorage => {
+        return "storage" in e && e.storage instanceof Storage;
+      });
   });
 
   storedItems = computed(() => {
