@@ -186,78 +186,106 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
   });
 
   private dragHandler() {
-    this.on("dragmove", (e) => {
-      if (!this.hasCollision) return;
+    let originSafe: { x: number; y: number } | null = null;
 
-      const collidingNode = this.detectCollision();
-      if (!collidingNode) return;
-      const moving = e.target.getClientRect();
-      const collider = collidingNode.getClientRect();
+    this.on("dragstart", (e) => {
+      originSafe = this.absolutePosition();
+    });
 
-      let safeX = moving.x;
-      let safeY = moving.y;
+    this.on("dragend", () => {
+      originSafe = null;
+    });
 
-      let constrainedX = 0;
-      let constrainedY = 0;
+    this.dragBoundFunc((pos) => {
+      if (!originSafe) return pos;
 
-      const penX = Math.min(
-        moving.x + moving.width - collider.x,
-        collider.x + collider.width - moving.x,
+      const targetDest = { x: pos.x, y: pos.y };
+
+      if (!this.collidesAt(targetDest)) {
+        originSafe = targetDest;
+        return targetDest;
+      }
+
+      let safeDest = this.searchDestination(targetDest, originSafe);
+      safeDest = this.searchDestination(
+        { x: targetDest.x, y: safeDest.y },
+        safeDest,
       );
-      const penY = Math.min(
-        moving.y + moving.height - collider.y,
-        collider.y + collider.height - moving.y,
+      safeDest = this.searchDestination(
+        { x: safeDest.x, y: targetDest.y },
+        safeDest,
       );
 
-      if (moving.x < collider.x && moving.x + moving.width > collider.x) {
-        constrainedX = collider.x - moving.width;
-      } else if (
-        moving.x > collider.x &&
-        collider.x + collider.width > moving.x
-      ) {
-        constrainedX = collider.x + collider.width;
-      }
-
-      if (moving.y < collider.y && moving.y + moving.height > collider.y) {
-        constrainedY = collider.y - moving.height;
-      } else if (
-        moving.y > collider.y &&
-        collider.y + collider.height > moving.y
-      ) {
-        constrainedY = collider.y + collider.height;
-      }
-
-      const parentTransform = e.target
-        .getParent()!
-        .getAbsoluteTransform()
-        .copy()
-        .invert();
-
-      if (penX < penY) {
-        safeX = constrainedX;
-      } else {
-        safeY = constrainedY;
-      }
-
-      const safeCoords = parentTransform.point({ x: safeX, y: safeY });
-
-      e.target.position(safeCoords);
+      originSafe = safeDest;
+      return { x: safeDest.x, y: safeDest.y };
     });
   }
 
-  private detectCollision(): Konva.Node | null {
-    const entities = this.getLayer!()?.children || [];
+  private searchDestination(
+    target: { x: number; y: number },
+    safe: { x: number; y: number },
+  ) {
+    let low = 0;
+    let high = 1;
+    let best = {
+      distance: RenderUtils.distance(target, safe),
+      x: safe.x,
+      y: safe.y,
+    };
 
-    for (const child of entities) {
-      if (child === this) continue;
-      const intersect = RenderUtils.intersect(
-        this.getClientRect(),
-        child.getClientRect(),
-      );
-      if (intersect) {
-        return child;
+    // Binary search to find the point closest to target that doesn't collide
+    for (let t = 0; t <= 10; t += 1) {
+      const middle = (low + high) / 2;
+
+      const candidate = this.lerpPoint(safe, target, middle);
+      if (!this.collidesAt(candidate)) {
+        const distance = RenderUtils.distance(candidate, target);
+        if (distance < best.distance) {
+          low = middle;
+          best = { distance, x: candidate.x, y: candidate.y };
+        }
+      } else {
+        high = middle;
       }
     }
-    return null;
+
+    return { x: best.x, y: best.y };
+  }
+
+  private collidesAt(position: { x: number; y: number }): boolean {
+    const currentRect = this.getClientRect();
+    const currentPos = this.absolutePosition();
+
+    const dx = position.x - currentPos.x;
+    const dy = position.y - currentPos.y;
+
+    const candidate = {
+      x: currentRect.x + dx,
+      y: currentRect.y + dy,
+      width: currentRect.width,
+      height: currentRect.height,
+    };
+
+    for (const child of this.getLayer()?.children || []) {
+      if (child === this) continue;
+      const childRect = child.getClientRect();
+
+      if (RenderUtils.intersect(candidate, childRect)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private lerpPoint(
+    a: { x: number; y: number },
+    b: { x: number; y: number },
+    t: number,
+  ): { x: number; y: number } {
+    return {
+      x: a.x + (b.x - a.x) * t,
+      y: a.y + (b.y - a.y) * t,
+    };
   }
 }
