@@ -1,17 +1,19 @@
 import { computed, signal } from "@angular/core";
 import { Item } from "../../../services/wares.service";
 import { Entity } from "../Entity";
+import { Ability } from "./utils";
 
 export interface IStorage extends Entity<any, any> {
   storage: Storage;
 }
 
-export class Storage {
+export class Storage extends Ability {
   private storage = signal<Item[]>([]);
 
   private maxStorage = signal(10);
 
   constructor(maxStorage?: number) {
+    super();
     if (maxStorage !== undefined) {
       this.maxStorage.set(maxStorage);
     }
@@ -135,5 +137,15 @@ export class Storage {
 
   setMaxStorage(amount: number) {
     this.maxStorage.set(amount);
+  }
+
+  override marshalSave() {
+    return {
+      storage: this.storage(),
+    };
+  }
+
+  override restoreFromSave(data: ReturnType<this["marshalSave"]>) {
+    this.storage.set(data.storage);
   }
 }

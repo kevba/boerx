@@ -1,8 +1,9 @@
 import { signal } from "@angular/core";
+import { Ability } from "../abilities/utils";
 
 export type Act = { act: () => void; weight: number; description: string };
 
-export abstract class Behavior {
+export abstract class Behavior extends Ability {
   protected maxRange = 400;
   disabled = signal(false);
 

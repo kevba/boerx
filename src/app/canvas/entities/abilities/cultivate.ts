@@ -100,4 +100,18 @@ export class Cultivate extends Passive {
   growth(): number {
     return 1;
   }
+
+  override marshalSave() {
+    return {
+      crop: this._crop(),
+      cropGrowthStage: this.cropGrowthStage(),
+      lastPlantedCrop: this.lastPlantedCrop(),
+    };
+  }
+
+  override restoreFromSave(data: ReturnType<this["marshalSave"]>) {
+    this._crop.set(data.crop);
+    this.cropGrowthStage.set(data.cropGrowthStage);
+    this.lastPlantedCrop.set(data.lastPlantedCrop);
+  }
 }

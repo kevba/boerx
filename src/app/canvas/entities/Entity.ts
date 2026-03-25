@@ -3,8 +3,8 @@ import {
   inject,
   Injector,
   signal,
-  Signal,
   untracked,
+  WritableSignal,
 } from "@angular/core";
 import Konva from "konva";
 import { map } from "rxjs";
@@ -15,7 +15,7 @@ import { TickService } from "../../services/tick.service";
 import { ImageUtils } from "../utils/imageUtils";
 import { RenderUtils } from "../utils/renderUtils";
 import { Direction } from "./abilities/move";
-import { Passive } from "./abilities/utils";
+import { Ability, Passive } from "./abilities/utils";
 import { Act, Behavior } from "./behaviors/models";
 
 export type EntityOptions<T extends Konva.Node> = {
@@ -35,7 +35,7 @@ export abstract class Entity<
   selectable: boolean = true;
   abstract type: EntityType;
   protected initialDirection: Direction = Direction.right;
-  abstract upgrade: Signal<UpgradeType>;
+  abstract upgrade: WritableSignal<UpgradeType>;
 
   protected lastAction: string = "";
 
@@ -73,13 +73,9 @@ export abstract class Entity<
   private executeBehaviors() {
     let actions: Act[] = [];
 
-    Object.values(this)
-      .filter((attr) => {
-        return attr instanceof Behavior;
-      })
-      .forEach((behavior: Behavior) => {
-        actions.push(behavior.weight());
-      });
+    this.getBehaviors().forEach((behavior: Behavior) => {
+      actions.push(behavior.weight());
+    });
 
     actions = actions.map((a) => {
       if (a.description === this.lastAction && a.weight !== 0) {
@@ -97,7 +93,7 @@ export abstract class Entity<
   }
 
   private executePassives() {
-    const passives = Object.values(this).filter((attr) => {
+    const passives = this.getAbilities().filter((attr) => {
       return attr instanceof Passive;
     });
 
@@ -119,8 +115,54 @@ export abstract class Entity<
     this.selectionService.select(this.type, this.id);
   }
 
+  protected getBehaviors(): Behavior[] {
+    return this.getAbilities().filter((attr) => {
+      return attr instanceof Behavior;
+    });
+  }
+
+  protected getAbilities(): Ability[] {
+    return Object.values(this).filter((attr) => {
+      return attr instanceof Ability;
+    });
+  }
+
   destroy() {
     this.node.destroy();
+  }
+
+  marshalSave() {
+    return {
+      id: this.id,
+      type: this.type,
+      x: this.node.position().x,
+      y: this.node.position().y,
+      upgrade: this.upgrade(),
+      abilities: this.getAbilities().map((b) => ({
+        type: b.constructor.name,
+        data: b.marshalSave(),
+      })),
+    };
+  }
+
+  restoreFromSave(data: ReturnType<this["marshalSave"]>) {
+    try {
+      data?.abilities?.forEach((saved) => {
+        const ability = this.getAbilities().find(
+          (abilities) => abilities.constructor.name === saved.type,
+        ) as Ability | undefined;
+
+        if (ability) {
+          ability.restoreFromSave(saved.data);
+        }
+      });
+
+      this.node.position({ x: data.x, y: data.y });
+      this.id = data.id;
+      this.upgrade.set(data.upgrade);
+    } catch (e) {
+      console.error("Failed to restore entity from save", e);
+    }
   }
 
   protected setDirection(direction: Direction) {
@@ -189,22 +231,16 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
     let originSafe: { x: number; y: number } | null = null;
     let snapGrid = false;
 
-    window.addEventListener("keyup", function (e) {
-      if (e.shiftKey) {
-        snapGrid = false;
-      }
-    });
-    window.addEventListener("keydown", function (e) {
-      if (e.shiftKey) {
-        snapGrid = true;
-      }
-    });
-
     this.on("dragstart", (e) => {
       originSafe = this.absolutePosition();
     });
 
+    this.on("dragmove", (e) => {
+      snapGrid = e.evt.shiftKey;
+    });
+
     this.on("dragend", () => {
+      snapGrid = false;
       originSafe = null;
     });
 

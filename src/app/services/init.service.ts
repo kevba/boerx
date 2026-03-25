@@ -1,6 +1,7 @@
-import { effect, inject, Injectable } from "@angular/core";
+import { effect, inject, Injectable, Injector } from "@angular/core";
 import { ImageUtils } from "../canvas/utils/imageUtils";
 import { EntityType } from "../models/entity";
+import { EntityService } from "../models/serviceMap";
 import { BarnService } from "./entities/barn.service";
 import { EntitiesService } from "./entities/entities.service";
 import { FarmerService } from "./entities/farmer.service";
@@ -10,6 +11,7 @@ import { PlotService } from "./entities/plots.service";
 import { TractorService } from "./entities/tractor.service";
 import { VanService } from "./entities/van.service";
 import { WeatherControlService } from "./entities/weather-control.service";
+import { WindmillService } from "./entities/windmill.service";
 import { EntityLayerService } from "./entity-layer.service";
 import { StashService } from "./stash.service";
 import { TickService } from "./tick.service";
@@ -18,6 +20,8 @@ import { TickService } from "./tick.service";
   providedIn: "root",
 })
 export class InitService {
+  private injector = inject(Injector);
+
   private entitiesService = inject(EntitiesService);
   private marketService = inject(MarketService);
   private plotService = inject(PlotService);
@@ -30,6 +34,7 @@ export class InitService {
   private stashService = inject(StashService);
   private weatherControlService = inject(WeatherControlService);
   private greenhouseService = inject(GreenhouseService);
+  private windmillService = inject(WindmillService);
 
   private setupComplete = false;
 
@@ -37,7 +42,6 @@ export class InitService {
     // Delay to ensure the injection context hack is setup
     setTimeout(() => {
       const loaded = this.load();
-      console.log("Loaded state:", loaded);
       if (!loaded) {
         this.setupDefaults();
       }
@@ -97,18 +101,12 @@ export class InitService {
   });
 
   private save() {
-    const savedEntities = this.entitiesService.entities().map((e) => ({
-      id: e.id,
-      type: e.type,
-      x: e.node.position().x,
-      y: e.node.position().y,
-    }));
+    const savedEntities = this.entitiesService.entities();
     const state = {
-      entities: savedEntities,
+      entities: savedEntities.map((e) => e.marshalSave()),
       stash: this.stashService.stash(),
+      tick: this.tickService.tick(),
     };
-
-    console.log("save state:", state);
 
     localStorage.setItem("gameState", JSON.stringify(state));
   }
@@ -119,40 +117,64 @@ export class InitService {
 
     const state = JSON.parse(stateStr);
     if (!state.entities || !state.stash) return false;
-    if (state.entities.length === 0) return false;
 
-    state.entities.forEach(
-      (e: { id: string; type: EntityType; x: number; y: number }) => {
-        switch (e.type) {
-          case EntityType.Market:
-            this.marketService.add({ x: e.x, y: e.y });
-            break;
-          case EntityType.Plot:
-            this.plotService.add({ x: e.x, y: e.y });
-            break;
-          case EntityType.Barn:
-            this.barnService.add({ x: e.x, y: e.y });
-            break;
-          case EntityType.Farmer:
-            this.farmerService.add({ x: e.x, y: e.y });
-            break;
-          case EntityType.Tractor:
-            this.tractorService.add({ x: e.x, y: e.y });
-            break;
-          case EntityType.Van:
-            this.vanService.add({ x: e.x, y: e.y });
-            break;
-          case EntityType.WeatherControl:
-            this.weatherControlService.add({ x: e.x, y: e.y });
-            break;
-          case EntityType.Greenhouse:
-            this.greenhouseService.add({ x: e.x, y: e.y });
-            break;
-        }
-      },
-    );
+    state.entities.forEach((e: any) => {
+      const entityType = e.type as EntityType;
+      const service = this.injector.get(EntityService[entityType]);
+      service.add({ x: e.x, y: e.y });
+
+      const entity = service.entities()[service.entities().length - 1];
+      entity.restoreFromSave(e);
+    });
 
     this.stashService.setStash(state.stash);
+    this.tickService["_tick"].set(state.tick);
+
     return true;
   }
+  // private load(): boolean {
+  //   const stateStr = localStorage.getItem("gameState");
+  //   if (!stateStr) return false;
+
+  //   const state = JSON.parse(stateStr);
+  //   if (!state.entities || !state.stash) return false;
+  //   if (state.entities.length === 0) return false;
+
+  //   state.entities.forEach(
+  //     (e: { id: string; type: EntityType; x: number; y: number }) => {
+  //       switch (e.type) {
+  //         case EntityType.Market:
+  //           this.marketService.add({ x: e.x, y: e.y });
+  //           break;
+  //         case EntityType.Plot:
+  //           this.plotService.add({ x: e.x, y: e.y });
+  //           break;
+  //         case EntityType.Barn:
+  //           this.barnService.add({ x: e.x, y: e.y });
+  //           break;
+  //         case EntityType.Farmer:
+  //           this.farmerService.add({ x: e.x, y: e.y });
+  //           break;
+  //         case EntityType.Tractor:
+  //           this.tractorService.add({ x: e.x, y: e.y });
+  //           break;
+  //         case EntityType.Van:
+  //           this.vanService.add({ x: e.x, y: e.y });
+  //           break;
+  //         case EntityType.WeatherControl:
+  //           this.weatherControlService.add({ x: e.x, y: e.y });
+  //           break;
+  //         case EntityType.Greenhouse:
+  //           this.greenhouseService.add({ x: e.x, y: e.y });
+  //           break;
+  //         case EntityType.Windmill:
+  //           this.windmillService.add({ x: e.x, y: e.y });
+  //           break;
+  //       }
+  //     },
+  //   );
+
+  //   this.stashService.setStash(state.stash);
+  //   return true;
+  // }
 }
