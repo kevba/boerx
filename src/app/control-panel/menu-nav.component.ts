@@ -14,17 +14,21 @@ import {
   template: `
     <div class="p-2 md:p-4 flex flex-col h-full pb-0!">
       <div
-        class="w-full md:text-2xl text-xl flex flex-row items-center justify-between gap-4">
-        <button class="text pl-2!" (click)="previousMenu()">{{ "<" }}</button>
+        class="w-full md:text-2xl text-xl flex flex-row items-center justify-around gap-4 h-4rem">
+        @if (menuOptions().length > 1) {
+          <button class="text pl-2!" (click)="previousMenu()">{{ "<" }}</button>
+        }
         <h1 class="font-bold text-center ">
           {{ selectedMenu().text }}
         </h1>
-        <button class="text pr-2!" (click)="nextMenu()">{{ ">" }}</button>
+        @if (menuOptions().length > 1) {
+          <button class="text pr-2!" (click)="nextMenu()">{{ ">" }}</button>
+        }
       </div>
 
       <div
         class="flex flex-col gap-4 pt-1 md:pt-4 items-start h-full w-full md:overflow-y-scroll overflow-y-scroll overflow-x-scroll">
-        <div class="md:pb-4">
+        <div class="md:pb-4 w-full">
           <ng-container
             *ngTemplateOutlet="
               panelContent();

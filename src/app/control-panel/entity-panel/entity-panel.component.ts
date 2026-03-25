@@ -1,20 +1,15 @@
 import { Component, computed, inject, Injector } from "@angular/core";
 import { Cultivate } from "../../canvas/entities/abilities/cultivate";
+import { Storage } from "../../canvas/entities/abilities/store";
 import { EntityType } from "../../models/entity";
-import { BarnService } from "../../services/entities/barn.service";
-import { BaseService } from "../../services/entities/base.service";
-import { CowService } from "../../services/entities/cow.service";
-import { FarmerService } from "../../services/entities/farmer.service";
-import { GreenhouseService } from "../../services/entities/greenhouse.service";
-import { MarketService } from "../../services/entities/market.service";
-import { PlotService } from "../../services/entities/plots.service";
-import { TractorService } from "../../services/entities/tractor.service";
-import { VanService } from "../../services/entities/van.service";
-import { WeatherControlService } from "../../services/entities/weather-control.service";
+import { EntityService } from "../../models/serviceMap";
 import { SelectionService } from "../../services/selection.service";
 import { PanelMenuNavComponent } from "../menu-nav.component";
 import { EntityPlantComponent } from "./entity-plant.component";
+import { EntityStorageComponent } from "./entity-storage.component";
 import { EntityUpgradesComponent } from "./entity-upgrades.component";
+import { SeasonControlPanelComponent } from "./season-control-panel.component";
+import { WeatherControlPanelComponent } from "./weather-control-panel.component";
 
 @Component({
   selector: "app-entity-panel",
@@ -46,7 +41,15 @@ import { EntityUpgradesComponent } from "./entity-upgrades.component";
                     <app-entity-plant [service]="service" />
                   }
                   @case (PanelType.CropStatus) {}
-                  @case (PanelType.Storage) {}
+                  @case (PanelType.Storage) {
+                    <app-entity-storage [service]="service" />
+                  }
+                  @case (PanelType.WeatherControl) {
+                    <app-weather-control-panel></app-weather-control-panel>
+                  }
+                  @case (PanelType.SeasonControl) {
+                    <app-season-control-panel></app-season-control-panel>
+                  }
                   @default {
                     <div>Select an option</div>
                   }
@@ -88,6 +91,9 @@ import { EntityUpgradesComponent } from "./entity-upgrades.component";
     PanelMenuNavComponent,
     EntityUpgradesComponent,
     EntityPlantComponent,
+    WeatherControlPanelComponent,
+    SeasonControlPanelComponent,
+    EntityStorageComponent,
   ],
 })
 export class EntityPanelComponent {
@@ -103,7 +109,7 @@ export class EntityPanelComponent {
   entityService = computed(() => {
     if (!this.selectedEntityType()) return null;
     return this.injector.get(
-      entityService[this.selectedEntityType() as EntityType],
+      EntityService[this.selectedEntityType() as EntityType],
     );
   });
 
@@ -115,11 +121,6 @@ export class EntityPanelComponent {
     const entity = entityService.entities()[0];
     if (!entity) return [];
 
-    const hasUpgrades = Object.keys(entityService.upgrades).length > 0;
-    if (hasUpgrades) {
-      options.push(PanelType.Upgrade);
-    }
-
     if ("cultivate" in entity && entity.cultivate instanceof Cultivate) {
       options.push(PanelType.Plant);
       options.push(PanelType.CropStatus);
@@ -127,6 +128,16 @@ export class EntityPanelComponent {
 
     if ("storage" in entity && entity.storage instanceof Storage) {
       options.push(PanelType.Storage);
+    }
+
+    const hasUpgrades = Object.keys(entityService.upgrades).length > 0;
+    if (hasUpgrades) {
+      options.push(PanelType.Upgrade);
+    }
+
+    if (entity.type === EntityType.WeatherControl) {
+      options.push(PanelType.WeatherControl);
+      options.push(PanelType.SeasonControl);
     }
 
     return options;
@@ -138,16 +149,6 @@ enum PanelType {
   Plant = "Plant",
   CropStatus = "Crop Status",
   Storage = "Storage",
+  WeatherControl = "Weather Control",
+  SeasonControl = "Season Control",
 }
-
-const entityService: Record<EntityType, typeof BaseService<any, any>> = {
-  [EntityType.Plot]: PlotService,
-  [EntityType.Farmer]: FarmerService,
-  [EntityType.Barn]: BarnService,
-  [EntityType.Tractor]: TractorService,
-  [EntityType.Van]: VanService,
-  [EntityType.Market]: MarketService,
-  [EntityType.Cow]: CowService,
-  [EntityType.Greenhouse]: GreenhouseService,
-  [EntityType.WeatherControl]: WeatherControlService,
-};

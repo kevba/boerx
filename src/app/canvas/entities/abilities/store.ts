@@ -17,14 +17,19 @@ export class Storage {
     }
   }
 
-  spaceLeft = computed(() => {
+  spaceUsed = computed(() => {
     const currentStorage = this.storage();
     const totalAmount = currentStorage.reduce(
       (sum, item) => sum + item.amount,
       0,
     );
-    return this.maxStorage() - totalAmount;
+    return totalAmount;
   });
+
+  spaceLeft = computed(() => {
+    return this.maxStorage() - this.spaceUsed();
+  });
+
   totalSpace = computed(() => this.maxStorage());
 
   isFull = computed(() => {

@@ -1,6 +1,6 @@
 import { Component, computed, inject, input } from "@angular/core";
 import { Entity } from "../../canvas/entities/Entity";
-import { BaseService } from "../../services/entities/base.service";
+import { EntityType } from "../../models/entity";
 import { UpgradeTable } from "../../services/entities/upgradeUtils";
 import { SelectionService } from "../../services/selection.service";
 import { BuyTileComponent } from "../buy-tile.component";
@@ -23,23 +23,13 @@ import { BuyTileComponent } from "../buy-tile.component";
 })
 export class EntityUpgradesComponent {
   selectionService = inject(SelectionService);
-  service = input.required<BaseService<any, any>>();
-
-  private upgradeService = computed<{
+  service = input.required<{
+    entityType: EntityType;
+    entities: () => Entity<any, any>[];
     upgrades: UpgradeTable<any>;
     upgradeCost: (id: string, upgrade: string) => number;
     upgrade: (id: string, upgrade: string) => void;
-  }>(() => {
-    const service = this.service();
-    if (
-      "upgrades" in service &&
-      "upgradeCost" in service &&
-      "upgrade" in service
-    ) {
-      return service as any;
-    }
-    return null;
-  });
+  }>();
 
   selectedEntities = computed<Entity<any, any>[]>(() => {
     const selectedIds =
@@ -51,7 +41,7 @@ export class EntityUpgradesComponent {
   });
 
   options = computed(() => {
-    let service = this.upgradeService();
+    let service = this.service();
     if (!service) return [];
 
     const entities = this.selectedEntities();
@@ -74,7 +64,7 @@ export class EntityUpgradesComponent {
 
   upgrade(upgrade: string) {
     const entities = this.selectedEntities();
-    let service = this.upgradeService();
+    let service = this.service();
 
     if (!service) return;
 

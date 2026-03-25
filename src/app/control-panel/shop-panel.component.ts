@@ -1,5 +1,6 @@
-import { Component, computed, inject } from "@angular/core";
+import { Component, computed, inject, Injector } from "@angular/core";
 import { EntityType } from "../models/entity";
+import { EntityService } from "../models/serviceMap";
 import { BuyService } from "../services/buy.service";
 import { CheatsService } from "../services/cheats.service";
 import { BarnService } from "../services/entities/barn.service";
@@ -72,6 +73,8 @@ import { BuyTileComponent } from "./buy-tile.component";
   `,
 })
 export class ShopPanelComponent {
+  private injector = inject(Injector);
+
   cheatsService = inject(CheatsService);
 
   plotService = inject(PlotService);
@@ -91,23 +94,7 @@ export class ShopPanelComponent {
 
   onBuy(entity: EntityType) {
     this.buyService.setBuying(entity, () => {
-      if (entity === EntityType.Plot) {
-        this.plotService.buy();
-      } else if (entity === EntityType.Farmer) {
-        this.farmerService.buy();
-      } else if (entity === EntityType.Tractor) {
-        this.tractorService.buy();
-      } else if (entity === EntityType.Barn) {
-        this.barnService.buy();
-      } else if (entity === EntityType.Van) {
-        this.vanService.buy();
-      } else if (entity === EntityType.Cow) {
-        this.cowService.buy();
-      } else if (entity === EntityType.WeatherControl) {
-        this.weatherControlService.buy();
-      } else if (entity === EntityType.Greenhouse) {
-        this.greenHouseService.buy();
-      }
+      this.injector.get(EntityService[entity as EntityType]).buy();
     });
   }
 }
