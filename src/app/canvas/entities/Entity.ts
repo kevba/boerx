@@ -145,24 +145,25 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
   isMoving = signal(false);
 
   constructor(args: { x: number; y: number; id: string; type: EntityType }) {
-    const size = ImageUtils.entitySize[args.type][0];
+    const width = ImageUtils.entitySize[args.type][0];
+    const height = ImageUtils.entitySize[args.type][1];
 
     super({
       id: `${args.type}_${args.id}`,
       name: args.type,
       x: args.x,
       y: args.y,
-      width: size,
-      height: size,
+      width: width,
+      height: height,
     });
 
     this.selectedRect = new Konva.Rect({
       x: 0,
       y: 0,
-      width: size,
-      height: size,
+      width: width,
+      height: height,
       stroke: ImageUtils.selectedColor,
-      strokeWidth: size > 64 ? 4 : 2,
+      strokeWidth: width > 64 ? 4 : 2,
       visible: false,
       listening: false,
     });

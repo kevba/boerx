@@ -3,10 +3,10 @@ import {
   Cultivate,
   ICultivate,
 } from "../../canvas/entities/abilities/cultivate";
+import { BuyTileComponent } from "../../components/buy-tile.component";
 import { BaseService } from "../../services/entities/base.service";
 import { Crop, CropService } from "../../services/items/crop.service";
 import { SelectionService } from "../../services/selection.service";
-import { BuyTileComponent } from "../buy-tile.component";
 
 @Component({
   selector: "app-entity-plant",

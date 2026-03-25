@@ -20,6 +20,7 @@ export class ImageUtils {
     [EntityType.Cow]: [32, 32],
     [EntityType.Greenhouse]: [144, 144],
     [EntityType.WeatherControl]: [320, 320],
+    [EntityType.Windmill]: [32 * 5, 36 * 5],
   };
 
   static preprocessImage(

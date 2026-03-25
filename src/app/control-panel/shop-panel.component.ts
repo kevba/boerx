@@ -1,4 +1,5 @@
 import { Component, computed, inject, Injector } from "@angular/core";
+import { BuyTileComponent } from "../components/buy-tile.component";
 import { EntityType } from "../models/entity";
 import { EntityService } from "../models/serviceMap";
 import { BuyService } from "../services/buy.service";
@@ -11,8 +12,8 @@ import { PlotService } from "../services/entities/plots.service";
 import { TractorService } from "../services/entities/tractor.service";
 import { VanService } from "../services/entities/van.service";
 import { WeatherControlService } from "../services/entities/weather-control.service";
+import { WindmillService } from "../services/entities/windmill.service";
 import { StashService } from "../services/stash.service";
-import { BuyTileComponent } from "./buy-tile.component";
 
 @Component({
   selector: "app-shop-panel",
@@ -56,6 +57,12 @@ import { BuyTileComponent } from "./buy-tile.component";
         [cost]="tractorService.cost()"
         (buyClick)="onBuy(EntityType.Tractor)"></app-buy-tile>
       <app-buy-tile
+        image="/imgs/windmill.png"
+        text="Windmill"
+        [active]="activeBuyingEntity() === EntityType.Windmill"
+        [cost]="windmillService.cost()"
+        (buyClick)="onBuy(EntityType.Windmill)"></app-buy-tile>
+      <app-buy-tile
         image="/imgs/greenhouse.png"
         text="Greenhouse"
         [active]="activeBuyingEntity() === EntityType.Greenhouse"
@@ -85,6 +92,7 @@ export class ShopPanelComponent {
   vanService = inject(VanService);
   weatherControlService = inject(WeatherControlService);
   greenHouseService = inject(GreenhouseService);
+  windmillService = inject(WindmillService);
 
   stashService = inject(StashService);
   buyService = inject(BuyService);

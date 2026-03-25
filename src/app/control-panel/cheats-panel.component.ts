@@ -1,4 +1,5 @@
 import { Component, inject } from "@angular/core";
+import { BuyTileComponent } from "../components/buy-tile.component";
 import { PlotService } from "../services/entities/plots.service";
 import { TractorService } from "../services/entities/tractor.service";
 import { InitService } from "../services/init.service";
@@ -8,7 +9,6 @@ import {
   WeatherService,
   WeatherTypes,
 } from "../services/weather.service";
-import { BuyTileComponent } from "./buy-tile.component";
 
 @Component({
   selector: "app-cheats-panel",

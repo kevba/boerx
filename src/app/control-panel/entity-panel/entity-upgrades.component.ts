@@ -1,9 +1,9 @@
 import { Component, computed, inject, input } from "@angular/core";
 import { Entity } from "../../canvas/entities/Entity";
+import { BuyTileComponent } from "../../components/buy-tile.component";
 import { EntityType } from "../../models/entity";
 import { UpgradeTable } from "../../services/entities/upgradeUtils";
 import { SelectionService } from "../../services/selection.service";
-import { BuyTileComponent } from "../buy-tile.component";
 
 @Component({
   selector: "app-entity-upgrades",

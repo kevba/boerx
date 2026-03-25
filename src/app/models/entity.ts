@@ -8,4 +8,5 @@ export enum EntityType {
   Market = "market",
   WeatherControl = "weather",
   Greenhouse = "greenhouse",
+  Windmill = "windmill",
 }

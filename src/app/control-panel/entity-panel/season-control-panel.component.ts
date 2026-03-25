@@ -1,6 +1,6 @@
 import { Component, inject } from "@angular/core";
+import { BuyTileComponent } from "../../components/buy-tile.component";
 import { SeasonTypes, WeatherService } from "../../services/weather.service";
-import { BuyTileComponent } from "../buy-tile.component";
 
 @Component({
   selector: "app-season-control-panel",
