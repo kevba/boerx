@@ -187,6 +187,18 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
 
   private dragHandler() {
     let originSafe: { x: number; y: number } | null = null;
+    let snapGrid = false;
+
+    window.addEventListener("keyup", function (e) {
+      if (e.shiftKey) {
+        snapGrid = false;
+      }
+    });
+    window.addEventListener("keydown", function (e) {
+      if (e.shiftKey) {
+        snapGrid = true;
+      }
+    });
 
     this.on("dragstart", (e) => {
       originSafe = this.absolutePosition();
@@ -199,7 +211,15 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
     this.dragBoundFunc((pos) => {
       if (!originSafe) return pos;
 
-      const targetDest = { x: pos.x, y: pos.y };
+      let targetDest = { x: pos.x, y: pos.y };
+
+      if (snapGrid) {
+        const gridSize = 32 * this.getLayer()!.getParent()!.scaleX() || 1;
+        targetDest = {
+          x: Math.round(targetDest.x / gridSize) * gridSize,
+          y: Math.round(targetDest.y / gridSize) * gridSize,
+        };
+      }
 
       if (!this.collidesAt(targetDest)) {
         originSafe = targetDest;

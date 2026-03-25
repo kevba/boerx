@@ -38,6 +38,7 @@ export class Planter extends Behavior {
         description: `Planter: planting`,
         act: () => {
           if (!targetInfo.target.cultivate.canPlant()) return;
+
           this.entity.move.stop();
           const cropToPlant =
             targetInfo.target.cultivate.lastPlantedCrop() || Crop.Wheat;
