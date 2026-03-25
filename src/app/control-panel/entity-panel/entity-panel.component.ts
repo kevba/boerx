@@ -5,6 +5,7 @@ import { EntityType } from "../../models/entity";
 import { EntityService } from "../../models/serviceMap";
 import { SelectionService } from "../../services/selection.service";
 import { PanelMenuNavComponent } from "../menu-nav.component";
+import { EntityCropStatusComponent } from "./entity-crop-status.component";
 import { EntityPlantComponent } from "./entity-plant.component";
 import { EntityStorageComponent } from "./entity-storage.component";
 import { EntityUpgradesComponent } from "./entity-upgrades.component";
@@ -40,7 +41,9 @@ import { WeatherControlPanelComponent } from "./weather-control-panel.component"
                   @case (PanelType.Plant) {
                     <app-entity-plant [service]="service" />
                   }
-                  @case (PanelType.CropStatus) {}
+                  @case (PanelType.CropStatus) {
+                    <app-entity-crop-status [service]="service" />
+                  }
                   @case (PanelType.Storage) {
                     <app-entity-storage [service]="service" />
                   }
@@ -94,6 +97,7 @@ import { WeatherControlPanelComponent } from "./weather-control-panel.component"
     WeatherControlPanelComponent,
     SeasonControlPanelComponent,
     EntityStorageComponent,
+    EntityCropStatusComponent,
   ],
 })
 export class EntityPanelComponent {

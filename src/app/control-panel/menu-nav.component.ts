@@ -3,10 +3,20 @@ import {
   Component,
   computed,
   contentChild,
+  effect,
+  inject,
+  Injectable,
   input,
   signal,
   TemplateRef,
 } from "@angular/core";
+
+@Injectable({
+  providedIn: "root",
+})
+export class PanelMenuNavService {
+  lastOpenMenu = signal<string>("");
+}
 
 @Component({
   selector: "app-panel-menu-nav",
@@ -41,6 +51,8 @@ import {
   `,
 })
 export class PanelMenuNavComponent {
+  private panelMenuNavService = inject(PanelMenuNavService);
+
   panelContent = contentChild.required<TemplateRef<any>>("panelContent");
 
   menuOptions = input.required<string[]>();
@@ -77,5 +89,25 @@ export class PanelMenuNavComponent {
     }
 
     this.selectedMenuIndex.set(prevIndex);
+  }
+
+  constructor() {
+    const restoreLastMenu = effect(() => {
+      const lastOpenMenu = this.panelMenuNavService.lastOpenMenu();
+      if (!lastOpenMenu) return;
+
+      const index = this.menuItems().findIndex(
+        (item) => item.type === lastOpenMenu,
+      );
+
+      if (index !== -1) {
+        this.selectedMenuIndex.set(index);
+      }
+      restoreLastMenu.destroy();
+    });
+
+    effect(() => {
+      this.panelMenuNavService.lastOpenMenu.set(this.selectedMenu().type);
+    });
   }
 }
