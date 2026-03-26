@@ -3,6 +3,7 @@ import {
   effect,
   inject,
   Injectable,
+  linkedSignal,
   signal,
   untracked,
 } from "@angular/core";
@@ -16,8 +17,8 @@ export class WeatherService {
 
   private seasonDurationInTicks = this.tickService.dayDurationInTicks * 24;
 
-  private weatherForecast = signal<Array<WeatherTypes>>([
-    ...new Array(5).fill(WeatherTypes.Sunny),
+  private weatherForecast = linkedSignal<Array<WeatherTypes>>(() => [
+    ...new Array(10).fill(this.getRandomWeather()),
   ]);
   private currentWeather = computed<WeatherTypes>(() => {
     return this.weatherForecast()[0];
@@ -70,7 +71,7 @@ export class WeatherService {
     }
 
     if (this.season() === SeasonTypes.Spring) {
-      if (rand > 0.6) return WeatherTypes.Rainy;
+      if (rand > 0.65) return WeatherTypes.Rainy;
       else return WeatherTypes.Sunny;
     }
 
