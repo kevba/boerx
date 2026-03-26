@@ -65,7 +65,6 @@ export abstract class Entity<
   }
 
   protected update(): void {
-    if (this.node.isDragging() || this.node.draggable()) return;
     this.executeBehaviors();
     this.executePassives();
   }

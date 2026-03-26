@@ -9,6 +9,7 @@ import { EntityCropStatusComponent } from "./entity-crop-status.component";
 import { EntityPlantComponent } from "./entity-plant.component";
 import { EntityStorageComponent } from "./entity-storage.component";
 import { EntityUpgradesComponent } from "./entity-upgrades.component";
+import { EntityWeatherForecastComponent } from "./entity-weather-forecast.component";
 import { SeasonControlPanelComponent } from "./season-control-panel.component";
 import { WeatherControlPanelComponent } from "./weather-control-panel.component";
 
@@ -52,6 +53,9 @@ import { WeatherControlPanelComponent } from "./weather-control-panel.component"
                   }
                   @case (PanelType.SeasonControl) {
                     <app-season-control-panel></app-season-control-panel>
+                  }
+                  @case (PanelType.WeatherForecast) {
+                    <app-entity-weather-forecast></app-entity-weather-forecast>
                   }
                   @default {
                     <div>Select an option</div>
@@ -98,6 +102,7 @@ import { WeatherControlPanelComponent } from "./weather-control-panel.component"
     SeasonControlPanelComponent,
     EntityStorageComponent,
     EntityCropStatusComponent,
+    EntityWeatherForecastComponent,
   ],
 })
 export class EntityPanelComponent {
@@ -144,6 +149,10 @@ export class EntityPanelComponent {
       options.push(PanelType.SeasonControl);
     }
 
+    if (entity.type === EntityType.WeatherStation) {
+      options.push(PanelType.WeatherForecast);
+    }
+
     return options;
   });
 }
@@ -155,4 +164,5 @@ enum PanelType {
   Storage = "Storage",
   WeatherControl = "Weather Control",
   SeasonControl = "Season Control",
+  WeatherForecast = "Weather Forecast",
 }

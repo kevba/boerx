@@ -32,10 +32,23 @@ export class Cultivate extends Passive {
   });
 
   canPlant = computed(() => {
+    const crop = this._crop();
+    const cost = this.cropService.plantCost()[crop];
+    const stash = this.stashService.stash();
+    if (stash < cost) {
+      return false;
+    }
     return this._crop() === Crop.Grass && !this.canHarvest();
   });
 
-  lastPlantedCrop = signal<Crop | null>(null);
+  protected lastPlantedCrop = signal<Crop | null>(null);
+  lastPlanted = computed(() => {
+    const crop = this.lastPlantedCrop();
+    if (!crop || crop === Crop.Grass) {
+      return null;
+    }
+    return crop;
+  });
 
   private cropToHarvestTicks: Record<Crop, number> = {
     [Crop.Wheat]: 20,
@@ -55,11 +68,9 @@ export class Cultivate extends Passive {
   });
 
   plant(crop: Crop) {
+    if (!this.canPlant()) return;
     const cost = this.cropService.plantCost()[crop];
-    const stash = this.stashService.stash();
-    if (stash < cost) {
-      return;
-    }
+
     this.stashService.addStash(-cost);
 
     this._crop.set(crop);

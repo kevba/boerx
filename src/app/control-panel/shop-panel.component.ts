@@ -12,6 +12,7 @@ import { PlotService } from "../services/entities/plots.service";
 import { TractorService } from "../services/entities/tractor.service";
 import { VanService } from "../services/entities/van.service";
 import { WeatherControlService } from "../services/entities/weather-control.service";
+import { WeatherStationService } from "../services/entities/weatherStation.service";
 import { WindmillService } from "../services/entities/windmill.service";
 import { StashService } from "../services/stash.service";
 
@@ -57,6 +58,12 @@ import { StashService } from "../services/stash.service";
         [cost]="tractorService.cost()"
         (buyClick)="onBuy(EntityType.Tractor)"></app-buy-tile>
       <app-buy-tile
+        image="/imgs/weather-station.png"
+        text="Weather Station"
+        [active]="activeBuyingEntity() === EntityType.WeatherStation"
+        [cost]="weatherStationService.cost()"
+        (buyClick)="onBuy(EntityType.WeatherStation)"></app-buy-tile>
+      <app-buy-tile
         image="/imgs/windmill.png"
         text="Windmill"
         [active]="activeBuyingEntity() === EntityType.Windmill"
@@ -90,6 +97,7 @@ export class ShopPanelComponent {
   barnService = inject(BarnService);
   cowService = inject(CowService);
   vanService = inject(VanService);
+  weatherStationService = inject(WeatherStationService);
   weatherControlService = inject(WeatherControlService);
   greenHouseService = inject(GreenhouseService);
   windmillService = inject(WindmillService);

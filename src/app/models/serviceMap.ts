@@ -8,6 +8,7 @@ import { PlotService } from "../services/entities/plots.service";
 import { TractorService } from "../services/entities/tractor.service";
 import { VanService } from "../services/entities/van.service";
 import { WeatherControlService } from "../services/entities/weather-control.service";
+import { WeatherStationService } from "../services/entities/weatherStation.service";
 import { WindmillService } from "../services/entities/windmill.service";
 import { EntityType } from "./entity";
 
@@ -22,4 +23,5 @@ export const EntityService: Record<EntityType, typeof BaseService<any, any>> = {
   [EntityType.Greenhouse]: GreenhouseService,
   [EntityType.WeatherControl]: WeatherControlService,
   [EntityType.Windmill]: WindmillService,
+  [EntityType.WeatherStation]: WeatherStationService,
 };

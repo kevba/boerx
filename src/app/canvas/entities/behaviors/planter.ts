@@ -33,15 +33,22 @@ export class Planter extends Behavior {
       };
     }
 
+    if (!targetInfo.target.cultivate.canPlant()) {
+      return {
+        description: `Planter: No target`,
+        act: () => undefined,
+        weight: 0,
+      };
+    }
+
     if (targetInfo.distance < 10) {
       return {
         description: `Planter: planting`,
         act: () => {
-          if (!targetInfo.target.cultivate.canPlant()) return;
-
           this.entity.move.stop();
+
           const cropToPlant =
-            targetInfo.target.cultivate.lastPlantedCrop() || Crop.Wheat;
+            targetInfo.target.cultivate.lastPlanted() || Crop.Wheat;
 
           targetInfo.target.cultivate.plant(cropToPlant);
           this.targetId = null;

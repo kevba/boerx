@@ -24,6 +24,7 @@ export class WeatherService {
   });
   private currentSeason = signal(SeasonTypes.Spring);
 
+  forecast = computed(() => [...this.weatherForecast()].splice(1));
   weather = this.currentWeather;
   season = this.currentSeason.asReadonly();
 
@@ -31,7 +32,7 @@ export class WeatherService {
     effect(() => {
       const _day = this.tickService.currentDay();
       this.weatherForecast.update((forecast) => {
-        const newForecast = [...forecast.splice(1)];
+        const newForecast = [...forecast].splice(1);
         newForecast.push(this.getRandomWeather());
         return newForecast;
       });

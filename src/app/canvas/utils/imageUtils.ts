@@ -21,6 +21,7 @@ export class ImageUtils {
     [EntityType.Greenhouse]: [144, 144],
     [EntityType.WeatherControl]: [320, 320],
     [EntityType.Windmill]: [32 * 5, 36 * 5],
+    [EntityType.WeatherStation]: [10 * 5, 16 * 5],
   };
 
   static preprocessImage(
