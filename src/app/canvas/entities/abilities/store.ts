@@ -32,6 +32,11 @@ export class Storage extends Ability {
     return this.maxStorage() - this.spaceUsed();
   });
 
+  filledFraction = computed(() => {
+    if (this.maxStorage() === 0) return 0;
+    return this.spaceUsed() / this.maxStorage();
+  });
+
   totalSpace = computed(() => this.maxStorage());
 
   isFull = computed(() => {

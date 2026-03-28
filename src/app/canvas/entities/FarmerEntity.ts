@@ -28,13 +28,10 @@ export class FarmerEntity
     FarmerRoles.Transport,
   ]);
 
-  // This should be on the sprite
-  override initialDirection: Direction = Direction.left;
-
   move: Movement = new Movement(this.node, 24, (direction) =>
-    this.setDirection(direction),
+    this.node.setDirection(direction),
   );
-  storage: Storage = new Storage(1);
+  storage: Storage = new Storage(2);
   hauler: Hauler = new Hauler(this);
   harvester: Harvester = new Harvester(this);
   planter: Planter = new Planter(this);
@@ -84,6 +81,8 @@ export enum FarmerUpgrade {
 }
 
 class FarmerRender extends Sprite<FarmerEntity> {
+  override initialDirection: Direction = Direction.left;
+
   override hasCollision = false;
   override frameSpeed = 250;
 

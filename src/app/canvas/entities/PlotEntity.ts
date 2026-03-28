@@ -11,7 +11,6 @@ import {
 import { ImageUtils } from "../utils/imageUtils";
 import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
 import { Cultivate, ICultivate } from "./abilities/cultivate";
-import { Direction } from "./abilities/move";
 import { IStorage, Storage } from "./abilities/store";
 import { Entity, EntityRender } from "./Entity";
 
@@ -22,8 +21,6 @@ export class PlotEntity
   private weatherService = inject(WeatherService);
 
   override type = EntityType.Plot;
-
-  override initialDirection: Direction = Direction.right;
 
   upgrade = signal<PlotUpgrade>(PlotUpgrade.Basic);
   storage = new Storage(1);

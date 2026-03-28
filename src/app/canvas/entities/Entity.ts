@@ -34,7 +34,6 @@ export abstract class Entity<
   public node: T;
   selectable: boolean = true;
   abstract type: EntityType;
-  protected initialDirection: Direction = Direction.right;
   abstract upgrade: WritableSignal<UpgradeType>;
 
   protected lastAction: string = "";
@@ -164,20 +163,11 @@ export abstract class Entity<
     }
   }
 
-  protected setDirection(direction: Direction) {
-    if (direction === this.initialDirection) {
-      this.node.scaleX(1);
-      this.node.offsetX(0);
-    } else {
-      this.node.scaleX(-1);
-      this.node.offsetX(this.node.width());
-    }
-  }
-
   abstract upgradeTo(upgrade: UpgradeType): void;
 }
 
 export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
+  protected initialDirection: Direction = Direction.right;
   selectedRect: Konva.Rect | null = null;
   entity!: T;
   protected hasCollision = true;
@@ -225,6 +215,16 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
       this.selectedRect.visible(selected);
     }
   });
+
+  setDirection(direction: Direction) {
+    if (direction === this.initialDirection) {
+      this.scaleX(1);
+      this.offsetX(0);
+    } else {
+      this.scaleX(-1);
+      this.offsetX(this.width());
+    }
+  }
 
   private dragHandler() {
     let originSafe: { x: number; y: number } | null = null;

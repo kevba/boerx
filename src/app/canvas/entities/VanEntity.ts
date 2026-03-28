@@ -2,7 +2,7 @@ import { signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
-import { Direction, IMovement, Movement } from "./abilities/move";
+import { IMovement, Movement } from "./abilities/move";
 import { IStorage, Storage } from "./abilities/store";
 import { ISeller, Seller } from "./behaviors/seller";
 import { Entity } from "./Entity";
@@ -13,7 +13,6 @@ export class VanEntity
   implements IStorage, IMovement, ISeller
 {
   override type = EntityType.Van;
-  override initialDirection = Direction.right;
 
   seller: Seller;
   storage: Storage;
@@ -41,7 +40,7 @@ export class VanEntity
     node.entity = this;
 
     this.move = new Movement(this.node, 64, (direction) =>
-      this.setDirection(direction),
+      this.node.setDirection(direction),
     );
 
     this.upgrade.set(upgrade);

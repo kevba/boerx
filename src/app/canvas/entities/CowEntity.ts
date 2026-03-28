@@ -8,7 +8,6 @@ import { Direction, Movement } from "./abilities/move";
 
 export class CowEntity extends Entity<CowImage, CowUpgrade> {
   private moveBehavior: Movement;
-  override initialDirection = Direction.left;
 
   type = EntityType.Cow;
 
@@ -34,7 +33,7 @@ export class CowEntity extends Entity<CowImage, CowUpgrade> {
 
     this.upgrade.set(upgrade);
     this.moveBehavior = new Movement(node, 12, (direction) =>
-      this.setDirection(direction),
+      this.node.setDirection(direction),
     );
 
     this.init();
@@ -60,6 +59,7 @@ export class CowEntity extends Entity<CowImage, CowUpgrade> {
 
 class CowImage extends Sprite<CowEntity> {
   override hasCollision = false;
+  override initialDirection = Direction.left;
 
   constructor(args: { x: number; y: number; id: string }) {
     super({

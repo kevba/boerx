@@ -48,7 +48,9 @@ export class GreenhouseService extends BaseService<
       );
       if (greenhouseIndex === -1) return greenhouses;
 
-      (greenhouses[greenhouseIndex] as GreenhouseEntity).cultivate.plant(crop);
+      (greenhouses[greenhouseIndex] as GreenhouseEntity).cultivate.replace(
+        crop,
+      );
 
       return greenhouses;
     });

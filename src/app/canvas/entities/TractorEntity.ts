@@ -2,7 +2,7 @@ import { effect, signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
-import { Direction, IMovement, Movement } from "./abilities/move";
+import { IMovement, Movement } from "./abilities/move";
 import { IStorage, Storage } from "./abilities/store";
 import { Harvester, IHarvester } from "./behaviors/harvester";
 import { Hauler, IHauler } from "./behaviors/hauler";
@@ -15,11 +15,10 @@ export class TractorEntity
   implements IStorage, IMovement, IHarvester, IPlanter, IHauler
 {
   override type = EntityType.Tractor;
-  override initialDirection: Direction = Direction.right;
 
   storage: Storage = new Storage();
   move: Movement = new Movement(this.node, 0, (direction) =>
-    this.setDirection(direction),
+    this.node.setDirection(direction),
   );
 
   hauler: Hauler = new Hauler(this);

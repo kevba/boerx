@@ -65,7 +65,7 @@ export class PlotService extends BaseService<PlotUpgrade, PlotEntity> {
       const plotIndex = plots.findIndex((plot) => plot.id === plotId);
       if (plotIndex === -1) return plots;
 
-      (plots[plotIndex] as PlotEntity).cultivate.plant(crop);
+      (plots[plotIndex] as PlotEntity).cultivate.replace(crop);
 
       return plots;
     });

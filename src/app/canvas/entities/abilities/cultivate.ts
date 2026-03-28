@@ -77,6 +77,18 @@ export class Cultivate extends Passive {
     this.lastPlantedCrop.set(crop);
   }
 
+  replace(crop: Crop) {
+    const cost = this.cropService.plantCost()[crop];
+    const stash = this.stashService.stash();
+    if (stash < cost) {
+      return;
+    }
+    this.stashService.addStash(-cost);
+
+    this._crop.set(crop);
+    this.lastPlantedCrop.set(crop);
+  }
+
   private _cropChangeEffect = effect(() => {
     const crop = this._crop();
     this.cropGrowthStage.set(0);

@@ -27,11 +27,11 @@ export class Hauler extends Behavior {
   }
 
   override getWeight(): Act {
-    const isFull = this.entity.storage.isFull();
+    const filledFraction = this.entity.storage.filledFraction();
     const fetchTarget = this.getFetchTarget(this.fetchTargetId);
     const deliveryTarget = this.getDeliveryTarget(this.deliveryTargetId);
 
-    if (isFull && deliveryTarget) {
+    if (filledFraction > 0.5 && deliveryTarget) {
       if (deliveryTarget.distance < 10) {
         return {
           weight: 1,
@@ -51,7 +51,9 @@ export class Hauler extends Behavior {
           },
         };
       } else {
-        let weight = Math.max(1 - deliveryTarget.distance / this.maxRange, 0);
+        let weight =
+          Math.max(1 - deliveryTarget.distance / this.maxRange, 0) *
+          filledFraction;
 
         return {
           description: `Hauler: moving to delivery target`,
@@ -66,9 +68,7 @@ export class Hauler extends Behavior {
           },
         };
       }
-    }
-
-    if (!isFull && fetchTarget) {
+    } else if (fetchTarget) {
       if (fetchTarget.distance < 10) {
         return {
           weight: 1,

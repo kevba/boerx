@@ -68,6 +68,10 @@ export class Movement {
     radius: number = 0,
     onReach?: () => void,
   ) {
+    if (this.entity.isSelected()) {
+      return;
+    }
+
     if (!this.moving) {
       this.entity.isMoving.set(false);
       return;
