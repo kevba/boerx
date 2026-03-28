@@ -36,10 +36,6 @@ export class MarketEntity extends Entity<MarketImage, MarketUpgrade> {
     this.upgrade.set(upgrade);
   }
 
-  upgradeTo(upgrade: MarketUpgrade) {
-    this.upgrade.set(upgrade);
-  }
-
   sellItems(items: Item[]) {
     const crops = Object.values(Crop);
     items.forEach((i) => {

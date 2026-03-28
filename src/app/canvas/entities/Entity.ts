@@ -163,7 +163,9 @@ export abstract class Entity<
     }
   }
 
-  abstract upgradeTo(upgrade: UpgradeType): void;
+  upgradeTo(upgrade: UpgradeType) {
+    this.upgrade.set(upgrade);
+  }
 }
 
 export class EntityRender<T extends Entity<any, any>> extends Konva.Group {

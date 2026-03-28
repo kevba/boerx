@@ -28,6 +28,7 @@ export abstract class BaseService<
   protected stashService = inject(StashService);
   protected abstract baseCost: number;
 
+  canBeSold = computed(() => true);
   entities = computed(
     () =>
       this.entitiesService

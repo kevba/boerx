@@ -7,6 +7,7 @@ import { Crop } from "../../services/items/crop.service";
 import { CropItem, Item } from "../../services/wares.service";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
+import { Forecast } from "./abilities/forecast";
 
 export class WeatherStationEntity extends Entity<
   WeatherStationImage,
@@ -15,6 +16,7 @@ export class WeatherStationEntity extends Entity<
   type = EntityType.WeatherStation;
 
   upgrade = signal<WeatherStationUpgrade>(WeatherStationUpgrade.Basic);
+  forecast = new Forecast();
 
   private incomeService = new IncomeService();
 
@@ -36,10 +38,6 @@ export class WeatherStationEntity extends Entity<
       node,
     });
     this.node.entity = this;
-    this.upgrade.set(upgrade);
-  }
-
-  upgradeTo(upgrade: WeatherStationUpgrade) {
     this.upgrade.set(upgrade);
   }
 

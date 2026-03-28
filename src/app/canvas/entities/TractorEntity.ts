@@ -58,10 +58,6 @@ export class TractorEntity
     this.init();
   }
 
-  upgradeTo(upgrade: TractorUpgrade) {
-    this.upgrade.set(upgrade);
-  }
-
   private _upgradeChangeEffect = effect(() => {
     const upgrade = this.upgrade();
     this.move.setSpeed(this.brandSpeed[upgrade]);

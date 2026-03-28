@@ -1,9 +1,10 @@
-import { effect, signal } from "@angular/core";
+import { signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
+import { Forecast } from "./abilities/forecast";
 
 export class WeatherControlEntity extends Entity<
   WeatherControlImage,
@@ -12,6 +13,7 @@ export class WeatherControlEntity extends Entity<
   type = EntityType.WeatherControl;
 
   upgrade = signal<WeatherControlUpgrade>(WeatherControlUpgrade.Pillar);
+  forecast = new Forecast();
 
   maxStoragePerUpgrade: Record<WeatherControlUpgrade, number> = {
     [WeatherControlUpgrade.Pillar]: 20,
@@ -39,12 +41,6 @@ export class WeatherControlEntity extends Entity<
 
     this.init();
   }
-
-  upgradeTo(upgrade: WeatherControlUpgrade) {
-    this.upgrade.set(upgrade);
-  }
-
-  private _upgradeEffect = effect(() => {});
 }
 
 export enum WeatherControlUpgrade {

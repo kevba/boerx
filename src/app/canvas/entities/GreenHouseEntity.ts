@@ -1,4 +1,4 @@
-import { effect, signal } from "@angular/core";
+import { signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
@@ -40,14 +40,6 @@ export class GreenhouseEntity
 
     this.init();
   }
-
-  upgradeTo(upgrade: GreenhouseUpgrade) {
-    this.upgrade.set(upgrade);
-  }
-
-  private _upgradeEffect = effect(() => {
-    const upgrade = this.upgrade();
-  });
 }
 
 class GreenhouseCultivate extends Cultivate {

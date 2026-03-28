@@ -50,10 +50,6 @@ export class VanEntity
 
     this.init();
   }
-
-  upgradeTo(upgrade: VanUpgrade) {
-    this.upgrade.set(upgrade);
-  }
 }
 
 export enum VanUpgrade {

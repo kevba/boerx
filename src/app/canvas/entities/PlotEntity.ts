@@ -52,12 +52,6 @@ export class PlotEntity
     this.init();
   }
 
-  upgradeTo(upgrade: PlotUpgrade) {
-    this.upgrade.set(upgrade);
-  }
-
-  _upgradeChangeEffect = effect(() => {});
-
   private _cropChangeEffect = effect(() => {
     const crop = this.cultivate.crop();
     this.node.setCrop(crop);

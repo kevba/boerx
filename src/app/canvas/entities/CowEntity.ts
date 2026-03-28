@@ -44,8 +44,6 @@ export class CowEntity extends Entity<CowImage, CowUpgrade> {
     this.followCursor();
   }
 
-  override upgradeTo(upgrade: CowUpgrade): void {}
-
   private followCursor() {
     const stage = this.node.getStage();
     if (!stage) return;

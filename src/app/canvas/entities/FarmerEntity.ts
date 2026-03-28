@@ -60,14 +60,6 @@ export class FarmerEntity
     this.init();
   }
 
-  upgradeTo(upgrade: FarmerUpgrade) {
-    this.upgrade.set(upgrade);
-  }
-
-  private _upgradeChangeEffect = effect(() => {
-    const upgrade = this.upgrade();
-  });
-
   private _rolesChangeEffect = effect(() => {
     const roles = this.roles();
     this.harvester.disabled.set(!roles.includes(FarmerRoles.Harvest));

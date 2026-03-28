@@ -50,10 +50,6 @@ export class BarnEntity
     if (this.node.isDragging() || this.node.draggable()) return;
   }
 
-  upgradeTo(upgrade: BarnUpgrade) {
-    this.upgrade.set(upgrade);
-  }
-
   private _upgradeEffect = effect(() => {
     const upgrade = this.upgrade();
     const storageSpace = this.maxStoragePerUpgrade[upgrade];

@@ -1,5 +1,6 @@
 import { Component, computed, inject, Injector } from "@angular/core";
 import { Cultivate } from "../../canvas/entities/abilities/cultivate";
+import { Forecast } from "../../canvas/entities/abilities/forecast";
 import { Storage } from "../../canvas/entities/abilities/store";
 import { EntityType } from "../../models/entity";
 import { EntityService } from "../../models/serviceMap";
@@ -57,6 +58,9 @@ import { WeatherControlPanelComponent } from "./weather-control-panel.component"
                   @case (PanelType.WeatherForecast) {
                     <app-entity-weather-forecast></app-entity-weather-forecast>
                   }
+                  <!-- @case (PanelType.Sell) {
+                    <app-entity-sell></app-entity-sell>
+                  } -->
                   @default {
                     <div>Select an option</div>
                   }
@@ -130,6 +134,10 @@ export class EntityPanelComponent {
     const entity = entityService.entities()[0];
     if (!entity) return [];
 
+    if (entityService.canBeSold()) {
+      options.push(PanelType.Sell);
+    }
+
     if ("cultivate" in entity && entity.cultivate instanceof Cultivate) {
       options.push(PanelType.Plant);
       options.push(PanelType.CropStatus);
@@ -149,7 +157,7 @@ export class EntityPanelComponent {
       options.push(PanelType.SeasonControl);
     }
 
-    if (entity.type === EntityType.WeatherStation) {
+    if ("forecast" in entity && entity.forecast instanceof Forecast) {
       options.push(PanelType.WeatherForecast);
     }
 
@@ -158,6 +166,7 @@ export class EntityPanelComponent {
 }
 
 enum PanelType {
+  Sell = "Sell",
   Upgrade = "Upgrade",
   Plant = "Plant",
   CropStatus = "Crop Status",
