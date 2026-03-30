@@ -6,7 +6,7 @@ export enum EntityType {
   Tractor = "tractor",
   Cow = "cow",
   Market = "market",
-  WeatherControl = "weather",
+  Altar = "altar",
   Greenhouse = "greenhouse",
   Windmill = "windmill",
   WeatherStation = "weather station",

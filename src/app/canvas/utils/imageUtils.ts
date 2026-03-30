@@ -19,7 +19,7 @@ export class ImageUtils {
     [EntityType.Market]: [240, 240],
     [EntityType.Cow]: [32, 32],
     [EntityType.Greenhouse]: [144, 144],
-    [EntityType.WeatherControl]: [320, 320],
+    [EntityType.Altar]: [320, 320],
     [EntityType.Windmill]: [32 * 5, 36 * 5],
     [EntityType.WeatherStation]: [10 * 5, 16 * 5],
   };

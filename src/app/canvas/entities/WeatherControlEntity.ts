@@ -10,7 +10,7 @@ export class WeatherControlEntity extends Entity<
   WeatherControlImage,
   WeatherControlUpgrade
 > {
-  type = EntityType.WeatherControl;
+  type = EntityType.Altar;
 
   upgrade = signal<WeatherControlUpgrade>(WeatherControlUpgrade.Pillar);
   forecast = new Forecast();
@@ -52,11 +52,11 @@ export class WeatherControlImage extends Sprite<WeatherControlEntity> {
   constructor(args: { x: number; y: number; id: string }) {
     super({
       id: `weathercontrol_${args.id}`,
-      name: EntityType.WeatherControl,
+      name: EntityType.Altar,
       x: args.x,
       y: args.y,
       imageSrc: "/sprites/weather-control.png",
-      EntityType: EntityType.WeatherControl,
+      EntityType: EntityType.Altar,
       totalFrames: 10,
       frameWidth: 32,
       frameHeight: 32,

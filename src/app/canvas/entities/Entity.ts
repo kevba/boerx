@@ -209,7 +209,7 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
     this.selected.set(selected);
   }
 
-  _selectedEffect = effect(() => {
+  private _selectedEffect = effect(() => {
     const selected = this.selected();
     this.setAttr("draggable", selected);
     if (this.selectedRect) {
@@ -344,5 +344,10 @@ export class EntityRender<T extends Entity<any, any>> extends Konva.Group {
       x: a.x + (b.x - a.x) * t,
       y: a.y + (b.y - a.y) * t,
     };
+  }
+
+  override destroy(): this {
+    this._selectedEffect.destroy();
+    return super.destroy();
   }
 }

@@ -79,9 +79,9 @@ import { StashService } from "../services/stash.service";
         <app-buy-tile
           image="/imgs/weather-control.png"
           text="Weather Control"
-          [active]="activeBuyingEntity() === EntityType.WeatherControl"
+          [active]="activeBuyingEntity() === EntityType.Altar"
           [cost]="weatherControlService.cost()"
-          (buyClick)="onBuy(EntityType.WeatherControl)"></app-buy-tile>
+          (buyClick)="onBuy(EntityType.Altar)"></app-buy-tile>
       }
     </div>
   `,

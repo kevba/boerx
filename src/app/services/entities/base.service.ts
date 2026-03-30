@@ -62,6 +62,21 @@ export abstract class BaseService<
     this.add(coords);
   }
 
+  sell(id: string) {
+    const entity = this.getById(id);
+    if (!entity) return;
+
+    this.stashService.addStash(this.baseCost);
+
+    const e = this.getById(id);
+    if (e) {
+      e.destroy();
+    }
+    this.entitiesService.entities.update((entities) =>
+      entities.filter((e) => e.id !== id),
+    );
+  }
+
   add(coords: { x: number; y: number }) {
     runInInjectionContext(this.injector, () => {
       const base = this.createNew(coords);
@@ -96,8 +111,6 @@ export abstract class BaseService<
     if (!base) return 0;
     return this.upgrader.fromToCost(base.upgrade(), toUpgrade);
   }
-
-  constructor() {}
 
   protected init() {
     this.upgrader = new Upgrader<UpgradeType>(this.upgrades);

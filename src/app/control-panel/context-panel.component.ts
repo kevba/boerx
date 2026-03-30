@@ -6,16 +6,7 @@ import { MainPanelComponent } from "./main-panel.component";
 
 @Component({
   selector: "app-context-panel",
-  imports: [
-    // PlotPanelComponent,
-    MainPanelComponent,
-    // TractorPanelComponent,
-    // BarnPanelComponent,
-    // WeatherControlPanelComponent,
-    // FarmerPanelComponent,
-    // GreenhousePanelComponent,
-    EntityPanelComponent,
-  ],
+  imports: [MainPanelComponent, EntityPanelComponent],
 
   template: `
     <div class="md:w-[20rem] w-full md:h-full h-[14rem]  flex flex-col ">
@@ -46,7 +37,7 @@ export class ContextPanelComponent {
     EntityType.Tractor,
     EntityType.Market,
     EntityType.Farmer,
-    EntityType.WeatherControl,
+    EntityType.Altar,
     EntityType.Greenhouse,
   ];
 

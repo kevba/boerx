@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import {
-  WeatherControlEntity,
-  WeatherControlUpgrade,
+    WeatherControlEntity,
+    WeatherControlUpgrade,
 } from "../../canvas/entities/WeatherControlEntity";
 import { EntityType } from "../../models/entity";
 import { BaseService } from "./base.service";
@@ -13,7 +13,7 @@ export class WeatherControlService extends BaseService<
   WeatherControlUpgrade,
   WeatherControlEntity
 > {
-  override entityType = EntityType.WeatherControl;
+  override entityType = EntityType.Altar;
   protected baseCost = 999999;
 
   upgrades = {};

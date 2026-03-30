@@ -120,7 +120,11 @@ export class InitService {
 
     state.entities.forEach((e: any) => {
       const entityType = e.type as EntityType;
+      const serviceType = EntityService[entityType];
+      if (!serviceType) return;
+
       const service = this.injector.get(EntityService[entityType]);
+
       service.add({ x: e.x, y: e.y });
 
       const entity = service.entities()[service.entities().length - 1];
@@ -132,49 +136,4 @@ export class InitService {
 
     return true;
   }
-  // private load(): boolean {
-  //   const stateStr = localStorage.getItem("gameState");
-  //   if (!stateStr) return false;
-
-  //   const state = JSON.parse(stateStr);
-  //   if (!state.entities || !state.stash) return false;
-  //   if (state.entities.length === 0) return false;
-
-  //   state.entities.forEach(
-  //     (e: { id: string; type: EntityType; x: number; y: number }) => {
-  //       switch (e.type) {
-  //         case EntityType.Market:
-  //           this.marketService.add({ x: e.x, y: e.y });
-  //           break;
-  //         case EntityType.Plot:
-  //           this.plotService.add({ x: e.x, y: e.y });
-  //           break;
-  //         case EntityType.Barn:
-  //           this.barnService.add({ x: e.x, y: e.y });
-  //           break;
-  //         case EntityType.Farmer:
-  //           this.farmerService.add({ x: e.x, y: e.y });
-  //           break;
-  //         case EntityType.Tractor:
-  //           this.tractorService.add({ x: e.x, y: e.y });
-  //           break;
-  //         case EntityType.Van:
-  //           this.vanService.add({ x: e.x, y: e.y });
-  //           break;
-  //         case EntityType.WeatherControl:
-  //           this.weatherControlService.add({ x: e.x, y: e.y });
-  //           break;
-  //         case EntityType.Greenhouse:
-  //           this.greenhouseService.add({ x: e.x, y: e.y });
-  //           break;
-  //         case EntityType.Windmill:
-  //           this.windmillService.add({ x: e.x, y: e.y });
-  //           break;
-  //       }
-  //     },
-  //   );
-
-  //   this.stashService.setStash(state.stash);
-  //   return true;
-  // }
 }

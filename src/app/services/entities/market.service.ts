@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { computed, Injectable } from "@angular/core";
 import {
   MarketEntity,
   MarketUpgrade,
@@ -13,6 +13,7 @@ export class MarketService extends BaseService<MarketUpgrade, MarketEntity> {
   override baseCost = 1000000;
   override entityType = EntityType.Market;
 
+  override canBeSold = computed(() => this.entities().length > 1);
   upgrades = {};
 
   constructor() {

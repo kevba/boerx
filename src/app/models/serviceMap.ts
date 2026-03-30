@@ -21,7 +21,7 @@ export const EntityService: Record<EntityType, typeof BaseService<any, any>> = {
   [EntityType.Market]: MarketService,
   [EntityType.Cow]: CowService,
   [EntityType.Greenhouse]: GreenhouseService,
-  [EntityType.WeatherControl]: WeatherControlService,
+  [EntityType.Altar]: WeatherControlService,
   [EntityType.Windmill]: WindmillService,
   [EntityType.WeatherStation]: WeatherStationService,
 };
