@@ -7,6 +7,7 @@ import { Crop } from "../../services/items/crop.service";
 import { CropItem, Item } from "../../services/wares.service";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
+import { SellPower } from "./abilities/sellPower";
 
 export class MarketEntity extends Entity<MarketImage, MarketUpgrade> {
   type = EntityType.Market;
@@ -14,6 +15,7 @@ export class MarketEntity extends Entity<MarketImage, MarketUpgrade> {
   upgrade = signal<MarketUpgrade>(MarketUpgrade.Shed);
 
   private incomeService = new IncomeService();
+  sellPower = new SellPower();
 
   constructor(
     initialCoords: { x: number; y: number },
@@ -34,6 +36,7 @@ export class MarketEntity extends Entity<MarketImage, MarketUpgrade> {
     });
     this.node.entity = this;
     this.upgrade.set(upgrade);
+    this.init();
   }
 
   sellItems(items: Item[]) {

@@ -94,7 +94,6 @@ export abstract class Entity<
     const passives = this.getAbilities().filter((attr) => {
       return attr instanceof Passive;
     });
-
     passives.forEach((passive: Passive) => {
       untracked(() => passive.run());
     });

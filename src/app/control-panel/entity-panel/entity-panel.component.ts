@@ -1,12 +1,14 @@
 import { Component, computed, inject, Injector } from "@angular/core";
 import { Cultivate } from "../../canvas/entities/abilities/cultivate";
 import { Forecast } from "../../canvas/entities/abilities/forecast";
+import { GeneratePower } from "../../canvas/entities/abilities/generatePower";
 import { Storage } from "../../canvas/entities/abilities/store";
 import { EntityType } from "../../models/entity";
 import { EntityService } from "../../models/serviceMap";
 import { SelectionService } from "../../services/selection.service";
 import { PanelMenuNavComponent } from "../menu-nav.component";
 import { EntityCropStatusComponent } from "./entity-crop-status.component";
+import { EntityGeneratePowerComponent } from "./entity-generate-power.component";
 import { EntityPlantComponent } from "./entity-plant.component";
 import { EntityStorageComponent } from "./entity-storage.component";
 import { EntityUpgradesComponent } from "./entity-upgrades.component";
@@ -69,9 +71,10 @@ import { WeatherControlPanelComponent } from "./weather-control-panel.component"
                   @case (PanelType.WeatherForecast) {
                     <app-entity-weather-forecast></app-entity-weather-forecast>
                   }
-                  <!-- @case (PanelType.Sell) {
-                    <app-entity-sell></app-entity-sell>
-                  } -->
+                  @case (PanelType.PowerGeneration) {
+                    <app-entity-generate-power
+                      [service]="service"></app-entity-generate-power>
+                  }
                   @default {
                     <div>Select an option</div>
                   }
@@ -118,6 +121,7 @@ import { WeatherControlPanelComponent } from "./weather-control-panel.component"
     EntityStorageComponent,
     EntityCropStatusComponent,
     EntityWeatherForecastComponent,
+    EntityGeneratePowerComponent,
   ],
 })
 export class EntityPanelComponent {
@@ -180,6 +184,13 @@ export class EntityPanelComponent {
       options.push(PanelType.WeatherForecast);
     }
 
+    if (
+      "generatePower" in entity &&
+      entity.generatePower instanceof GeneratePower
+    ) {
+      options.push(PanelType.PowerGeneration);
+    }
+
     return options;
   });
 
@@ -202,4 +213,5 @@ enum PanelType {
   WeatherControl = "Weather Control",
   SeasonControl = "Season Control",
   WeatherForecast = "Weather Forecast",
+  PowerGeneration = "Power",
 }

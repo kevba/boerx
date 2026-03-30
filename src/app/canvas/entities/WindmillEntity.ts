@@ -7,6 +7,7 @@ import { Crop } from "../../services/items/crop.service";
 import { CropItem, Item } from "../../services/wares.service";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
+import { GeneratePower } from "./abilities/generatePower";
 
 export class WindmillEntity extends Entity<WindmillImage, WindmillUpgrade> {
   type = EntityType.Windmill;
@@ -14,6 +15,7 @@ export class WindmillEntity extends Entity<WindmillImage, WindmillUpgrade> {
   upgrade = signal<WindmillUpgrade>(WindmillUpgrade.Basic);
 
   private incomeService = new IncomeService();
+  generatePower = new GeneratePower(100);
 
   constructor(
     initialCoords: { x: number; y: number },
@@ -34,6 +36,8 @@ export class WindmillEntity extends Entity<WindmillImage, WindmillUpgrade> {
     });
     this.node.entity = this;
     this.upgrade.set(upgrade);
+
+    this.init();
   }
 
   sellItems(items: Item[]) {
