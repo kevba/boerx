@@ -4,11 +4,7 @@ import { PlotService } from "../services/entities/plots.service";
 import { TractorService } from "../services/entities/tractor.service";
 import { InitService } from "../services/init.service";
 import { StashService } from "../services/stash.service";
-import {
-  SeasonTypes,
-  WeatherService,
-  WeatherTypes,
-} from "../services/weather.service";
+import { WeatherService, WeatherTypes } from "../services/weather.service";
 
 @Component({
   selector: "app-cheats-panel",
@@ -36,7 +32,6 @@ export class CheatsPanelComponent {
   initService = inject(InitService);
 
   weatherTypes = Object.values(WeatherTypes);
-  seasonTypes = Object.values(SeasonTypes);
 
   addMoney() {
     this.stashService.addStash(100000);
@@ -49,9 +44,5 @@ export class CheatsPanelComponent {
 
   setWeather(weather: WeatherTypes) {
     this.weatherService.setWeather(weather);
-  }
-
-  setSeason(season: SeasonTypes) {
-    this.weatherService.setSeason(season);
   }
 }

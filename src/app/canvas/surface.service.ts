@@ -1,6 +1,7 @@
 import { effect, inject, Injectable } from "@angular/core";
 import Konva from "konva";
-import { SeasonTypes, WeatherService } from "../services/weather.service";
+import { SeasonTypes, TimeService } from "../services/time.service";
+import { WeatherService } from "../services/weather.service";
 import { ColorMap, NoisyImageService } from "./utils/noisy-image.service";
 
 @Injectable({
@@ -8,6 +9,7 @@ import { ColorMap, NoisyImageService } from "./utils/noisy-image.service";
 })
 export class SurfaceService {
   private weatherService = inject(WeatherService);
+  private timeService = inject(TimeService);
 
   // TODO: Duplicated from canvas.component
   private size = 2500;
@@ -73,7 +75,7 @@ export class SurfaceService {
     this.backgroundLayer.add(this.backgroudRect);
 
     effect(() => {
-      const season = this.weatherService.season();
+      const season = this.timeService.season();
       let colorMap = this.surfaceColorMap;
       if (season === SeasonTypes.Winter) {
         colorMap = this.winterSurfaceColorMap;

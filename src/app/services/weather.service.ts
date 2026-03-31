@@ -4,83 +4,71 @@ import {
   inject,
   Injectable,
   linkedSignal,
-  signal,
-  untracked,
 } from "@angular/core";
-import { TickService } from "./tick.service";
+import { SeasonTypes, TimeService } from "./time.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class WeatherService {
-  private tickService = inject(TickService);
+  private timeService = inject(TimeService);
 
-  private seasonDurationInTicks = this.tickService.dayDurationInTicks * 24;
+  private weatherForecast = linkedSignal<Array<WeatherTypes>>(() => {
+    const forecast: WeatherTypes[] = [];
 
-  private weatherForecast = linkedSignal<Array<WeatherTypes>>(() => [
-    ...new Array(10).fill(this.getRandomWeather()),
-  ]);
+    for (let i = 0; i < 10; i++) {
+      forecast.push(this.getNextForecast(forecast));
+    }
+
+    return forecast;
+  });
+
   private currentWeather = computed<WeatherTypes>(() => {
     return this.weatherForecast()[0];
   });
-  private currentSeason = signal(SeasonTypes.Spring);
 
   forecast = computed(() => [...this.weatherForecast()].splice(1));
   weather = this.currentWeather;
-  season = this.currentSeason.asReadonly();
 
   constructor() {
     effect(() => {
-      const _day = this.tickService.currentDay();
+      const _day = this.timeService.currentDay();
       this.weatherForecast.update((forecast) => {
+        const nextForecast = this.getNextForecast(forecast);
         const newForecast = [...forecast].splice(1);
-        newForecast.push(this.getRandomWeather());
+        newForecast.push(nextForecast);
         return newForecast;
       });
-    });
-
-    effect(() => {
-      const ticks = this.tickService.tick();
-
-      const changeOver = (ticks + 1) % this.seasonDurationInTicks === 0;
-
-      if (!changeOver) return;
-
-      const currentSeason = untracked(() => this.currentSeason());
-      const seasons = Object.values(SeasonTypes);
-      const nextIndex = (seasons.indexOf(currentSeason) + 1) % seasons.length;
-      const nextSeason = seasons[nextIndex];
-      this.weatherForecast.update((forecast) => {
-        const newForecast = new Array(forecast.length).map(() =>
-          this.getRandomWeather(),
-        );
-        return newForecast;
-      });
-
-      this.currentSeason.set(nextSeason);
     });
   }
 
-  private getRandomWeather(): WeatherTypes {
+  private getNextForecast(currentForecast: WeatherTypes[]): WeatherTypes {
+    let season = this.timeService.season();
+    const nextSeason = this.timeService.daysTillSeason();
+
+    if (nextSeason.days <= currentForecast.length) {
+      season = nextSeason.season;
+    }
+
     const rand = Math.random();
 
-    if (this.season() === SeasonTypes.Winter) {
+    if (season === SeasonTypes.Winter) {
       if (rand > 0.3) return WeatherTypes.Snow;
       if (rand > 0.2) return WeatherTypes.Rainy;
       else return WeatherTypes.Sunny;
     }
 
-    if (this.season() === SeasonTypes.Spring) {
+    if (season === SeasonTypes.Spring) {
       if (rand > 0.65) return WeatherTypes.Rainy;
       else return WeatherTypes.Sunny;
     }
 
-    if (this.season() === SeasonTypes.Summer) {
+    if (season === SeasonTypes.Summer) {
       if (rand > 0.7) return WeatherTypes.Rainy;
       else return WeatherTypes.Sunny;
     }
 
-    if (this.season() === SeasonTypes.Fall) {
+    if (season === SeasonTypes.Fall) {
       if (rand > 0.2) return WeatherTypes.Rainy;
       else return WeatherTypes.Sunny;
     }
@@ -95,21 +83,10 @@ export class WeatherService {
       return newForecast;
     });
   }
-
-  setSeason(season: SeasonTypes) {
-    this.currentSeason.set(season);
-  }
 }
 
 export enum WeatherTypes {
   Sunny = "Sunny",
   Rainy = "Rainy",
   Snow = "Snow",
-}
-
-export enum SeasonTypes {
-  Spring = "Spring",
-  Summer = "Summer",
-  Fall = "Fall",
-  Winter = "Winter",
 }

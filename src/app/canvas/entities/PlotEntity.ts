@@ -3,11 +3,8 @@ import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { Crop } from "../../services/items/crop.service";
-import {
-  SeasonTypes,
-  WeatherService,
-  WeatherTypes,
-} from "../../services/weather.service";
+import { SeasonTypes, TimeService } from "../../services/time.service";
+import { WeatherService, WeatherTypes } from "../../services/weather.service";
 import { ImageUtils } from "../utils/imageUtils";
 import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
 import { Cultivate, ICultivate } from "./abilities/cultivate";
@@ -18,7 +15,7 @@ export class PlotEntity
   extends Entity<PlotRender, PlotUpgrade>
   implements IStorage, ICultivate
 {
-  private weatherService = inject(WeatherService);
+  private timeService = inject(TimeService);
 
   override type = EntityType.Plot;
 
@@ -58,7 +55,7 @@ export class PlotEntity
   });
 
   private _seasonChangeEffect = effect(() => {
-    const season = this.weatherService.season();
+    const season = this.timeService.season();
     if (season === SeasonTypes.Winter) {
       this.cultivate.plant(Crop.Grass);
     }
@@ -67,13 +64,15 @@ export class PlotEntity
 
 class PlotCultivate extends Cultivate {
   private weatherService = inject(WeatherService);
+  private timeService = inject(TimeService);
+
   override lastPlantedCrop = signal(Crop.Wheat);
 
   override canPlant = computed(() => {
     return (
       this._crop() === Crop.Grass &&
       !this.canHarvest() &&
-      this.weatherService.season() !== SeasonTypes.Winter
+      this.timeService.season() !== SeasonTypes.Winter
     );
   });
 

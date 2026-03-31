@@ -1,6 +1,6 @@
 import { Component, inject } from "@angular/core";
 import { BuyTileComponent } from "../../components/buy-tile.component";
-import { SeasonTypes, WeatherService } from "../../services/weather.service";
+import { SeasonTypes, TimeService } from "./../../services/time.service";
 
 @Component({
   selector: "app-season-control-panel",
@@ -21,10 +21,10 @@ import { SeasonTypes, WeatherService } from "../../services/weather.service";
   `,
 })
 export class SeasonControlPanelComponent {
-  private weatherService = inject(WeatherService);
+  private timeService = inject(TimeService);
 
   seasonTypes = Object.values(SeasonTypes);
   setSeason(season: SeasonTypes) {
-    this.weatherService.setSeason(season);
+    this.timeService.setSeason(season);
   }
 }
