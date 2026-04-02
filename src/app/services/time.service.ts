@@ -1,11 +1,4 @@
-import {
-  computed,
-  effect,
-  inject,
-  Injectable,
-  signal,
-  untracked,
-} from "@angular/core";
+import { computed, effect, inject, Injectable, signal } from "@angular/core";
 import { TickService } from "./tick.service";
 
 @Injectable({
@@ -14,9 +7,13 @@ import { TickService } from "./tick.service";
 export class TimeService {
   private tickService = inject(TickService);
 
-  dayDurationInTicks = 60;
+  dayDurationInTicks = 15;
   seasonDuration = 24; // in days
   yearDuration = this.seasonDuration * Object.values(SeasonTypes).length; // in days
+
+  currentHour = computed(() => {
+    return Math.floor(this.tickService.tick() % this.dayDurationInTicks);
+  });
 
   currentDay = computed(() => {
     return Math.floor(this.tickService.tick() / this.dayDurationInTicks);
@@ -28,13 +25,28 @@ export class TimeService {
 
   currentDate = computed(() => {
     const dayOfYear = this.currentDay() % this.yearDuration;
-    const seasonIndex = Math.floor(dayOfYear / this.seasonDuration);
     const dayOfSeason = dayOfYear % this.seasonDuration;
     return {
       year: this.currentYear(),
-      season: Object.values(SeasonTypes)[seasonIndex],
+      season: this.currentSeason(),
       day: dayOfSeason,
+      dayOfYear: dayOfYear,
     };
+  });
+
+  lightLevel = computed(() => {
+    const date = this.currentDate();
+    const hour = this.currentHour();
+    const dayProgress = hour / this.dayDurationInTicks;
+    const dayLight = 0.5 * (1 + Math.cos(Math.PI - 2 * Math.PI * dayProgress));
+
+    const dayOfYear = date.dayOfYear;
+    const yearProgress = dayOfYear / this.yearDuration;
+    const phaseOffset = 0.25;
+    const seasonLight =
+      0.5 * (1 + Math.cos(2 * Math.PI * (yearProgress - phaseOffset)));
+
+    return dayLight * seasonLight;
   });
 
   private currentSeason = signal(SeasonTypes.Spring);
@@ -42,17 +54,19 @@ export class TimeService {
 
   constructor() {
     effect(() => {
-      const day = this.currentDay();
+      const date = this.currentDate();
+      const hour = this.currentHour();
+      const dayProgress = hour / this.dayDurationInTicks;
+      const dayLight =
+        0.5 * (1 + Math.cos(Math.PI - 2 * Math.PI * dayProgress));
 
-      const changeOver = (day + 1) % this.seasonDuration === 0;
+      const dayOfYear = date.dayOfYear;
+      const yearProgress = dayOfYear / this.yearDuration;
+      const phaseOffset = 0.25;
+      const seasonLight =
+        0.75 + 0.25 * Math.cos(2 * Math.PI * (yearProgress - phaseOffset));
 
-      if (!changeOver) return;
-
-      const currentSeason = untracked(() => this.currentSeason());
-      const seasons = Object.values(SeasonTypes);
-      const nextIndex = (seasons.indexOf(currentSeason) + 1) % seasons.length;
-      const nextSeason = seasons[nextIndex];
-      this.currentSeason.set(nextSeason);
+      return dayLight * seasonLight;
     });
   }
 
