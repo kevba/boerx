@@ -32,7 +32,7 @@ export class WeatherService {
 
   constructor() {
     effect(() => {
-      const _day = this.timeService.currentDay();
+      const _day = this.timeService.totalDays();
       this.weatherForecast.update((forecast) => {
         const nextForecast = this.getNextForecast(forecast);
         const newForecast = [...forecast].splice(1);

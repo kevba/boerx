@@ -18,8 +18,11 @@ import { TimeService } from "./../services/time.service";
       </div>
       <div class="md:text-sm text-xs font-bold ml-auto">
         <span class="text-stone-300">
-          {{ timeService.currentDate().season }}
-          {{ timeService.currentDate().day }}
+          {{ timeService.displayDate().hour | number: "1.0-0" }}:00
+        </span>
+        <span class="text-stone-300">
+          {{ timeService.displayDate().season }}
+          {{ timeService.displayDate().day }}
         </span>
       </div>
     </div>

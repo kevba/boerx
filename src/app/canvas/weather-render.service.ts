@@ -1,5 +1,6 @@
-import { inject, Injectable } from "@angular/core";
+import { effect, inject, Injectable } from "@angular/core";
 import Konva from "konva";
+import { TimeService } from "../services/time.service";
 import { WeatherService, WeatherTypes } from "../services/weather.service";
 import { ColorMap, NoisyImageService } from "./utils/noisy-image.service";
 
@@ -12,8 +13,17 @@ export class WeatherRenderService {
 
   private weatherService = inject(WeatherService);
 
+  private timeService = inject(TimeService);
+
   private weatherRect = new Konva.Rect({
     id: "weather",
+    width: this.size,
+    height: this.size,
+    listening: false,
+  });
+
+  private daylightRect = new Konva.Rect({
+    id: "daylight",
     width: this.size,
     height: this.size,
     listening: false,
@@ -42,10 +52,16 @@ export class WeatherRenderService {
 
   constructor() {
     this.layer.add(this.weatherRect);
+    this.layer.add(this.daylightRect);
 
     setInterval(() => {
       this.setWeatherOverlay();
     }, 200);
+
+    effect(() => {
+      const lightLevel = this.timeService.lightLevel();
+      this.setDaylightOverlay(lightLevel);
+    });
   }
 
   private sunnyImage = NoisyImageService.getNoiseImage(1, 1, {
@@ -67,6 +83,21 @@ export class WeatherRenderService {
     // Image must be loaded before setting as fill pattern, otherwise it won't render
     imageObj.onload = () => {
       this.weatherRect.setAttrs({ fillPatternImage: imageObj });
+    };
+
+    imageObj.src = imageUrl;
+  }
+
+  private setDaylightOverlay(lightLevel: number) {
+    const color = `rgba(0, 0, 0, ${(1 - lightLevel) / 1.5})`;
+
+    const imageUrl = NoisyImageService.PixelsToImage([[color]], 1);
+
+    const imageObj = new Image();
+
+    // Image must be loaded before setting as fill pattern, otherwise it won't render
+    imageObj.onload = () => {
+      this.daylightRect.setAttrs({ fillPatternImage: imageObj });
     };
 
     imageObj.src = imageUrl;

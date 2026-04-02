@@ -1,4 +1,4 @@
-import { computed, effect, inject, Injectable, signal } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 import { TickService } from "./tick.service";
 
 @Injectable({
@@ -7,68 +7,90 @@ import { TickService } from "./tick.service";
 export class TimeService {
   private tickService = inject(TickService);
 
-  dayDurationInTicks = 15;
-  seasonDuration = 24; // in days
+  timeTick = 1;
+
+  hourDuration = this.timeTick * 1;
+  dayDuration = this.hourDuration * 24;
+  seasonDuration = this.dayDuration * 24;
   yearDuration = this.seasonDuration * Object.values(SeasonTypes).length; // in days
 
-  currentHour = computed(() => {
-    return Math.floor(this.tickService.tick() % this.dayDurationInTicks);
+  totalHours = computed(() => {
+    return Math.floor(this.tickService.tick() / this.hourDuration);
   });
 
-  currentDay = computed(() => {
-    return Math.floor(this.tickService.tick() / this.dayDurationInTicks);
+  hourOfDay = computed(() => {
+    return Math.floor(this.totalHours() % this.dayDuration);
   });
 
-  currentYear = computed(() => {
-    return Math.floor(this.currentDay() / this.yearDuration);
+  totalDays = computed(() => {
+    return Math.floor(this.tickService.tick() / this.dayDuration);
   });
 
-  currentDate = computed(() => {
-    const dayOfYear = this.currentDay() % this.yearDuration;
-    const dayOfSeason = dayOfYear % this.seasonDuration;
+  totalYears = computed(() => {
+    return Math.floor(this.totalDays() / this.yearDuration);
+  });
+
+  dayOfYear = computed(() => {
+    return this.totalDays() % (this.yearDuration / this.dayDuration);
+  });
+
+  dayOfSeason = computed(() => {
+    return this.dayOfYear() % (this.seasonDuration / this.dayDuration);
+  });
+
+  displayDate = computed(() => {
     return {
-      year: this.currentYear(),
+      year: this.totalYears(),
+      hour: this.hourOfDay(),
       season: this.currentSeason(),
-      day: dayOfSeason,
-      dayOfYear: dayOfYear,
+      day: this.dayOfSeason() + 1, // +1 to make it 1-indexed for display
     };
   });
 
   lightLevel = computed(() => {
-    const date = this.currentDate();
-    const hour = this.currentHour();
-    const dayProgress = hour / this.dayDurationInTicks;
-    const dayLight = 0.5 * (1 + Math.cos(Math.PI - 2 * Math.PI * dayProgress));
+    const hour = this.hourOfDay();
+    const season = this.currentSeason();
+    const dayOfSeason = this.dayOfSeason();
+    let day = 0;
 
-    const dayOfYear = date.dayOfYear;
-    const yearProgress = dayOfYear / this.yearDuration;
-    const phaseOffset = 0.25;
-    const seasonLight =
-      0.5 * (1 + Math.cos(2 * Math.PI * (yearProgress - phaseOffset)));
+    switch (season) {
+      case SeasonTypes.Spring:
+        day = dayOfSeason + this.seasonDuration;
+        break;
+      case SeasonTypes.Summer:
+        day = dayOfSeason + this.seasonDuration * 2;
+        break;
+      case SeasonTypes.Fall:
+        day = dayOfSeason + this.seasonDuration * 3;
+        break;
+      case SeasonTypes.Winter:
+        day = dayOfSeason;
+        break;
+    }
 
-    return dayLight * seasonLight;
+    const hourRad = (hour / this.dayDuration) * Math.PI;
+    const dailyLightLevel = Math.sin(hourRad);
+
+    const seasonRad = (day / this.yearDuration) * Math.PI;
+    const seasonalLightLevel = Math.sin(seasonRad);
+
+    const baseLight = dailyLightLevel * (0.7 + seasonalLightLevel * 0.3);
+
+    const darkEdge = 0.35; // stay fully dark until lightLevel rises above this
+    const lightEdge = 0.8; // start brightening after this
+    const t = Math.min(
+      Math.max((lightEdge - baseLight) / (lightEdge - darkEdge), 0),
+      1,
+    );
+
+    const lightLevel = 1 - t * t * (3 - 2 * t);
+    return lightLevel;
   });
 
   private currentSeason = signal(SeasonTypes.Spring);
   season = this.currentSeason.asReadonly();
 
-  constructor() {
-    effect(() => {
-      const date = this.currentDate();
-      const hour = this.currentHour();
-      const dayProgress = hour / this.dayDurationInTicks;
-      const dayLight =
-        0.5 * (1 + Math.cos(Math.PI - 2 * Math.PI * dayProgress));
-
-      const dayOfYear = date.dayOfYear;
-      const yearProgress = dayOfYear / this.yearDuration;
-      const phaseOffset = 0.25;
-      const seasonLight =
-        0.75 + 0.25 * Math.cos(2 * Math.PI * (yearProgress - phaseOffset));
-
-      return dayLight * seasonLight;
-    });
-  }
+  constructor() {}
 
   setSeason(season: SeasonTypes) {
     this.currentSeason.set(season);
@@ -81,7 +103,7 @@ export class TimeService {
     const nextSeason = seasons[nextIndex];
     return {
       season: nextSeason,
-      days: this.seasonDuration - (this.currentDay() % this.seasonDuration),
+      days: this.seasonDuration - (this.totalDays() % this.seasonDuration),
     };
   }
 }
