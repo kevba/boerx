@@ -59,7 +59,6 @@ export abstract class Entity<
 
   init() {
     this.tickEffect = effect(() => {
-      console.log(`Tick for entity ${this.id} of type ${this.type}`);
       const t = this.tick.tick();
       this.update();
     });
