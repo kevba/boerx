@@ -53,13 +53,6 @@ export class PlotEntity
     const crop = this.cultivate.crop();
     this.node.setCrop(crop);
   });
-
-  private _seasonChangeEffect = effect(() => {
-    const season = this.timeService.season();
-    if (season === SeasonTypes.Winter) {
-      this.cultivate.plant(Crop.Grass);
-    }
-  });
 }
 
 class PlotCultivate extends Cultivate {
@@ -83,8 +76,17 @@ class PlotCultivate extends Cultivate {
       growthModifier += 0.5;
     }
 
+    growthModifier *= this.timeService.lightLevel();
+
     return growthModifier;
   }
+
+  private _seasonChangeEffect = effect(() => {
+    const season = this.timeService.season();
+    if (season === SeasonTypes.Winter) {
+      this._crop.set(Crop.Grass);
+    }
+  });
 }
 
 export enum PlotUpgrade {
