@@ -70,7 +70,6 @@ export class Cultivate extends Passive {
   });
 
   plant(crop: Crop) {
-    console.log("Attempting to plant", crop);
     if (!this.canPlant()) return;
     const cost = this.cropService.plantCost()[crop];
 
