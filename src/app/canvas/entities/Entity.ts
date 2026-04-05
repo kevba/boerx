@@ -42,6 +42,7 @@ export abstract class Entity<
     return AppInjectorHolder.injector.get(SelectionService);
   }
 
+  private tickEffect: null | ReturnType<typeof effect> = null;
   constructor(options: EntityOptions<T>) {
     this.node = options.node;
     this.node.entity = this as any;
@@ -57,7 +58,8 @@ export abstract class Entity<
   }
 
   init() {
-    effect(() => {
+    this.tickEffect = effect(() => {
+      console.log(`Tick for entity ${this.id} of type ${this.type}`);
       const t = this.tick.tick();
       this.update();
     });
@@ -126,6 +128,14 @@ export abstract class Entity<
 
   destroy() {
     this.node.destroy();
+    this.tickEffect?.destroy();
+    this.tickEffect = null;
+
+    // An enttity will not be garbage collected if abilities and behaviors
+    // hold a reference to it. To prevent memory leaks, we can null out the properties of the entity.
+    Object.keys(this).forEach((key) => {
+      (this as any)[key] = null;
+    });
   }
 
   marshalSave() {

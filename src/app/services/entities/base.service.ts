@@ -69,12 +69,13 @@ export abstract class BaseService<
     this.stashService.addStash(this.baseCost);
 
     const e = this.getById(id);
-    if (e) {
-      e.destroy();
-    }
+
     this.entitiesService.entities.update((entities) =>
       entities.filter((e) => e.id !== id),
     );
+    if (e) {
+      e.destroy();
+    }
   }
 
   add(coords: { x: number; y: number }) {

@@ -21,7 +21,7 @@ export class PlotEntity
 
   upgrade = signal<PlotUpgrade>(PlotUpgrade.Basic);
   storage = new Storage(1);
-  cultivate = new PlotCultivate(this);
+  cultivate: PlotCultivate = new PlotCultivate(this);
 
   constructor(
     initialCoords: { x: number; y: number },

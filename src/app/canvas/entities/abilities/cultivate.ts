@@ -1,7 +1,6 @@
 import { computed, effect, inject, signal } from "@angular/core";
 import { Crop, CropService } from "../../../services/items/crop.service";
 import { StashService } from "../../../services/stash.service";
-import { Entity } from "../Entity";
 import { IStorage } from "./store";
 import { Passive } from "./utils";
 
@@ -13,7 +12,7 @@ export class Cultivate extends Passive {
   private cropService = inject(CropService);
   private stashService = inject(StashService);
 
-  constructor(private entity: Entity<any, any> & IStorage) {
+  constructor(protected entity: ICultivate) {
     super();
   }
 

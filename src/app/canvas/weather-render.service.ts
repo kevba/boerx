@@ -89,7 +89,7 @@ export class WeatherRenderService {
   }
 
   private setDaylightOverlay(lightLevel: number) {
-    const color = `rgba(0, 0, 0, ${(1 - lightLevel) / 1.5})`;
+    const color = `rgba(0, 0, 0, ${(1 - lightLevel) / 2})`;
 
     const imageUrl = NoisyImageService.PixelsToImage([[color]], 1);
 

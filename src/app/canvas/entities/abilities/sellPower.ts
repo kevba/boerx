@@ -15,7 +15,6 @@ export class SellPower extends Passive {
 
   run(): void {
     const overSuppliedPower = this.powerService.overSuppliedPower();
-    this.powerService.consumeOverSupply(overSuppliedPower);
     this.stashService.addStash(overSuppliedPower * this.pricePerPowerUnit());
   }
 }
