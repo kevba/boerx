@@ -1,14 +1,14 @@
 import { Component, computed, inject } from "@angular/core";
 import { WeatherStationService } from "../../services/entities/weatherStation.service";
+import { SunService } from "../../services/sun.service";
 import { WeatherService } from "../../services/weather.service";
-import { TimeService } from "./../../services/time.service";
 
 @Component({
   selector: "app-entity-weather-forecast",
   template: `
     <div class="grid grid-cols-2 gap-1">
-      <span class="col-span-1">Light level</span>
-      <p class="col-span-1">{{ lightLevel() }}</p>
+      <span class="col-span-1">Light </span>
+      <p class="col-span-1">{{ rad() }}W/m²</p>
       <span class="col-span-1">now</span>
       <p class="col-span-1">{{ currentWeather() }}</p>
 
@@ -23,9 +23,9 @@ import { TimeService } from "./../../services/time.service";
 export class EntityWeatherForecastComponent {
   private weatherService = inject(WeatherService);
   private weatherStations = inject(WeatherStationService);
-  private timeService = inject(TimeService);
+  private sunService = inject(SunService);
 
-  lightLevel = computed(() => this.timeService.lightLevel());
+  rad = computed(() => this.sunService.solarRadiation());
 
   currentWeather = computed(() => this.weatherService.weather());
   forecast = computed(() => {

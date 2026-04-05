@@ -10,7 +10,7 @@ export class CheatsService {
   unlocked = computed(() => this.pressCount() >= this.pressesRequired);
 
   constructor() {
-    if (window.location.port === "4200") {
+    if (window.location.hostname === "localhost") {
       this.pressCount.set(this.pressesRequired);
     }
   }

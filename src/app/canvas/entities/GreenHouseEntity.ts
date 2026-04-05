@@ -6,18 +6,18 @@ import { Crop } from "../../services/items/crop.service";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
 import { ConsumePower } from "./abilities/consumePower";
+import { CropStock, ICropStock } from "./abilities/cropStock";
 import { Cultivate, ICultivate } from "./abilities/cultivate";
-import { IStorage, Storage } from "./abilities/store";
 
 export class GreenhouseEntity
   extends Entity<GreenhouseImage, GreenhouseUpgrade>
-  implements IStorage, ICultivate
+  implements ICropStock, ICultivate
 {
   type = EntityType.Greenhouse;
 
   upgrade = signal<GreenhouseUpgrade>(GreenhouseUpgrade.Shed);
 
-  storage = new Storage(5);
+  cropStock = new CropStock(5);
   cultivate: GreenhouseCultivate = new GreenhouseCultivate(this);
   consumePower = new ConsumePower(5);
 
@@ -50,7 +50,7 @@ export class GreenhouseEntity
 }
 
 class GreenhouseCultivate extends Cultivate {
-  override lastPlantedCrop = signal(Crop.Strawberry);
+  override defaultCrop = Crop.Tomato;
 
   constructor(override entity: GreenhouseEntity) {
     super(entity);

@@ -2,8 +2,8 @@ import { effect, signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
+import { CropStock, ICropStock } from "./abilities/cropStock";
 import { IMovement, Movement } from "./abilities/move";
-import { IStorage, Storage } from "./abilities/store";
 import { Harvester, IHarvester } from "./behaviors/harvester";
 import { Hauler, IHauler } from "./behaviors/hauler";
 import { IPlanter, Planter } from "./behaviors/planter";
@@ -12,11 +12,11 @@ import { Sprite } from "./Sprite";
 
 export class TractorEntity
   extends Entity<TractorRender, TractorUpgrade>
-  implements IStorage, IMovement, IHarvester, IPlanter, IHauler
+  implements ICropStock, IMovement, IHarvester, IPlanter, IHauler
 {
   override type = EntityType.Tractor;
 
-  storage: Storage = new Storage();
+  cropStock: CropStock = new CropStock();
   move: Movement = new Movement(this.node, 0, (direction) =>
     this.node.setDirection(direction),
   );

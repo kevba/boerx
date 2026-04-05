@@ -4,12 +4,12 @@ import { Crop } from "../../../services/items/crop.service";
 import { Entity } from "../Entity";
 
 import { RenderUtils } from "../../utils/renderUtils";
+import { ICropStock } from "../abilities/cropStock";
 import { Cultivate, ICultivate } from "../abilities/cultivate";
 import { IMovement } from "../abilities/move";
-import { IStorage } from "../abilities/store";
 import { Act, Behavior } from "./models";
 
-export interface IPlanter extends Entity<any, any>, IMovement, IStorage {
+export interface IPlanter extends Entity<any, any>, IMovement, ICropStock {
   planter: Planter;
 }
 
@@ -121,7 +121,9 @@ export class Planter extends Behavior {
     let targets = this.entityService
       .entities()
       .filter((e) => "cultivate" in e && e.cultivate instanceof Cultivate)
-      .filter((e) => (e as ICultivate).cultivate.canPlant());
+      .filter((e) => {
+        return (e as ICultivate).cultivate.canPlant();
+      });
 
     return targets as ICultivate[];
   }

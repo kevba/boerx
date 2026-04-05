@@ -3,7 +3,6 @@ import { Component, inject } from "@angular/core";
 import { CanvasComponent } from "./canvas/canvas.component";
 import { ContextPanelComponent } from "./control-panel/context-panel.component";
 import { FinancialBarComponent } from "./databars/financial-bar.component";
-import { NutrientsBarComponent } from "./databars/nutrients-bar.component";
 import { CheatsService } from "./services/cheats.service";
 import { InitService } from "./services/init.service";
 
@@ -12,7 +11,6 @@ import { InitService } from "./services/init.service";
   imports: [
     ContextPanelComponent,
     FinancialBarComponent,
-    NutrientsBarComponent,
     CanvasComponent,
     NgClass,
   ],
@@ -39,9 +37,7 @@ import { InitService } from "./services/init.service";
         <app-context-panel class="md:flex-0" />
       </div>
       <div class="h-[3rem] bg-stone-600 hidden md:visible">
-        <div class="flex flex-row gap-4 p-4 h-full">
-          <app-nutrients-bar />
-        </div>
+        <div class="flex flex-row gap-4 p-4 h-full"></div>
       </div>
     </div>
   `,

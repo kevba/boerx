@@ -2,8 +2,8 @@ import { effect, signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
+import { CropStock, ICropStock } from "./abilities/cropStock";
 import { Direction, IMovement, Movement } from "./abilities/move";
-import { IStorage, Storage } from "./abilities/store";
 import { Harvester, IHarvester } from "./behaviors/harvester";
 import { Hauler, IHauler } from "./behaviors/hauler";
 import { IPlanter, Planter } from "./behaviors/planter";
@@ -18,7 +18,7 @@ export enum FarmerRoles {
 
 export class FarmerEntity
   extends Entity<FarmerRender, FarmerUpgrade>
-  implements IStorage, IMovement, IHarvester, IPlanter, IHauler
+  implements ICropStock, IMovement, IHarvester, IPlanter, IHauler
 {
   override type = EntityType.Farmer;
 
@@ -31,7 +31,7 @@ export class FarmerEntity
   move: Movement = new Movement(this.node, 24, (direction) =>
     this.node.setDirection(direction),
   );
-  storage: Storage = new Storage(2);
+  cropStock: CropStock = new CropStock(2);
   hauler: Hauler = new Hauler(this);
   harvester: Harvester = new Harvester(this);
   planter: Planter = new Planter(this);

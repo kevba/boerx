@@ -4,17 +4,17 @@ import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
-import { IStorage, Storage } from "./abilities/store";
+import { CropStock, ICropStock } from "./abilities/cropStock";
 
 export class BarnEntity
   extends Entity<BarnImage, BarnUpgrade>
-  implements IStorage
+  implements ICropStock
 {
   type = EntityType.Barn;
 
   upgrade = signal<BarnUpgrade>(BarnUpgrade.Shed);
 
-  storage: Storage;
+  cropStock: CropStock = new CropStock(0);
 
   maxStoragePerUpgrade: Record<BarnUpgrade, number> = {
     [BarnUpgrade.Shed]: 20,
@@ -40,7 +40,6 @@ export class BarnEntity
       node,
     });
     this.node.entity = this;
-    this.storage = new Storage();
     this.upgrade.set(upgrade);
 
     this.init();
@@ -53,7 +52,7 @@ export class BarnEntity
   private _upgradeEffect = effect(() => {
     const upgrade = this.upgrade();
     const storageSpace = this.maxStoragePerUpgrade[upgrade];
-    this.storage.setMaxStorage(storageSpace);
+    this.cropStock.setMaxStock(storageSpace);
   });
 }
 

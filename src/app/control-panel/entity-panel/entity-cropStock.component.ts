@@ -1,15 +1,18 @@
 import { Component, computed, inject, input } from "@angular/core";
-import { IStorage, Storage } from "../../canvas/entities/abilities/store";
+import {
+  CropStock,
+  ICropStock,
+} from "../../canvas/entities/abilities/cropStock";
 import { EntityType } from "../../models/entity";
 import { SelectionService } from "../../services/selection.service";
 
 @Component({
-  selector: "app-entity-storage",
+  selector: "app-entity-crop-stock",
   template: `
     <div class="grid grid-cols-2 gap-2 w-full">
       <span class="text-lg">{{ "TOTAL" }}</span>
-      <span [class.text-red-500]="usedStorage() === maxStorage()"
-        >{{ usedStorage() }} of {{ maxStorage() }}</span
+      <span [class.text-red-500]="usedCropStock() === maxCropStock()"
+        >{{ usedCropStock() }} of {{ maxCropStock() }}</span
       >
       <div class="col-span-2"></div>
 
@@ -27,29 +30,29 @@ import { SelectionService } from "../../services/selection.service";
   `,
   imports: [],
 })
-export class EntityStorageComponent {
+export class EntityCropStockComponent {
   private selectionService = inject(SelectionService);
   service = input.required<{
     entityType: EntityType;
-    entities: () => IStorage[];
+    entities: () => ICropStock[];
   }>();
 
-  selectedEntities = computed<IStorage[]>(() => {
+  selectedEntities = computed<ICropStock[]>(() => {
     const selectedIds =
       this.selectionService.selectedPerType()[this.service().entityType];
 
     return this.service()
       .entities()
       .filter((p) => selectedIds.includes(p.id))
-      .filter((e): e is IStorage => {
-        return "storage" in e && e.storage instanceof Storage;
+      .filter((e): e is ICropStock => {
+        return "cropStock" in e && e.cropStock instanceof CropStock;
       });
   });
 
   storedItems = computed(() => {
     const items = new Map<string, number>();
     for (const entity of this.selectedEntities()) {
-      const stored = entity.storage.storedItems();
+      const stored = entity.cropStock.storedItems();
       for (const item of stored) {
         const current = items.get(item.type) || 0;
 
@@ -59,18 +62,18 @@ export class EntityStorageComponent {
     return Array.from(items, ([type, amount]) => ({ type, amount }));
   });
 
-  maxStorage = computed(() => {
+  maxCropStock = computed(() => {
     let max = 0;
     for (const entity of this.selectedEntities()) {
-      max += entity.storage.totalSpace();
+      max += entity.cropStock.totalSpace();
     }
     return max;
   });
 
-  usedStorage = computed(() => {
+  usedCropStock = computed(() => {
     let used = 0;
     for (const entity of this.selectedEntities()) {
-      used += entity.storage.spaceUsed();
+      used += entity.cropStock.spaceUsed();
     }
     return used;
   });

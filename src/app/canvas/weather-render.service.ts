@@ -1,6 +1,6 @@
 import { effect, inject, Injectable } from "@angular/core";
 import Konva from "konva";
-import { TimeService } from "../services/time.service";
+import { SunService } from "../services/sun.service";
 import { WeatherService, WeatherTypes } from "../services/weather.service";
 import { ColorMap, NoisyImageService } from "./utils/noisy-image.service";
 
@@ -13,7 +13,7 @@ export class WeatherRenderService {
 
   private weatherService = inject(WeatherService);
 
-  private timeService = inject(TimeService);
+  private sunService = inject(SunService);
 
   private weatherRect = new Konva.Rect({
     id: "weather",
@@ -59,7 +59,7 @@ export class WeatherRenderService {
     }, 200);
 
     effect(() => {
-      const lightLevel = this.timeService.lightLevel();
+      const lightLevel = this.sunService.lightLevel();
       this.setDaylightOverlay(lightLevel);
     });
   }

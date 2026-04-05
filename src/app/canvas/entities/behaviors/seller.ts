@@ -4,13 +4,13 @@ import { Entity } from "../Entity";
 
 import { Crop } from "../../../services/items/crop.service";
 import { RenderUtils } from "../../utils/renderUtils";
+import { ICropStock } from "../abilities/cropStock";
 import { IMovement } from "../abilities/move";
-import { IStorage } from "../abilities/store";
 import { BarnEntity } from "../BarnEntity";
 import { MarketEntity } from "../MarketEntity";
 import { Act, Behavior } from "./models";
 
-export interface ISeller extends Entity<any, any>, IMovement, IStorage {
+export interface ISeller extends Entity<any, any>, IMovement, ICropStock {
   seller: Seller;
 }
 
@@ -27,7 +27,7 @@ export class Seller extends Behavior {
   }
 
   override getWeight(): Act {
-    const hasItems = this.entity.storage.storedItems().length > 0;
+    const hasItems = this.entity.cropStock.storedItems().length > 0;
     const fetchTarget = this.getFetchTarget(this.fetchTargetId);
     const deliveryTarget = this.getDeliveryTarget(this.deliveryTargetId);
 
@@ -42,16 +42,16 @@ export class Seller extends Behavior {
 
             this.entity.move.stop();
             Object.values(Crop).forEach((crop) => {
-              if (this.entity.storage.spaceLeft() <= 0) {
+              if (this.entity.cropStock.spaceLeft() <= 0) {
                 return;
               }
 
-              const item = fetchTarget.target.storage.retrieveMax(crop);
+              const item = fetchTarget.target.cropStock.retrieveMax(crop);
               if (!item) return;
 
-              const remainder = this.entity.storage.store(item);
+              const remainder = this.entity.cropStock.store(item);
               if (remainder) {
-                fetchTarget.target.storage.store(remainder);
+                fetchTarget.target.cropStock.store(remainder);
               }
             });
           },
@@ -84,7 +84,7 @@ export class Seller extends Behavior {
             this.deliveryTargetId = null;
             this.fetchTargetId = null;
 
-            const storedItems = this.entity.storage.retrieveAll() || [];
+            const storedItems = this.entity.cropStock.retrieveAll() || [];
             deliveryTarget.target.sellItems(storedItems);
           },
         };
@@ -115,12 +115,12 @@ export class Seller extends Behavior {
 
   private getFetchTarget(
     id: string | null,
-  ): { target: IStorage; distance: number; fill: number } | null {
+  ): { target: ICropStock; distance: number; fill: number } | null {
     if (id) {
       let entity =
         this.entityService.entities().find((t) => t.id === id) || null;
       if (entity) {
-        const storableEntity = entity as IStorage;
+        const storableEntity = entity as ICropStock;
 
         return {
           target: storableEntity,
@@ -129,8 +129,8 @@ export class Seller extends Behavior {
             this.entity.node,
           ),
           fill:
-            storableEntity.storage.spaceLeft() /
-            storableEntity.storage.totalSpace(),
+            storableEntity.cropStock.spaceLeft() /
+            storableEntity.cropStock.totalSpace(),
         };
       }
     }
@@ -164,7 +164,7 @@ export class Seller extends Behavior {
   }
 
   private findFetchTarget(): {
-    target: IStorage;
+    target: ICropStock;
     distance: number;
     fill: number;
   } | null {
@@ -180,14 +180,14 @@ export class Seller extends Behavior {
       .filter((e) => e instanceof BarnEntity)
       .filter((e) => !otherSellers.includes(e.id))
       .filter((e) => {
-        return (e as IStorage).storage.storedItems().length > 0;
-      }) as IStorage[];
+        return (e as ICropStock).cropStock.storedItems().length > 0;
+      }) as ICropStock[];
 
     const targetsWithDistance = targets.map((t) => {
       return {
         target: t,
         distance: RenderUtils.nodeDistance(t.node, this.entity.node),
-        fill: t.storage.spaceLeft() / t.storage.totalSpace(),
+        fill: t.cropStock.spaceLeft() / t.cropStock.totalSpace(),
       };
     });
 

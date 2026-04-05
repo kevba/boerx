@@ -4,13 +4,13 @@ import { Entity } from "../Entity";
 
 import { Crop } from "../../../services/items/crop.service";
 import { RenderUtils } from "../../utils/renderUtils";
+import { ICropStock } from "../abilities/cropStock";
 import { ICultivate } from "../abilities/cultivate";
 import { IMovement } from "../abilities/move";
-import { IStorage } from "../abilities/store";
 import { BarnEntity } from "../BarnEntity";
 import { Act, Behavior } from "./models";
 
-export interface IHauler extends Entity<any, any>, IMovement, IStorage {
+export interface IHauler extends Entity<any, any>, IMovement, ICropStock {
   hauler: Hauler;
 }
 
@@ -27,7 +27,7 @@ export class Hauler extends Behavior {
   }
 
   override getWeight(): Act {
-    const filledFraction = this.entity.storage.filledFraction();
+    const filledFraction = this.entity.cropStock.filledFraction();
     const fetchTarget = this.getFetchTarget(this.fetchTargetId);
     const deliveryTarget = this.getDeliveryTarget(this.deliveryTargetId);
 
@@ -41,11 +41,11 @@ export class Hauler extends Behavior {
             this.deliveryTargetId = null;
             this.fetchTargetId = null;
 
-            const storedItems = this.entity.storage.retrieveAll() || [];
+            const storedItems = this.entity.cropStock.retrieveAll() || [];
             storedItems.forEach((item) => {
-              const remainder = deliveryTarget.target.storage.store(item);
+              const remainder = deliveryTarget.target.cropStock.store(item);
               if (remainder) {
-                this.entity.storage.store(remainder);
+                this.entity.cropStock.store(remainder);
               }
             });
           },
@@ -79,16 +79,16 @@ export class Hauler extends Behavior {
 
             this.entity.move.stop();
             Object.values(Crop).forEach((crop) => {
-              if (this.entity.storage.spaceLeft() <= 0) {
+              if (this.entity.cropStock.spaceLeft() <= 0) {
                 return;
               }
 
-              const item = fetchTarget.target.storage.retrieveMax(crop);
+              const item = fetchTarget.target.cropStock.retrieveMax(crop);
               if (!item) return;
 
-              const remainder = this.entity.storage.store(item);
+              const remainder = this.entity.cropStock.store(item);
               if (remainder) {
-                fetchTarget.target.storage.store(remainder);
+                fetchTarget.target.cropStock.store(remainder);
               }
             });
           },
@@ -120,7 +120,7 @@ export class Hauler extends Behavior {
 
   private getFetchTarget(
     id: string | null,
-  ): { target: IStorage; distance: number; fill: number } | null {
+  ): { target: ICropStock; distance: number; fill: number } | null {
     if (id) {
       const target = this.findTargetById(id);
       if (target) {
@@ -133,7 +133,7 @@ export class Hauler extends Behavior {
 
   private getDeliveryTarget(
     id: string | null,
-  ): { target: IStorage; distance: number; fill: number } | null {
+  ): { target: ICropStock; distance: number; fill: number } | null {
     if (id) {
       const target = this.findTargetById(id);
       if (target) {
@@ -146,16 +146,16 @@ export class Hauler extends Behavior {
 
   private findTargetById(
     id: string,
-  ): { target: IStorage; distance: number; fill: number } | null {
+  ): { target: ICropStock; distance: number; fill: number } | null {
     const entity =
       this.entityService.entities().find((t) => t.id === id) || null;
     if (!entity) return null;
-    const e = entity as IStorage;
+    const e = entity as ICropStock;
 
     return {
       target: e,
       distance: RenderUtils.nodeDistance(e.node, this.entity.node),
-      fill: e.storage.spaceLeft() / e.storage.totalSpace(),
+      fill: e.cropStock.spaceLeft() / e.cropStock.totalSpace(),
     };
   }
 
@@ -166,16 +166,16 @@ export class Hauler extends Behavior {
   } | null {
     let targets = this.entityService
       .entities()
-      .filter((e) => "storage" in e && "cultivate" in e)
+      .filter((e) => "cropStock" in e && "cultivate" in e)
       .filter((e) => {
-        return (e as ICultivate).storage.storedItems().length > 0;
+        return (e as ICultivate).cropStock.storedItems().length > 0;
       }) as ICultivate[];
 
     const targetsWithDistance = targets.map((t) => {
       return {
         target: t,
         distance: RenderUtils.nodeDistance(t.node, this.entity.node),
-        fill: t.storage.spaceLeft() / t.storage.totalSpace(),
+        fill: t.cropStock.spaceLeft() / t.cropStock.totalSpace(),
       };
     });
 
@@ -184,25 +184,25 @@ export class Hauler extends Behavior {
   }
 
   private findDeliveryTarget(): {
-    target: IStorage;
+    target: ICropStock;
     distance: number;
     fill: number;
   } | null {
     let targets = this.entityService
       .entities()
-      .filter((e) => "storage" in e)
+      .filter((e) => "cropStock" in e)
       .filter((e) => e instanceof BarnEntity)
       .filter((e) => {
         const storable = e as BarnEntity;
 
-        return storable.storage.spaceLeft() > 0;
+        return storable.cropStock.spaceLeft() > 0;
       });
 
     const targetsWithDistance = targets.map((t) => {
       return {
         target: t,
         distance: RenderUtils.nodeDistance(t.node, this.entity.node),
-        fill: t.storage.spaceLeft() / t.storage.totalSpace(),
+        fill: t.cropStock.spaceLeft() / t.cropStock.totalSpace(),
       };
     });
 

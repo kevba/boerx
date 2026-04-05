@@ -59,6 +59,10 @@ export class PanelMenuNavComponent {
 
   selectedMenuIndex = signal(0);
   selectedMenu = computed(() => {
+    const menuItems = this.menuItems();
+    if (menuItems.length === 0) {
+      return { type: "", text: "" };
+    }
     const selected = this.menuItems()?.[this.selectedMenuIndex()];
     return selected || this.menuItems()[0];
   });

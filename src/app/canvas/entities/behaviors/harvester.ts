@@ -3,12 +3,12 @@ import { EntitiesService } from "../../../services/entities/entities.service";
 import { Entity } from "../Entity";
 
 import { RenderUtils } from "../../utils/renderUtils";
+import { ICropStock } from "../abilities/cropStock";
 import { Cultivate, ICultivate } from "../abilities/cultivate";
 import { IMovement } from "../abilities/move";
-import { IStorage } from "../abilities/store";
 import { Act, Behavior } from "./models";
 
-export interface IHarvester extends Entity<any, any>, IMovement, IStorage {
+export interface IHarvester extends Entity<any, any>, IMovement, ICropStock {
   harvester: Harvester;
 }
 

@@ -2,20 +2,20 @@ import { signal } from "@angular/core";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
+import { CropStock, ICropStock } from "./abilities/cropStock";
 import { IMovement, Movement } from "./abilities/move";
-import { IStorage, Storage } from "./abilities/store";
 import { ISeller, Seller } from "./behaviors/seller";
 import { Entity } from "./Entity";
 import { Sprite } from "./Sprite";
 
 export class VanEntity
   extends Entity<VanRender, VanUpgrade>
-  implements IStorage, IMovement, ISeller
+  implements ICropStock, IMovement, ISeller
 {
   override type = EntityType.Van;
 
   seller: Seller;
-  storage: Storage;
+  cropStock: CropStock;
   move: Movement;
 
   upgrade = signal<VanUpgrade>(VanUpgrade.Van);
@@ -44,7 +44,7 @@ export class VanEntity
     );
 
     this.upgrade.set(upgrade);
-    this.storage = new Storage(10);
+    this.cropStock = new CropStock(10);
 
     this.seller = new Seller(this);
 

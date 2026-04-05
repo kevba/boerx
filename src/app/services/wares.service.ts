@@ -1,7 +1,7 @@
 import { Crop } from "./items/crop.service";
 
-export interface Item {
-  type: string;
+export interface Item<T = string> {
+  type: T;
   amount: number;
 }
 

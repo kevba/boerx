@@ -1,16 +1,16 @@
 import { Component, computed, inject, Injector } from "@angular/core";
+import { CropStock } from "../../canvas/entities/abilities/cropStock";
 import { Cultivate } from "../../canvas/entities/abilities/cultivate";
 import { Forecast } from "../../canvas/entities/abilities/forecast";
 import { GeneratePower } from "../../canvas/entities/abilities/generatePower";
-import { Storage } from "../../canvas/entities/abilities/store";
 import { EntityType } from "../../models/entity";
 import { EntityService } from "../../models/serviceMap";
 import { SelectionService } from "../../services/selection.service";
 import { PanelMenuNavComponent } from "../menu-nav.component";
 import { EntityCropStatusComponent } from "./entity-crop-status.component";
+import { EntityCropStockComponent } from "./entity-cropStock.component";
 import { EntityGeneratePowerComponent } from "./entity-generate-power.component";
 import { EntityPlantComponent } from "./entity-plant.component";
-import { EntityStorageComponent } from "./entity-storage.component";
 import { EntityUpgradesComponent } from "./entity-upgrades.component";
 import { EntityWeatherForecastComponent } from "./entity-weather-forecast.component";
 import { SeasonControlPanelComponent } from "./season-control-panel.component";
@@ -59,8 +59,8 @@ import { WeatherControlPanelComponent } from "./weather-control-panel.component"
                   @case (PanelType.CropStatus) {
                     <app-entity-crop-status [service]="service" />
                   }
-                  @case (PanelType.Storage) {
-                    <app-entity-storage [service]="service" />
+                  @case (PanelType.CropStock) {
+                    <app-entity-crop-stock [service]="service" />
                   }
                   @case (PanelType.WeatherControl) {
                     <app-weather-control-panel></app-weather-control-panel>
@@ -118,7 +118,7 @@ import { WeatherControlPanelComponent } from "./weather-control-panel.component"
     EntityPlantComponent,
     WeatherControlPanelComponent,
     SeasonControlPanelComponent,
-    EntityStorageComponent,
+    EntityCropStockComponent,
     EntityCropStatusComponent,
     EntityWeatherForecastComponent,
     EntityGeneratePowerComponent,
@@ -166,8 +166,8 @@ export class EntityPanelComponent {
       options.push(PanelType.CropStatus);
     }
 
-    if ("storage" in entity && entity.storage instanceof Storage) {
-      options.push(PanelType.Storage);
+    if ("cropStock" in entity && entity.cropStock instanceof CropStock) {
+      options.push(PanelType.CropStock);
     }
 
     const hasUpgrades = Object.keys(entityService.upgrades).length > 0;
@@ -209,7 +209,7 @@ enum PanelType {
   Upgrade = "Upgrade",
   Plant = "Plant",
   CropStatus = "Crop Status",
-  Storage = "Storage",
+  CropStock = "Storage",
   WeatherControl = "Weather Control",
   SeasonControl = "Season Control",
   WeatherForecast = "Weather Forecast",

@@ -1,16 +1,17 @@
 import { computed, effect, inject, signal } from "@angular/core";
 import { Crop, CropService } from "../../../services/items/crop.service";
 import { StashService } from "../../../services/stash.service";
-import { IStorage } from "./store";
+import { ICropStock } from "./cropStock";
 import { Passive } from "./utils";
 
-export interface ICultivate extends IStorage {
+export interface ICultivate extends ICropStock {
   cultivate: Cultivate;
 }
 
 export class Cultivate extends Passive {
   private cropService = inject(CropService);
   private stashService = inject(StashService);
+  protected defaultCrop = Crop.Grass;
 
   constructor(protected entity: ICultivate) {
     super();
@@ -20,10 +21,11 @@ export class Cultivate extends Passive {
     this.growTick();
   }
 
-  protected _crop = signal<Crop>(Crop.Grass);
+  protected _crop = signal<Crop>(this.defaultCrop);
   crop = this._crop.asReadonly();
 
   canHarvest = computed(() => {
+    if (this._crop() === Crop.Grass) return false;
     const crop = this._crop();
     const growthStage = this.cropGrowthStage();
     const maxGrowthStage = this.cropToHarvestTicks[crop];
@@ -37,6 +39,7 @@ export class Cultivate extends Passive {
     if (stash < cost) {
       return false;
     }
+
     return this._crop() === Crop.Grass && !this.canHarvest();
   });
 
@@ -44,7 +47,7 @@ export class Cultivate extends Passive {
   lastPlanted = computed(() => {
     const crop = this.lastPlantedCrop();
     if (!crop || crop === Crop.Grass) {
-      return null;
+      return this.defaultCrop;
     }
     return crop;
   });
@@ -67,6 +70,7 @@ export class Cultivate extends Passive {
   });
 
   plant(crop: Crop) {
+    console.log("Attempting to plant", crop);
     if (!this.canPlant()) return;
     const cost = this.cropService.plantCost()[crop];
 
@@ -108,8 +112,8 @@ export class Cultivate extends Passive {
     this._crop.set(Crop.Grass);
     this.cropGrowthStage.set(0);
 
-    this.entity.storage.clear();
-    this.entity.storage.store({
+    this.entity.cropStock.clear();
+    this.entity.cropStock.store({
       type: harvestedCrop,
       amount: this.harvestAmount(),
     });

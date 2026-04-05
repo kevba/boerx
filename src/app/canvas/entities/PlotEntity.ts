@@ -3,24 +3,29 @@ import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { EntityType } from "../../models/entity";
 import { Crop } from "../../services/items/crop.service";
+import { SunService } from "../../services/sun.service";
 import { SeasonTypes, TimeService } from "../../services/time.service";
 import { WeatherService, WeatherTypes } from "../../services/weather.service";
 import { ImageUtils } from "../utils/imageUtils";
 import { ColorMap, NoisyImageService } from "../utils/noisy-image.service";
+import { CropStock, ICropStock } from "./abilities/cropStock";
 import { Cultivate, ICultivate } from "./abilities/cultivate";
-import { IStorage, Storage } from "./abilities/store";
+import { WaterStock } from "./abilities/waterStock";
 import { Entity, EntityRender } from "./Entity";
 
 export class PlotEntity
   extends Entity<PlotRender, PlotUpgrade>
-  implements IStorage, ICultivate
+  implements ICropStock, ICultivate
 {
   private timeService = inject(TimeService);
 
   override type = EntityType.Plot;
 
   upgrade = signal<PlotUpgrade>(PlotUpgrade.Basic);
-  storage = new Storage(1);
+
+  cropStock = new CropStock(5);
+  waterStock = new WaterStock(10);
+
   cultivate: PlotCultivate = new PlotCultivate(this);
 
   constructor(
@@ -42,10 +47,7 @@ export class PlotEntity
     });
     node.entity = this;
 
-    this.storage = new Storage(5);
-
     this.upgrade.set(upgrade);
-
     this.init();
   }
 
@@ -57,9 +59,9 @@ export class PlotEntity
 
 class PlotCultivate extends Cultivate {
   private weatherService = inject(WeatherService);
+  private sunService = inject(SunService);
   private timeService = inject(TimeService);
-
-  override lastPlantedCrop = signal(Crop.Wheat);
+  override defaultCrop = Crop.Wheat;
 
   override canPlant = computed(() => {
     return (
@@ -76,7 +78,7 @@ class PlotCultivate extends Cultivate {
       growthModifier += 0.5;
     }
 
-    growthModifier *= this.timeService.lightLevel();
+    growthModifier *= this.sunService.solarRadiation() / 1000;
 
     return growthModifier;
   }
